@@ -3,7 +3,7 @@ import {
   Home, Search, PlusCircle, MessageCircle, User, 
   ChevronRight, ChevronLeft, ShieldCheck, MapPin, 
   Star, Calendar, Sliders, Filter, FileText, CheckCircle,
-  Folder, Truck, Info, Settings, List, Grid, Camera, Clipboard, MoreHorizontal
+  Folder, Truck, Info, Settings, List, Grid, Camera, Clipboard, MoreHorizontal, Lock
 } from 'lucide-react';
 
 // --- TRANSLATION DICTIONARY ---
@@ -20,7 +20,7 @@ const translations = {
     region: "Località (Regione)",
     showResults: "Mostra Risultati",
     sex: "Sesso",
-    origin: "Origine",
+    birthDate: "Data di Nascita",
     weight: "Peso",
     location: "Località",
     breederNotes: "Note Allevatore",
@@ -42,7 +42,20 @@ const translations = {
     management: "Gestione Allevamento",
     logistics: "Burocrazia & Logistica",
     settings: "Configurazione",
-    langSwitch: "LANGUAGE: EN"
+    langSwitch: "LANGUAGE: EN",
+    male: "Maschio",
+    female: "Femmina",
+    unsexed: "Unsexed",
+    pair: "Coppia",
+    realPhoto: "Foto Reale",
+    noAnimals: "Nessun animale trovato con questi filtri.",
+    activeListings: "Annunci Attivi",
+    readReviews: "Leggi Recensioni",
+    reviewsFor: "Recensioni per",
+    verifiedBuyer: "Acquirente Verificato",
+    writeReview: "Scrivi una Recensione",
+    onlyBuyersCanReview: "Puoi lasciare una recensione solo dopo aver acquistato un animale da questo allevatore tramite HerpMarket.",
+    applyFilters: "Applica Filtri"
   },
   en: {
     appSub: "The reptile marketplace in Italy",
@@ -56,7 +69,7 @@ const translations = {
     region: "Location (Region)",
     showResults: "Show Results",
     sex: "Sex",
-    origin: "Origin",
+    birthDate: "Birth Date",
     weight: "Weight",
     location: "Location",
     breederNotes: "Breeder Notes",
@@ -78,7 +91,20 @@ const translations = {
     management: "Breeding Management",
     logistics: "Bureaucracy & Logistics",
     settings: "Configuration",
-    langSwitch: "LINGUA: IT"
+    langSwitch: "LINGUA: IT",
+    male: "Male",
+    female: "Female",
+    unsexed: "Unsexed",
+    pair: "Pair",
+    realPhoto: "Real Photo",
+    noAnimals: "No animals found with these filters.",
+    activeListings: "Active Listings",
+    readReviews: "Read Reviews",
+    reviewsFor: "Reviews for",
+    verifiedBuyer: "Verified Buyer",
+    writeReview: "Write a Review",
+    onlyBuyersCanReview: "You can only leave a review after purchasing an animal from this breeder through HerpMarket.",
+    applyFilters: "Apply Filters"
   }
 };
 
@@ -86,54 +112,48 @@ const translations = {
 const listings = [
   {
     id: 1, species: "Correlophus ciliatus", morph: "Red Harlequin Pinstripe", price: "€150",
-    image: "https://images.unsplash.com/photo-1621316492329-8fb83ebf90b9?auto=format&fit=crop&q=80&w=800", location: "Torino", fiera: "Squamata Expo", breeder: "Piedmont Geckos",
-    verified: true, sex: "Maschio", origin: "CB 2024", weight: "35g", rating: 4.8, reviews: 24,
+    image: "/images/ciliatus.jpg", location: "Torino", fiera: "Squamata Expo", breeder: "Piedmont Geckos",
+    verified: true, sex: "male", birthDate: "05/2024", weight: "35g", rating: 4.8, reviews: 24,
     description: "Bellissimo esemplare, mangia Pangea e grilli regolarmente. Perfetto per riproduzione.", breederFocus: "Crested Geckos", category: "Gechi (Geckos)"
   },
   {
     id: 2, species: "Furcifer pardalis", morph: "Ambilobe Blue Bar", price: "€280",
-    image: "https://images.unsplash.com/photo-1580526149844-31f1a5f6ed49?auto=format&fit=crop&q=80&w=800", location: "Milano", fiera: "Verona Reptiles", breeder: "ExoBreed IT",
-    verified: true, sex: "Maschio", origin: "CB 2025", weight: "80g", rating: 4.9, reviews: 56,
+    image: "/images/pardalis.jpg", location: "Milano", fiera: "Verona Reptiles", breeder: "ExoBreed IT",
+    verified: true, sex: "male", birthDate: "02/2025", weight: "80g", rating: 4.9, reviews: 56,
     description: "Colori spettacolari. Documento CITES All. B incluso per la cessione.", breederFocus: "Camaleonti (Pardalis, Calyptratus)", category: "Camaleonti (Chameleons)"
   },
   {
     id: 3, species: "Gekko gecko", morph: "Normal CB", price: "€90",
-    image: "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&q=80&w=800", location: "Roma", fiera: null, breeder: "Serpenti Roma",
-    verified: false, sex: "Femmina", origin: "CB 2023", weight: "75g", rating: 4.2, reviews: 15,
+    image: "/images/tokay.jpg", location: "Roma", fiera: null, breeder: "Serpenti Roma",
+    verified: false, sex: "female", birthDate: "11/2023", weight: "75g", rating: 4.2, reviews: 15,
     description: "Nata in cattività, molto docile per essere un Tokay. Abituata al maneggio.", breederFocus: "Gechi asiatici", category: "Gechi (Geckos)"
   },
   {
     id: 4, species: "Eublepharis macularius", morph: "Normal / Wild Type", price: "€45",
-    image: "https://images.unsplash.com/photo-1621316492329-8fb83ebf90b9?auto=format&fit=crop&q=80&w=800", location: "Napoli", fiera: "Esotika Pet Show", breeder: "LeoMorphs Campania",
-    verified: true, sex: "Unsexed", origin: "CB 2026", weight: "15g", rating: 4.7, reviews: 30,
+    image: "/images/leopardino.jpg", location: "Napoli", fiera: "Esotika Pet Show", breeder: "LeoMorphs Campania",
+    verified: true, sex: "unsexed", birthDate: "01/2026", weight: "15g", rating: 4.7, reviews: 30,
     description: "Mangia tarme della farina regolarmente. Ottimo primo rettile.", breederFocus: "Leopard Geckos", category: "Gechi (Geckos)"
   },
   {
     id: 5, species: "Phelsuma grandis", morph: "High Red", price: "€110",
-    image: "https://images.unsplash.com/photo-1596796985794-6887cb024dd8?auto=format&fit=crop&q=80&w=800", location: "Firenze", fiera: null, breeder: "Phelsuma Italia",
-    verified: true, sex: "Femmina", origin: "CB 2024", weight: "40g", rating: 5.0, reviews: 41,
+    image: "/images/phelsuma.jpg", location: "Firenze", fiera: null, breeder: "Phelsuma Italia",
+    verified: true, sex: "female", birthDate: "08/2024", weight: "40g", rating: 5.0, reviews: 41,
     description: "In salute, colori molto accesi. Doc. CITES All. B pronto.", breederFocus: "Phelsuma e Gechi Diurni", category: "Gechi (Geckos)"
-  },
-  {
-    id: 6, species: "Pogona henrylawsoni", morph: "Normal", price: "€180",
-    image: "https://images.unsplash.com/photo-1542228601-51208034b7a1?auto=format&fit=crop&q=80&w=800", location: "Bologna", fiera: "Squamata Expo", breeder: "DragoMania",
-    verified: false, sex: "Coppia", origin: "CB 2026", weight: "10g", rating: 4.4, reviews: 12,
-    description: "Piccoli di drago di Rankin, ottimi mangiatori. Prezzo per la coppia.", breederFocus: "Pogona vitticeps, henrylawsoni", category: "Sauri & Varani (Lizards & Monitors)"
-  },
-  {
-    id: 7, species: "Tiliqua scincoides", morph: "Irian Jaya", price: "€250",
-    image: "https://images.unsplash.com/photo-1506555191898-bea76022e379?auto=format&fit=crop&q=80&w=800", location: "Genova", fiera: "Verona Reptiles", breeder: "SkinkHaven",
-    verified: true, sex: "Unsexed", origin: "CB 2025", weight: "300g", rating: 4.9, reviews: 28,
-    description: "Scinco dalla lingua blu, mangia di tutto. Molto tranquillo e facile da gestire.", breederFocus: "Scinchi e Varani", category: "Sauri & Varani (Lizards & Monitors)"
   }
+];
+
+// Mock written reviews for breeders
+const breederReviewsData = [
+  { breeder: "Piedmont Geckos", buyer: "Marco T.", date: "03/2026", rating: 5, comment: "Esemplare fantastico, ritirato in fiera senza problemi. Allevatore super disponibile a rispondere a tutte le mie domande." },
+  { breeder: "Piedmont Geckos", buyer: "Giulia S.", date: "11/2025", rating: 4, comment: "Animale in perfetta salute. Ottima comunicazione." },
+  { breeder: "ExoBreed IT", buyer: "Luca P.", date: "01/2026", rating: 5, comment: "Camaleonte stupendo, colori pazzeschi. Documentazione CITES impeccabile e consegnata al momento del ritiro." }
 ];
 
 const expos = [
   { id: 1, name: "Squamata Expo", location: "Bologna, IT", date: "21 Giu 2026", color: "bg-emerald-600" },
   { id: 2, name: "Verona Reptiles", location: "Cerea (VR), IT", date: "3 Ott 2026", color: "bg-orange-600" },
   { id: 3, name: "Esotika Pet Show", location: "Arezzo, IT", date: "12 Set 2026", color: "bg-blue-600" },
-  { id: 4, name: "Terraristika Hamm", location: "Hamm, DE", date: "12 Dic 2026", color: "bg-slate-700" },
-  { id: 5, name: "EXOTICA", location: "St. Pölten, AT", date: "8 Nov 2026", color: "bg-red-800" }
+  { id: 4, name: "Terraristika Hamm", location: "Hamm, DE", date: "12 Dic 2026", color: "bg-slate-700" }
 ];
 
 const categoriesData = {
@@ -142,7 +162,7 @@ const categoriesData = {
   "Serpenti (Snakes)": [],
   "Camaleonti (Chameleons)": [],
   "Sauri & Varani (Lizards)": [],
-  "Tartarughe (Turtles & Tortoises)": [],
+  "Tartarughe (Turtles)": [],
   "Anfibi (Amphibians)": [],
   "Invertebrati (Invertebrates)": []
 };
@@ -173,6 +193,7 @@ export default function HerpMarketPWA() {
       case 'search': return <SearchView navigateTo={navigateTo} t={t} />;
       case 'detail': return <ListingDetailView animal={viewData} navigateTo={navigateTo} t={t} />;
       case 'breeder': return <BreederProfileView breederName={viewData} navigateTo={navigateTo} t={t} />;
+      case 'breeder_reviews': return <BreederReviewsView breederName={viewData} navigateTo={navigateTo} t={t} />;
       case 'add': return <AddListingView navigateTo={navigateTo} t={t} />;
       case 'chat': return <ChatHubView navigateTo={navigateTo} t={t} />;
       case 'chat_thread': return <ChatThreadView chatData={viewData} navigateTo={navigateTo} t={t} />;
@@ -197,7 +218,7 @@ export default function HerpMarketPWA() {
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
       
-      {/* DESKTOP SIDEBAR (Visible only on md screens and up) */}
+      {/* DESKTOP SIDEBAR */}
       <nav className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 p-6 z-30">
         <div className="mb-10">
           <h1 className="text-2xl font-black text-white tracking-tight">HERP<span className="text-emerald-400">MARKET</span></h1>
@@ -226,7 +247,7 @@ export default function HerpMarketPWA() {
           {renderView()}
         </div>
 
-        {/* MOBILE BOTTOM NAV (Visible only on small screens) */}
+        {/* MOBILE BOTTOM NAV */}
         <nav className="md:hidden absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-slate-800 flex justify-around py-3 z-30 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
           <MobileNavButton icon={<Home size={22} />} active={currentView === 'home'} label={t.navHome} onClick={() => navigateTo('home')} />
           <MobileNavButton icon={<Search size={22} />} active={currentView === 'search'} label={t.navSearch} onClick={() => navigateTo('search')} />
@@ -279,7 +300,6 @@ function HomeView({ navigateTo, t, lang, setLang }) {
 
       <div className="pt-6 pb-2 px-5">
         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.upcomingExpos}</h3>
-        {/* Adjusted Expo List: Shows exactly 2 expos and a button, scales nicely on laptop */}
         <div className="flex space-x-3 mb-2">
           {expos.slice(0, 2).map(expo => (
             <div key={expo.id} onClick={() => navigateTo('expo_hub', expo)} className={`flex-1 max-w-[200px] ${expo.color} p-4 rounded-2xl shadow-lg cursor-pointer transform active:scale-95 transition-transform flex flex-col justify-between`}>
@@ -291,7 +311,6 @@ function HomeView({ navigateTo, t, lang, setLang }) {
               <span className="text-[10px] bg-black/30 text-white font-bold px-2 py-0.5 rounded mt-3 inline-block self-start">{expo.date}</span>
             </div>
           ))}
-          {/* Action button to open more expos */}
           <div onClick={() => navigateTo('search')} className="w-16 md:w-24 bg-slate-800/80 border border-slate-700 rounded-2xl flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform hover:bg-slate-700 shadow-md">
             <MoreHorizontal size={24} className="text-slate-400 mb-1" />
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{t.seeAll}</span>
@@ -304,21 +323,25 @@ function HomeView({ navigateTo, t, lang, setLang }) {
           <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{t.latestListings}</h3>
           <span className="text-[11px] text-emerald-400 font-bold cursor-pointer hover:underline" onClick={() => navigateTo('search')}>{t.seeAllListings}</span>
         </div>
-        {/* Responsive Grid: 2 columns on mobile, 3 on tablet, 4/5 on large desktops */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {listings.map(item => (
             <div key={item.id} onClick={() => navigateTo('detail', item)} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-lg flex flex-col cursor-pointer hover:-translate-y-1 transition-transform">
               <div className="w-full aspect-square bg-slate-700 relative">
-                <img src={item.image} alt={item.morph} className="w-full h-full object-cover" />
+                <img 
+                  src={item.image} 
+                  alt={item.morph} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => { e.target.src = `https://placehold.co/400x400/1e293b/94a3b8?text=${t.realPhoto}` }}
+                />
               </div>
               <div className="p-3.5 flex-1 flex flex-col justify-between">
                 <div>
                   <h4 className="font-bold text-sm text-white truncate leading-tight mb-0.5">{item.morph}</h4>
                   <p className="text-[11px] text-slate-400 italic truncate">{item.species}</p>
                   
-                  {/* Clickable Seller Box Under The Animal */}
+                  {/* Clickable Seller Box Under The Animal -> Goes to Written Reviews */}
                   <div 
-                    onClick={(e) => { e.stopPropagation(); navigateTo('breeder', item.breeder); }}
+                    onClick={(e) => { e.stopPropagation(); navigateTo('breeder_reviews', item.breeder); }}
                     className="flex items-center mt-2.5 mb-1 text-[10px] text-slate-300 bg-slate-900/60 w-max px-2 py-1.5 rounded-lg border border-slate-700/50 hover:border-emerald-500/50 hover:bg-slate-800 transition-colors"
                   >
                     <Star size={10} fill="currentColor" className="text-yellow-400 mr-1"/>
@@ -329,7 +352,8 @@ function HomeView({ navigateTo, t, lang, setLang }) {
 
                 <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-700/60 text-emerald-400 font-black text-sm">
                   {item.price}
-                  <span className="bg-slate-900 text-slate-300 font-bold text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider">{item.sex}</span>
+                  {/* Dynamic Sex Translation */}
+                  <span className="bg-slate-900 text-slate-300 font-bold text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider">{t[item.sex]}</span>
                 </div>
               </div>
             </div>
@@ -340,7 +364,7 @@ function HomeView({ navigateTo, t, lang, setLang }) {
   );
 }
 
-// 2. Search View (With Dropdowns)
+// 2. Search View
 function SearchView({ navigateTo, t }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-900 pb-20 md:pb-0">
@@ -395,7 +419,12 @@ function ListingDetailView({ animal, navigateTo, t }) {
       </div>
       
       <div className="w-full h-80 md:h-[450px] bg-slate-800 relative shrink-0">
-        <img src={animal.image} className="w-full h-full object-cover" alt={animal.morph} />
+        <img 
+          src={animal.image} 
+          className="w-full h-full object-cover" 
+          alt={animal.morph} 
+          onError={(e) => { e.target.src = `https://placehold.co/800x600/1e293b/94a3b8?text=${t.realPhoto}` }}
+        />
         <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-slate-900 to-transparent"></div>
       </div>
       
@@ -403,18 +432,18 @@ function ListingDetailView({ animal, navigateTo, t }) {
         <h1 className="text-2xl md:text-3xl font-black text-white mb-0.5 leading-tight">{animal.morph}</h1>
         <h2 className="text-emerald-400 text-sm md:text-base font-medium mb-4">{animal.species}</h2>
         
-        <div onClick={() => navigateTo('breeder', animal.breeder)} className="flex items-center text-xs text-slate-300 mb-5 bg-slate-800 w-max px-3 py-2 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-700 transition-colors shadow-sm">
+        <div onClick={() => navigateTo('breeder_reviews', animal.breeder)} className="flex items-center text-xs text-slate-300 mb-5 bg-slate-800 w-max px-3 py-2 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-700 transition-colors shadow-sm">
            <Star size={14} fill="currentColor" className="text-yellow-400 mr-2"/>
            <span className="font-bold mr-2 text-white">{animal.rating}</span>
-           <span className="opacity-90">({animal.reviews} reviews) • {animal.breeder}</span>
+           <span className="opacity-90 underline">({animal.reviews} reviews) • {animal.breeder}</span>
         </div>
 
         <span className="text-4xl md:text-5xl font-black text-white tracking-tight">{animal.price}</span>
       </div>
 
       <div className="px-5 pb-6 grid grid-cols-2 gap-3 text-xs font-bold border-b border-slate-800">
-        <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50"><span className="text-slate-400 uppercase text-[9px] block mb-1 tracking-widest">{t.sex}</span><span className="text-white text-sm">{animal.sex}</span></div>
-        <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50"><span className="text-slate-400 uppercase text-[9px] block mb-1 tracking-widest">{t.origin}</span><span className="text-white text-sm">{animal.origin}</span></div>
+        <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50"><span className="text-slate-400 uppercase text-[9px] block mb-1 tracking-widest">{t.sex}</span><span className="text-white text-sm">{t[animal.sex]}</span></div>
+        <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50"><span className="text-slate-400 uppercase text-[9px] block mb-1 tracking-widest">{t.birthDate}</span><span className="text-white text-sm">{animal.birthDate}</span></div>
         <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50"><span className="text-slate-400 uppercase text-[9px] block mb-1 tracking-widest">{t.weight}</span><span className="text-white text-sm">{animal.weight || "N/A"}</span></div>
         <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50"><span className="text-slate-400 uppercase text-[9px] block mb-1 tracking-widest">{t.location}</span><span className="text-white text-sm">{animal.location}</span></div>
       </div>
@@ -452,18 +481,85 @@ function BreederProfileView({ breederName, navigateTo, t }) {
       <div className="pt-8 px-5 pb-6 bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
         <button onClick={() => navigateTo('home')} className="p-2 bg-slate-700 rounded-full text-white mb-4 hover:bg-slate-600 transition-colors"><ChevronLeft size={20} /></button>
         <h1 className="text-2xl font-black text-white flex items-center tracking-tight">{breederName} <ShieldCheck size={24} className="text-blue-400 ml-2" /></h1>
-        <div className="flex items-center text-yellow-400 font-bold text-sm mt-3 bg-slate-900/50 w-max px-3 py-1.5 rounded-lg border border-slate-700">
-           <Star size={14} fill="currentColor" className="mr-2"/> 4.9 <span className="text-slate-400 ml-2 font-medium underline">34 Reviews</span>
+        
+        {/* Clickable Stars -> Goes to Reviews Page */}
+        <div 
+          onClick={() => navigateTo('breeder_reviews', breederName)}
+          className="flex items-center text-yellow-400 font-bold text-sm mt-3 bg-slate-900/50 w-max px-3 py-2 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-700 transition-colors"
+        >
+           <Star size={14} fill="currentColor" className="mr-2"/> 4.9 <span className="text-slate-400 ml-2 font-medium underline">Leggi Recensioni</span>
         </div>
       </div>
-      <div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24">
-        {breederListings.map(item => (
-          <div key={item.id} onClick={() => navigateTo('detail', item)} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden flex flex-col cursor-pointer hover:-translate-y-1 transition-transform shadow-lg">
-            <img src={item.image} className="w-full aspect-square object-cover bg-slate-700" alt="" />
-            <div className="p-3">
-               <h4 className="font-bold text-sm text-white truncate">{item.morph}</h4>
-               <span className="text-sm font-black text-emerald-400 mt-1 block">{item.price}</span>
+      
+      <div className="p-5 border-b border-slate-800">
+        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">{t.activeListings}</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {breederListings.map(item => (
+            <div key={item.id} onClick={() => navigateTo('detail', item)} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden flex flex-col cursor-pointer hover:-translate-y-1 transition-transform shadow-lg">
+              <img 
+                src={item.image} 
+                className="w-full aspect-square object-cover bg-slate-700" 
+                alt="" 
+                onError={(e) => { e.target.src = `https://placehold.co/400x400/1e293b/94a3b8?text=${t.realPhoto}` }}
+              />
+              <div className="p-3">
+                 <h4 className="font-bold text-sm text-white truncate">{item.morph}</h4>
+                 <span className="text-sm font-black text-emerald-400 mt-1 block">{item.price}</span>
+              </div>
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 4.5. Breeder Written Reviews (NEW VIEW)
+function BreederReviewsView({ breederName, navigateTo, t }) {
+  // If no mock reviews exist for the chosen breeder, show default
+  const reviews = breederReviewsData.filter(r => r.breeder === breederName);
+  const displayReviews = reviews.length > 0 ? reviews : [
+    { breeder: breederName, buyer: "Cliente Anonimo", date: "01/2026", rating: 5, comment: "Ottimo venditore, consigliato!" }
+  ];
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-slate-900 overflow-y-auto hide-scrollbar pb-20 md:pb-0 max-w-3xl mx-auto w-full border-x border-slate-800/50">
+      <div className="pt-8 px-5 pb-6 bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
+        <button onClick={() => navigateTo('breeder', breederName)} className="p-2 bg-slate-700 rounded-full text-white mb-4 hover:bg-slate-600 transition-colors"><ChevronLeft size={20} /></button>
+        <h1 className="text-xl font-black text-white tracking-tight leading-tight">{t.reviewsFor}</h1>
+        <h2 className="text-emerald-400 font-bold text-lg">{breederName}</h2>
+      </div>
+      
+      <div className="p-5 flex-1 space-y-4">
+        {/* The Locked "Write Review" Box */}
+        <div className="bg-slate-800/50 border border-slate-700 border-dashed rounded-2xl p-5 text-center flex flex-col items-center justify-center mb-6">
+          <div className="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center text-slate-500 mb-3 border border-slate-700">
+            <Lock size={20} />
+          </div>
+          <h3 className="text-sm font-bold text-white mb-1">{t.writeReview}</h3>
+          <p className="text-xs text-slate-400 max-w-[280px]">{t.onlyBuyersCanReview}</p>
+        </div>
+
+        {/* Written Reviews List */}
+        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Feedback Recenti</h3>
+        {displayReviews.map((rev, index) => (
+          <div key={index} className="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-md">
+             <div className="flex justify-between items-start mb-3">
+               <div className="flex items-center space-x-3">
+                 <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-sm font-black text-white shadow-inner">{rev.buyer.charAt(0)}</div>
+                 <div>
+                   <h4 className="font-bold text-sm text-white">{rev.buyer}</h4>
+                   <span className="text-[9px] text-blue-400 font-bold flex items-center mt-0.5"><ShieldCheck size={10} className="mr-1"/> {t.verifiedBuyer}</span>
+                 </div>
+               </div>
+               <div className="flex text-yellow-400">
+                 {[...Array(5)].map((_, i) => (
+                   <Star key={i} size={12} fill={i < rev.rating ? "currentColor" : "none"} className={i < rev.rating ? "" : "text-slate-600"}/>
+                 ))}
+               </div>
+             </div>
+             <p className="text-sm text-slate-300 leading-relaxed italic font-medium">"{rev.comment}"</p>
+             <span className="text-[9px] text-slate-500 mt-4 block font-bold tracking-widest text-right">{rev.date}</span>
           </div>
         ))}
       </div>
@@ -493,7 +589,12 @@ function AddListingView({ navigateTo, t }) {
           <input type="text" placeholder="Morph / Genetica" className="w-full bg-slate-800 border border-slate-700 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-emerald-500 shadow-inner" />
           <div className="grid grid-cols-2 gap-3">
              <input type="text" placeholder="Prezzo (€)" className="w-full bg-slate-800 border border-slate-700 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-emerald-500 shadow-inner" />
-             <select className="bg-slate-800 border border-slate-700 rounded-2xl py-4 px-5 text-sm text-slate-400 outline-none appearance-none shadow-inner"><option>{t.sex}</option><option>Maschio</option><option>Femmina</option><option>Coppia</option></select>
+             <select className="bg-slate-800 border border-slate-700 rounded-2xl py-4 px-5 text-sm text-slate-400 outline-none appearance-none shadow-inner">
+               <option>{t.sex}</option>
+               <option>{t.male}</option>
+               <option>{t.female}</option>
+               <option>{t.pair}</option>
+             </select>
           </div>
         </div>
         <button onClick={() => setSuccess(true)} className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black py-4 rounded-2xl shadow-xl mt-6 active:scale-95 transition-transform tracking-wider">{t.publish}</button>
@@ -515,7 +616,12 @@ function ChatHubView({ navigateTo, t }) {
         {activeChats.map(chat => (
           <div key={chat.id} onClick={() => navigateTo('chat_thread', chat)} className="p-4 flex items-center space-x-4 cursor-pointer bg-slate-800/30 hover:bg-slate-800/80 rounded-3xl transition-colors mb-2 border border-slate-800">
             <div className="relative shrink-0">
-              <img src={chat.listing.image} className="w-14 h-14 rounded-2xl object-cover border border-slate-700 shadow-md" alt="" />
+              <img 
+                src={chat.listing.image} 
+                className="w-14 h-14 rounded-2xl object-cover border border-slate-700 shadow-md" 
+                alt="" 
+                onError={(e) => { e.target.src = `https://placehold.co/100x100/1e293b/94a3b8?text=${t.realPhoto}` }}
+              />
               <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>
             </div>
             <div className="flex-1 min-w-0">
@@ -546,7 +652,12 @@ function ChatThreadView({ chatData, navigateTo, t }) {
       </div>
       <div className="bg-slate-950/90 backdrop-blur p-3 border-b border-slate-800 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <img src={target.image} className="w-11 h-11 rounded-lg object-cover border border-slate-700" alt="" />
+          <img 
+            src={target.image} 
+            className="w-11 h-11 rounded-lg object-cover border border-slate-700" 
+            alt="" 
+            onError={(e) => { e.target.src = `https://placehold.co/100x100/1e293b/94a3b8?text=${t.realPhoto}` }}
+          />
           <div><h4 className="text-[11px] font-bold text-white leading-tight">{target.morph}</h4><p className="text-emerald-400 text-[11px] font-black">{target.price}</p></div>
         </div>
         <button onClick={() => navigateTo('cites_generator', target)} className="bg-blue-600 text-white font-bold text-[10px] py-2 px-3 rounded-xl flex items-center shadow-lg hover:bg-blue-500 active:scale-95 transition-all"><FileText size={14} className="mr-1.5" /> Modulo CITES</button>
@@ -597,7 +708,7 @@ function CitesGeneratorView({ animalData, navigateTo }) {
                 {isCites ? "DICHIARAZIONE DI CESSIONE AI FINI CITES" : "CERTIFICATO DI ORIGINE E CESSIONE (ANIMAL ID)"}
                 <p className="text-[8px] text-slate-500 font-sans mt-1.5">{isCites ? "(Ai sensi del Reg. CE 338/97)" : "(HerpMarket Verified - Captive Bred)"}</p>
               </div>
-              <p className="leading-relaxed text-[12px]">Il sottoscritto Cedente <strong>{animalData.breeder}</strong> cede a <strong>{formData.nome} {formData.cognome}</strong> (C.F. {formData.cf.toUpperCase()}) l'esemplare nato in cattività di <strong>{animalData.species}</strong> morph <strong>{animalData.morph}</strong> ({animalData.origin}).</p>
+              <p className="leading-relaxed text-[12px]">Il sottoscritto Cedente <strong>{animalData.breeder}</strong> cede a <strong>{formData.nome} {formData.cognome}</strong> (C.F. {formData.cf.toUpperCase()}) l'esemplare nato in cattività di <strong>{animalData.species}</strong> morph <strong>{animalData.morph}</strong> (Data di Nascita: {animalData.birthDate}).</p>
               <div className="pt-10 border-t border-slate-300 flex justify-between font-sans">
                 <div className="mt-4 border-t border-slate-800 px-6 pt-1 text-center font-bold">Firma Cedente</div>
                 <div className="mt-4 border-t border-slate-800 px-6 pt-1 text-center font-bold">Firma Acquirente</div>
@@ -715,7 +826,7 @@ function LineageTrackerView({ navigateTo }) {
       <div className="p-4 border-b border-slate-800 flex items-center pt-6 bg-slate-800 sticky top-0"><button onClick={() => navigateTo('profile')} className="p-2 mr-3 bg-slate-700 rounded-full text-white hover:bg-slate-600"><ChevronLeft size={20} /></button><h1 className="text-lg font-black text-white">Genetica & Pedigree</h1></div>
       <div className="p-4 space-y-3 flex-1 overflow-y-auto hide-scrollbar">
         <div className="bg-slate-800 border border-slate-700 rounded-3xl p-4 flex items-center space-x-4 shadow-lg">
-          <div className="w-16 h-16 bg-slate-700 rounded-2xl overflow-hidden shadow-inner shrink-0"><img src="https://images.unsplash.com/photo-1621316492329-8fb83ebf90b9?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" alt=""/></div>
+          <div className="w-16 h-16 bg-slate-700 rounded-2xl overflow-hidden shadow-inner shrink-0"><img src="/images/ciliatus.jpg" className="w-full h-full object-cover" alt="" onError={(e) => { e.target.src = 'https://placehold.co/200x200/1e293b/94a3b8?text=Foto' }} /></div>
           <div className="flex-1">
              <div className="flex items-center space-x-2"><span className="bg-blue-500/10 text-blue-400 text-[9px] font-black uppercase px-2 py-0.5 rounded border border-blue-500/20">SIRE</span><span className="text-[10px] text-slate-500 font-bold">#G01</span></div>
              <h4 className="text-white font-black text-lg mt-1">Ghost</h4>
@@ -729,18 +840,38 @@ function LineageTrackerView({ navigateTo }) {
 }
 
 function ReviewManagerView({ navigateTo }) {
+  const [activeTab, setActiveTab] = useState('ricevute');
+
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-900 max-w-3xl mx-auto w-full">
-      <div className="p-4 border-b border-slate-800 flex items-center pt-6 bg-slate-800 sticky top-0"><button onClick={() => navigateTo('profile')} className="p-2 mr-3 bg-slate-700 rounded-full text-white hover:bg-slate-600"><ChevronLeft size={20} /></button><h1 className="text-lg font-black text-white">Feed Recensioni</h1></div>
-      <div className="p-4 space-y-4 flex-1 overflow-y-auto hide-scrollbar pb-24">
-        <div className="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-lg">
-           <div className="flex justify-between items-start mb-4">
-             <div className="flex items-center space-x-3"><div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-sm font-black text-white shadow-inner">MR</div><h4 className="font-bold text-sm text-white">Marco Rossi</h4></div>
-             <div className="flex text-yellow-400"><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/></div>
-           </div>
-           <p className="text-sm text-slate-300 leading-relaxed italic font-medium">"Allevatore serissimo, animale in forma perfetta e documentazione CITES Allegato B compilata a regola d'arte. Consigliatissimo!"</p>
-           <span className="text-[9px] text-slate-500 mt-5 block font-bold uppercase tracking-widest text-right">Settembre 2026</span>
-        </div>
+      <div className="p-4 border-b border-slate-800 flex items-center pt-6 bg-slate-800 sticky top-0"><button onClick={() => navigateTo('profile')} className="p-2 mr-3 bg-slate-700 rounded-full text-white hover:bg-slate-600"><ChevronLeft size={20} /></button><h1 className="text-lg font-black text-white">Le Mie Recensioni</h1></div>
+      
+      <div className="flex border-b border-slate-800 bg-slate-900">
+        <button onClick={() => setActiveTab('ricevute')} className={`flex-1 py-3 text-sm font-bold border-b-2 ${activeTab === 'ricevute' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400'}`}>Ricevute (4)</button>
+        <button onClick={() => setActiveTab('lasciate')} className={`flex-1 py-3 text-sm font-bold border-b-2 ${activeTab === 'lasciate' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400'}`}>Lasciate ai Buyer</button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 hide-scrollbar pb-24">
+        {activeTab === 'ricevute' ? (
+          <>
+            <div className="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-lg">
+               <div className="flex justify-between items-start mb-4">
+                 <div className="flex items-center space-x-3"><div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-sm font-black text-white shadow-inner">MR</div><h4 className="font-bold text-sm text-white">Marco Rossi</h4></div>
+                 <div className="flex text-yellow-400"><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/></div>
+               </div>
+               <p className="text-sm text-slate-300 leading-relaxed italic font-medium">"Allevatore serissimo, animale in forma perfetta e documentazione CITES Allegato B compilata a regola d'arte. Consigliatissimo!"</p>
+               <span className="text-[9px] text-slate-500 mt-5 block font-bold uppercase tracking-widest text-right">Settembre 2026</span>
+            </div>
+            {/* You can only review buyers on the other tab */}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center pt-10">
+            <Star size={48} className="text-slate-700 mb-4" />
+            <h3 className="text-white font-bold mb-2">Nessuna recensione lasciata</h3>
+            <p className="text-slate-400 text-sm text-center max-w-[250px] mb-6">Valutare gli acquirenti aiuta la community a isolare perditempo e truffatori.</p>
+            <button className="bg-slate-800 text-slate-400 font-bold py-2.5 px-6 rounded-xl cursor-not-allowed border border-slate-700 border-dashed">Disponibile dopo la prima vendita</button>
+          </div>
+        )}
       </div>
     </div>
   );
