@@ -433,6 +433,7 @@ export default function HerpMarketPWA() {
       case 'wishlist': return <WishlistView {...props} />;
       case 'inventory': return <InventoryManagerView {...props} />;
       case 'documents': return <DocumentArchiveView {...props} />;
+      case 'transport': return <TransportBoardView {...props} />;
       case 'expo_hub': return <ExpoHubView expoData={viewData} {...props} />;
       case 'lineage': return <LineageTrackerView {...props} />;
       case 'reviews': return <ReviewManagerView {...props} />;
@@ -1282,7 +1283,7 @@ function DashboardHubView({ navigateTo, t }) {
         
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 mt-8 px-1">{t.logistics}</h3>
         <DashboardButton icon={<FileText />} label={t.documentsTitle} onClick={() => navigateTo('documents')} />
-        <DashboardButton icon={<Truck />} label="Eco-Taxi (Trasporti)" onClick={() => navigateTo('transport')} />
+        <DashboardButton icon={<Truck />} label={t.legalTitle} onClick={() => navigateTo('transport')} />
         <DashboardButton icon={<Info />} label={t.legalTitle} onClick={() => navigateTo('legal')} />
         
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 mt-8 px-1">{t.settings}</h3>
