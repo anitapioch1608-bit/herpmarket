@@ -4,7 +4,7 @@ import {
   ChevronRight, ChevronLeft, ShieldCheck, MapPin, 
   Star, Calendar, Sliders, Filter, FileText, CheckCircle,
   Folder, Truck, Info, Settings, List, Grid, Camera, Clipboard, 
-  MoreHorizontal, Lock, Heart, ShieldAlert, CreditCard, Calculator, Clock, ChevronDown, ExternalLink, Languages
+  MoreHorizontal, Lock, Heart, ShieldAlert, CreditCard, Calculator, Clock, ChevronDown, ExternalLink, Languages, Mail, Scale
 } from 'lucide-react';
 
 // --- TRANSLATION DICTIONARY ---
@@ -55,6 +55,7 @@ const translations = {
     breederLevel: "Allevatore Registrato",
     management: "Gestione Allevamento",
     logistics: "Burocrazia & Legale",
+    support: "Informazioni & Supporto",
     settings: "Configurazione",
     male: "Maschio",
     female: "Femmina",
@@ -85,6 +86,8 @@ const translations = {
     documentsTitle: "Archivio CITES & ID",
     legalTitle: "Normative & Guide",
     settingsTitle: "Impostazioni & KYC",
+    aboutTitle: "Chi Siamo & Contatti",
+    termsTitle: "Termini e Disclaimer Legale",
     loading: "Caricamento...",
     emptyWishlist: "La tua wishlist è vuota.",
     emptyReviews: "Nessuna recensione lasciata.",
@@ -160,6 +163,7 @@ const translations = {
     breederLevel: "Registered Breeder",
     management: "Breeding Management",
     logistics: "Bureaucracy & Legal",
+    support: "Information & Support",
     settings: "Configuration",
     male: "Male",
     female: "Female",
@@ -190,6 +194,8 @@ const translations = {
     documentsTitle: "CITES & ID Archive",
     legalTitle: "Regulations & Guides",
     settingsTitle: "Settings & KYC",
+    aboutTitle: "About Us & Contact",
+    termsTitle: "Terms & Legal Disclaimer",
     loading: "Loading...",
     emptyWishlist: "Your wishlist is empty.",
     emptyReviews: "No reviews left yet.",
@@ -265,6 +271,7 @@ const translations = {
     breederLevel: "Registrierter Züchter",
     management: "Zuchtmanagement",
     logistics: "Bürokratie & Rechtliches",
+    support: "Information & Support",
     settings: "Einstellungen",
     male: "Männlich",
     female: "Weiblich",
@@ -295,6 +302,8 @@ const translations = {
     documentsTitle: "CITES & ID Archiv",
     legalTitle: "Vorschriften & Leitfäden",
     settingsTitle: "Einstellungen & KYC",
+    aboutTitle: "Über uns & Kontakt",
+    termsTitle: "AGB & Haftungsausschluss",
     loading: "Laden...",
     emptyWishlist: "Deine Wunschliste ist leer.",
     emptyReviews: "Noch keine Bewertungen hinterlassen.",
@@ -411,6 +420,12 @@ export default function HerpMarketPWA() {
     }
   };
 
+  const handleLangToggle = () => {
+    if (lang === 'it') setLang('en');
+    else if (lang === 'en') setLang('de');
+    else setLang('it');
+  };
+
   const navigateTo = (view, data = null) => {
     setCurrentView(view);
     if (data) setViewData(data);
@@ -418,7 +433,7 @@ export default function HerpMarketPWA() {
   };
 
   const renderView = () => {
-    const props = { navigateTo, t, lang, setLang, favorites, toggleFavorite, userLocation, mockListings };
+    const props = { navigateTo, t, lang, setLang, favorites, toggleFavorite, userLocation, mockListings, handleLangToggle };
     switch (currentView) {
       case 'home': return <HomeView {...props} />;
       case 'search': return <SearchView {...props} />;
@@ -433,12 +448,13 @@ export default function HerpMarketPWA() {
       case 'wishlist': return <WishlistView {...props} />;
       case 'inventory': return <InventoryManagerView {...props} />;
       case 'documents': return <DocumentArchiveView {...props} />;
-      case 'transport': return <TransportBoardView {...props} />;
       case 'expo_hub': return <ExpoHubView expoData={viewData} {...props} />;
       case 'lineage': return <LineageTrackerView {...props} />;
       case 'reviews': return <ReviewManagerView {...props} />;
       case 'settings': return <SettingsView {...props} />;
       case 'legal': return <LegalGuideView {...props} />;
+      case 'about': return <AboutContactView {...props} />;
+      case 'terms': return <TermsView {...props} />;
       default: return <HomeView {...props} />;
     }
   };
@@ -461,7 +477,12 @@ export default function HerpMarketPWA() {
           <DesktopNavButton icon={<Search size={20} />} active={currentView === 'search'} label={t.navSearch} onClick={() => navigateTo('search')} />
           <DesktopNavButton icon={<PlusCircle size={20} />} active={currentView === 'add'} label={t.navSell} onClick={() => navigateTo('add')} />
           <DesktopNavButton icon={<MessageCircle size={20} />} active={currentView === 'chat' || currentView === 'chat_thread'} label={t.navChat} onClick={() => navigateTo('chat')} />
-          <DesktopNavButton icon={<User size={20} />} active={['profile', 'wishlist', 'lineage', 'legal', 'documents', 'settings', 'inventory', 'reviews'].includes(currentView)} label={t.navProfile} onClick={() => navigateTo('profile')} />
+          <DesktopNavButton icon={<User size={20} />} active={['profile', 'wishlist', 'lineage', 'legal', 'documents', 'settings', 'inventory', 'reviews', 'about', 'terms'].includes(currentView)} label={t.navProfile} onClick={() => navigateTo('profile')} />
+        </div>
+        <div className="mt-auto">
+          <button onClick={handleLangToggle} className="w-full bg-slate-800 hover:bg-slate-700 py-3.5 rounded-xl text-[11px] font-black tracking-widest text-emerald-400 border border-slate-700 transition-colors uppercase">
+            LANGUAGE: {lang}
+          </button>
         </div>
       </nav>
 
@@ -578,7 +599,7 @@ function StripeModal({ isOpen, onClose, amount, t }) {
 
 // --- VIEWS ---
 
-function HomeView({ navigateTo, t, lang, setLang, favorites, toggleFavorite, userLocation, mockListings }) {
+function HomeView({ navigateTo, t, lang, handleLangToggle, favorites, toggleFavorite, userLocation, mockListings }) {
   const localListings = mockListings.filter(item => item.location.includes(userLocation));
   const otherListings = mockListings.filter(item => !item.location.includes(userLocation));
   
@@ -593,9 +614,7 @@ function HomeView({ navigateTo, t, lang, setLang, favorites, toggleFavorite, use
             <p className="text-[11px] text-slate-400 mt-2 max-w-[250px] leading-relaxed font-medium">{t.appDesc}</p>
           </div>
           <div className="flex bg-slate-800 p-1 rounded-lg border border-slate-700 shadow-sm shrink-0 z-10 relative">
-            <button onClick={() => setLang('it')} className={`px-2 py-1.5 text-[10px] font-black rounded-md transition-colors ${lang === 'it' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>IT</button>
-            <button onClick={() => setLang('en')} className={`px-2 py-1.5 text-[10px] font-black rounded-md transition-colors ${lang === 'en' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>EN</button>
-            <button onClick={() => setLang('de')} className={`px-2 py-1.5 text-[10px] font-black rounded-md transition-colors ${lang === 'de' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>DE</button>
+            <button onClick={handleLangToggle} className="px-3 py-1.5 text-[10px] font-black rounded-md transition-colors bg-emerald-500 text-white uppercase">{lang}</button>
           </div>
         </div>
         <button onClick={() => navigateTo('profile')} className="w-full bg-emerald-600 text-white font-black py-3.5 px-6 rounded-xl text-xs active:scale-95 transition-transform shadow-lg uppercase tracking-widest">{t.joinCommunity}</button>
@@ -1283,9 +1302,13 @@ function DashboardHubView({ navigateTo, t }) {
         
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 mt-8 px-1">{t.logistics}</h3>
         <DashboardButton icon={<FileText />} label={t.documentsTitle} onClick={() => navigateTo('documents')} />
-        <DashboardButton icon={<Truck />} label={t.legalTitle} onClick={() => navigateTo('transport')} />
-        <DashboardButton icon={<Info />} label={t.legalTitle} onClick={() => navigateTo('legal')} />
+        <DashboardButton icon={<Truck />} label="Eco-Taxi (Trasporti)" onClick={() => navigateTo('transport')} />
+        <DashboardButton icon={<Scale />} label={t.legalTitle} onClick={() => navigateTo('legal')} />
         
+        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 mt-8 px-1">{t.support || "Support"}</h3>
+        <DashboardButton icon={<Info />} label={t.aboutTitle || "About Us"} onClick={() => navigateTo('about')} />
+        <DashboardButton icon={<ShieldAlert />} label={t.termsTitle || "Terms & Conditions"} onClick={() => navigateTo('terms')} />
+
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 mt-8 px-1">{t.settings}</h3>
         <DashboardButton icon={<Settings />} label={t.settingsTitle} onClick={() => navigateTo('settings')} />
       </div>
@@ -1499,6 +1522,46 @@ function LegalGuideView({ navigateTo, t }) {
         <div className="bg-orange-500/10 p-5 rounded-3xl border border-orange-500/20 text-orange-200 text-xs leading-relaxed shadow-lg font-medium">
           <div className="flex items-center mb-3"><Info size={18} className="mr-2 text-orange-400 font-bold"/> <strong className="tracking-widest uppercase">AVVISO LEGALE</strong></div>
           Le leggi italiane (D.Lgs 135/2022) vietano la detenzione di specie pericolose (come vipere, crotali, grandi felini) e specie invasive UE. Inserire tali annunci comporterà il ban permanente dalla piattaforma e la segnalazione alle autorità competenti.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AboutContactView({ navigateTo, t }) {
+  return (
+    <div className="flex-1 flex flex-col h-full bg-slate-900 max-w-3xl mx-auto w-full">
+      <div className="p-4 border-b border-slate-800 flex items-center pt-6 bg-slate-800 sticky top-0"><button onClick={() => navigateTo('profile')} className="p-2 mr-3 bg-slate-700 rounded-full text-white hover:bg-slate-600"><ChevronLeft size={20} /></button><h1 className="text-lg font-black text-white tracking-tight">{t.aboutTitle || "About Us & Contact"}</h1></div>
+      <div className="p-5 space-y-6 overflow-y-auto flex-1 hide-scrollbar pb-24">
+        <div className="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl">
+          <h2 className="text-xl font-black text-white mb-4">HerpMarket Europe</h2>
+          <p className="text-sm text-slate-300 leading-relaxed mb-6">
+            {t.aboutDesc || "We are a passionate team dedicated to creating a safe, legal marketplace for the European reptile hobby."}
+          </p>
+          <div className="pt-4 border-t border-slate-700">
+            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Support</h3>
+            <a href="mailto:support@herpmarket.eu" className="flex items-center text-emerald-400 font-bold text-sm hover:underline">
+              <Mail size={16} className="mr-2" /> support@herpmarket.eu
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TermsView({ navigateTo, t }) {
+  return (
+    <div className="flex-1 flex flex-col h-full bg-slate-900 max-w-3xl mx-auto w-full">
+      <div className="p-4 border-b border-slate-800 flex items-center pt-6 bg-slate-800 sticky top-0"><button onClick={() => navigateTo('profile')} className="p-2 mr-3 bg-slate-700 rounded-full text-white hover:bg-slate-600"><ChevronLeft size={20} /></button><h1 className="text-lg font-black text-white tracking-tight">{t.termsTitle || "Terms & Legal Disclaimer"}</h1></div>
+      <div className="p-5 space-y-6 overflow-y-auto flex-1 hide-scrollbar pb-24">
+        <div className="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+          <p className="text-sm text-slate-300 leading-relaxed">
+            {t.termsDesc || "By using this platform, you agree to our terms. HerpMarket acts solely as an intermediary. Sellers are strictly responsible for the legality and health of the animals. We assume no liability for user transactions."}
+          </p>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            <strong>Liability Disclaimer:</strong> HerpMarket is not responsible for the accuracy of CITES documentation generated through our platform. Users must verify all legal paperwork with their local authorities.
+          </p>
         </div>
       </div>
     </div>
