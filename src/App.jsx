@@ -5,7 +5,7 @@ import {
   Star, Calendar, SlidersHorizontal, FileText, CheckCircle,
   Camera, Heart, Mars, Venus, HelpCircle, X,
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
-  LogIn, LogOut, Globe, Facebook, Instagram, Truck, Scale,
+  LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail
 } from 'lucide-react';
 
@@ -252,24 +252,18 @@ const EXPOS = [
     id: 1, name: "Verona Reptiles", location: "Cerea (VR)", date: "10 mag 2026", color: "from-orange-700 to-amber-600",
     description: "La più grande fiera di animali esotici d'Europa. 20ª edizione presso l'Area Exp di Cerea, oltre 800 spazi espositivi e 300 espositori da tutta Europa.",
     website: "https://www.veronareptiles.it",
-    facebook: "https://www.facebook.com/veronareptiles",
-    instagram: "https://www.instagram.com/veronareptiles",
     venue: "Area Exp · Via Libertà, 57",
   },
   {
     id: 2, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "21 giu 2026", color: "from-emerald-700 to-teal-600",
     description: "Mostra mercato di terraristica nata nel 2006. Punto d'incontro per appassionati italiani in un ambiente familiare al Palagira di Ozzano.",
     website: "https://www.squamata.it",
-    facebook: "https://www.facebook.com/Squamata.it",
-    instagram: null,
     venue: "Palagira · Viale 2 Giugno, 3",
   },
   {
     id: 3, name: "Esotika Pet Show", location: "Arezzo", date: "12 set 2026", color: "from-sky-700 to-cyan-600",
     description: "Circuito di fiere itineranti dedicate agli animali esotici, con tappe in tutta Italia.",
     website: "https://www.esotika.it",
-    facebook: "https://www.facebook.com/Esotika",
-    instagram: "https://www.instagram.com/esotikapetshow",
     venue: "Arezzo Fiere e Congressi",
   },
 ];
@@ -1656,18 +1650,6 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav }) {
             <a href={expo.website} target="_blank" rel="noopener noreferrer"
                className="bg-black/30 hover:bg-black/50 backdrop-blur ring-1 ring-white/20 text-white font-bold text-[11px] uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
               <Globe size={13} />{t.visitWebsite}
-            </a>
-          )}
-          {expo.facebook && (
-            <a href={expo.facebook} target="_blank" rel="noopener noreferrer"
-               className="bg-black/30 hover:bg-black/50 backdrop-blur ring-1 ring-white/20 text-white font-bold text-[11px] uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
-              <Facebook size={13} />Facebook
-            </a>
-          )}
-          {expo.instagram && (
-            <a href={expo.instagram} target="_blank" rel="noopener noreferrer"
-               className="bg-black/30 hover:bg-black/50 backdrop-blur ring-1 ring-white/20 text-white font-bold text-[11px] uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
-              <Instagram size={13} />Instagram
             </a>
           )}
         </div>
