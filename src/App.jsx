@@ -75,7 +75,8 @@ const I18N = {
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
-    aboutContact: "Chi siamo & Contatti", termsLegal: "Termini & Disclaimer", settingsKyc: "Impostazioni & KYC",
+    aboutContact: "Chi siamo & Contatti", termsLegal: "Termini di servizio", settingsKyc: "Impostazioni & KYC",
+    storePolicyLabel: "Regolamento marketplace",
     citesArchive: "Archivio CITES",
     breedingMgmt: "Gestione allevamento", bureaucracyLegal: "Burocrazia & Legale", infoSupport: "Informazioni & Supporto", configuration: "Configurazione",
     login: "Accedi", signup: "Iscriviti", joinCommunity: "Unisciti", loginOrJoin: "Accedi / Iscriviti",
@@ -160,7 +161,8 @@ const I18N = {
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
-    aboutContact: "About us & Contact", termsLegal: "Terms & Disclaimer", settingsKyc: "Settings & KYC",
+    aboutContact: "About us & Contact", termsLegal: "Terms of service", settingsKyc: "Settings & KYC",
+    storePolicyLabel: "Marketplace policy",
     citesArchive: "CITES archive",
     breedingMgmt: "Breeding management", bureaucracyLegal: "Bureaucracy & Legal", infoSupport: "Information & Support", configuration: "Configuration",
     login: "Sign in", signup: "Sign up", joinCommunity: "Join us", loginOrJoin: "Sign in / Join",
@@ -499,26 +501,127 @@ const LISTINGS = [
   },
 ];
 
+/* EXPOS — comprehensive 2026 European reptile expo calendar.
+   Sorted by ISO date. The `getUpcomingExpos()` helper below filters
+   past expos and returns them in chronological order. IDs 1-3 are
+   stable references kept for existing seller/listing data. New IDs
+   continue from 4+. */
 const EXPOS = [
+  // ── Italian fairs ────────────────────────────────────────────────
   {
-    id: 1, name: "Verona Reptiles", location: "Cerea (VR)", date: "10 mag 2026", color: "from-orange-700 to-amber-600",
-    description: "La più grande fiera di animali esotici d'Europa. 20ª edizione presso l'Area Exp di Cerea, oltre 800 spazi espositivi e 300 espositori da tutta Europa.",
+    id: 1, name: "Verona Reptiles · Autunno", location: "Cerea (VR)",
+    date: "ott 2026", dateISO: "2026-10-04", color: "from-orange-700 to-amber-600",
+    description: "La più grande fiera di animali esotici d'Europa. Edizione autunnale presso l'Area Exp di Cerea, 800+ spazi espositivi e 300 espositori da tutta Europa.",
     website: "https://www.veronareptiles.it",
-    venue: "Area Exp · Via Libertà, 57",
+    venue: "Area Exp · Via Libertà, 57", country: "IT",
   },
   {
-    id: 2, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "21 giu 2026", color: "from-emerald-700 to-teal-600",
-    description: "Mostra mercato di terraristica nata nel 2006. Punto d'incontro per appassionati italiani in un ambiente familiare al Palagira di Ozzano.",
+    id: 2, name: "Squamata", location: "Ozzano dell'Emilia (BO)",
+    date: "21 giu 2026", dateISO: "2026-06-21", color: "from-emerald-700 to-teal-600",
+    description: "Mostra mercato di terraristica nata nel 2006. Punto d'incontro per appassionati italiani al Palagira di Ozzano.",
     website: "https://www.squamata.it",
-    venue: "Palagira · Viale 2 Giugno, 3",
+    venue: "Palagira · Viale 2 Giugno, 3", country: "IT",
   },
   {
-    id: 3, name: "Esotika Pet Show", location: "Arezzo", date: "12 set 2026", color: "from-sky-700 to-cyan-600",
-    description: "Circuito di fiere itineranti dedicate agli animali esotici, con tappe in tutta Italia.",
-    website: "https://www.esotika.it",
-    venue: "Arezzo Fiere e Congressi",
+    id: 3, name: "Esotika Pet Show · Arezzo", location: "Arezzo",
+    date: "12-13 set 2026", dateISO: "2026-09-12", color: "from-sky-700 to-cyan-600",
+    description: "Tappa aretina del circuito Esotika, salone internazionale degli animali esotici.",
+    website: "https://www.esotikapetshow.it",
+    venue: "Arezzo Fiere e Congressi", country: "IT",
+  },
+  {
+    id: 4, name: "Esotika Pet Show · Bastia Umbra", location: "Bastia Umbra (PG)",
+    date: "30-31 mag 2026", dateISO: "2026-05-30", color: "from-sky-700 to-cyan-600",
+    description: "Tappa umbra del circuito Esotika presso il polo fieristico di Umbriafiere.",
+    website: "https://www.esotikapetshow.it",
+    venue: "Umbriafiere", country: "IT",
+  },
+  {
+    id: 5, name: "Esotika Pet Show · Erba", location: "Erba (CO)",
+    date: "5-6 set 2026", dateISO: "2026-09-05", color: "from-sky-700 to-cyan-600",
+    description: "Tappa lombarda del circuito Esotika a Lariofiere.",
+    website: "https://www.esotikapetshow.it",
+    venue: "Lariofiere", country: "IT",
+  },
+  {
+    id: 6, name: "Esotika Pet Show · Marina di Carrara", location: "Marina di Carrara (MS)",
+    date: "26-27 set 2026", dateISO: "2026-09-26", color: "from-sky-700 to-cyan-600",
+    description: "Tappa toscana del circuito Esotika a CarraraFiere.",
+    website: "https://www.esotikapetshow.it",
+    venue: "CarraraFiere", country: "IT",
+  },
+  {
+    id: 7, name: "Esotika Pet Show · Brescia", location: "Brescia",
+    date: "10-11 ott 2026", dateISO: "2026-10-10", color: "from-sky-700 to-cyan-600",
+    description: "Tappa bresciana del circuito Esotika al Brixia Forum.",
+    website: "https://www.esotikapetshow.it",
+    venue: "Brixia Forum", country: "IT",
+  },
+  {
+    id: 8, name: "Esotika Pet Show · Casale Monferrato", location: "Casale Monferrato (AL)",
+    date: "17-18 ott 2026", dateISO: "2026-10-17", color: "from-sky-700 to-cyan-600",
+    description: "Tappa piemontese del circuito Esotika.",
+    website: "https://www.esotikapetshow.it",
+    venue: "Centro Polifunzionale Riccardo Coppo", country: "IT",
+  },
+  {
+    id: 9, name: "Esotika Pet Show · Busto Arsizio", location: "Busto Arsizio (VA)",
+    date: "7-8 nov 2026", dateISO: "2026-11-07", color: "from-sky-700 to-cyan-600",
+    description: "Tappa varesotta del circuito Esotika a Malpensa Fiere.",
+    website: "https://www.esotikapetshow.it",
+    venue: "Malpensa Fiere", country: "IT",
+  },
+  {
+    id: 10, name: "Reptilius · Forlì", location: "Forlì (FC)",
+    date: "10-11 ott 2026", dateISO: "2026-10-10", color: "from-rose-700 to-pink-600",
+    description: "Reptilius all'interno della manifestazione Animali in Fiera presso la Fiera di Forlì.",
+    website: "https://www.fieraavicola.com",
+    venue: "Fiera di Forlì", country: "IT",
+  },
+  // ── European fairs ────────────────────────────────────────────────
+  {
+    id: 11, name: "Terraristika Hamm · Estate", location: "Hamm",
+    date: "13 giu 2026", dateISO: "2026-06-13", color: "from-slate-700 to-zinc-600",
+    description: "Il più grande evento mondiale per animali da terrario. Quattro edizioni l'anno presso le Zentralhallen di Hamm.",
+    website: "https://www.terraristika.de",
+    venue: "Zentralhallen Hamm · Ökonomierat-Peitzmeier-Platz 2", country: "DE",
+  },
+  {
+    id: 12, name: "Terraristika Hamm · Autunno", location: "Hamm",
+    date: "12 set 2026", dateISO: "2026-09-12", color: "from-slate-700 to-zinc-600",
+    description: "Edizione autunnale della più grande fiera mondiale di terraristica.",
+    website: "https://www.terraristika.de",
+    venue: "Zentralhallen Hamm", country: "DE",
+  },
+  {
+    id: 13, name: "Terraristika Hamm · Inverno", location: "Hamm",
+    date: "12 dic 2026", dateISO: "2026-12-12", color: "from-slate-700 to-zinc-600",
+    description: "Edizione invernale di Terraristika a Hamm.",
+    website: "https://www.terraristika.de",
+    venue: "Zentralhallen Hamm", country: "DE",
+  },
+  {
+    id: 14, name: "Terraria Houten · Autunno", location: "Houten",
+    date: "20 set 2026", dateISO: "2026-09-20", color: "from-blue-700 to-indigo-600",
+    description: "Grande fiera di rettili e anfibi nei Paesi Bassi, organizzata da VHM Events presso l'Expo Houten.",
+    website: "https://vhm-events.com",
+    venue: "Expo Houten · Meidoornkade 24", country: "NL",
+  },
+  {
+    id: 15, name: "Terrabörsen Karlsruhe", location: "Wörth am Rhein",
+    date: "4 lug 2026", dateISO: "2026-07-04", color: "from-stone-700 to-stone-600",
+    description: "Fiera specializzata per rettili, anfibi, invertebrati e accessori da terrario.",
+    website: "https://www.terraboersen.de",
+    venue: "Bienwaldhalle Wörth am Rhein", country: "DE",
   },
 ];
+
+/* Returns expos with dateISO >= today, sorted by date ascending */
+function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().slice(0, 10)) {
+  return allExpos
+    .filter(e => e.dateISO >= todayISO)
+    .sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+}
 
 const SELLERS = {
   "Piedmont Geckos": {
@@ -638,6 +741,13 @@ export default function HerpMarket() {
   const t = I18N[lang];
 
   const go = (v, data = null) => { setView(v); setViewData(data); window.scrollTo(0, 0); };
+  // When the user taps Search from the nav, start with a clean slate.
+  // Category tiles, "see all" links and similar entry points should call go("search") directly
+  // to preserve the filter they just set.
+  const goToSearchFresh = () => {
+    setFilter({ category: null, sex: null, region: null, sort: "newest", search: "" });
+    go("search");
+  };
   const requireAuth = (reason, after) => {
     if (user) { after && after(); return true; }
     setAuthModal({ mode: "login", reason, after });
@@ -678,6 +788,7 @@ export default function HerpMarket() {
       case "documents": return <PlaceholderScreen title={t.citesArchive} {...props} icon={<FileText size={28} />} />;
       case "about":     return <AboutContact {...props} />;
       case "terms":     return <TermsLegal {...props} />;
+      case "storepolicy": return <StorePolicy {...props} />;
       case "settings":  return <PlaceholderScreen title={t.settingsKyc} {...props} icon={<SettingsIcon size={28} />} />;
       default:          return <Home_ {...props} />;
     }
@@ -703,7 +814,7 @@ export default function HerpMarket() {
         <Brand t={t} lang={lang} setLang={setLang} />
         <nav className="flex flex-col gap-1 mt-10 flex-1">
           <SideBtn icon={<Home size={18} />} label={t.home}    active={view === "home"}     onClick={() => go("home")} />
-          <SideBtn icon={<Search size={18} />} label={t.search} active={view === "search"}  onClick={() => go("search")} />
+          <SideBtn icon={<Search size={18} />} label={t.search} active={view === "search"}  onClick={goToSearchFresh} />
           <SideBtn icon={<PlusCircle size={18} />} label={t.sell} active={view === "sell"} onClick={() => go("sell")} />
           <SideBtn icon={<MessageCircle size={18} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
           <SideBtn icon={<User size={18} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
@@ -767,7 +878,7 @@ export default function HerpMarket() {
         {/* Mobile bottom nav */}
         <nav className="md:hidden absolute bottom-0 inset-x-0 z-50 bg-stone-950/90 backdrop-blur-xl border-t border-stone-800 px-3 pt-2 pb-6 flex justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
           <TabBtn icon={<Home size={20} />} label={t.home}    active={view === "home"}    onClick={() => go("home")} />
-          <TabBtn icon={<Search size={20} />} label={t.search} active={view === "search"} onClick={() => go("search")} />
+          <TabBtn icon={<Search size={20} />} label={t.search} active={view === "search"} onClick={goToSearchFresh} />
           <TabBtn icon={<PlusCircle size={24} />} label={t.sell} active={view === "sell"} onClick={() => go("sell")} accent />
           <TabBtn icon={<MessageCircle size={20} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
           <TabBtn icon={<User size={20} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
@@ -945,10 +1056,11 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
-function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
+function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter }) {
   const userRegion = "Piemonte";
   const near = LISTINGS.filter(l => l.region === userRegion);
   const all = LISTINGS;
+  const [showAllExpos, setShowAllExpos] = useState(false);
 
   return (
     <div className="max-w-7xl mx-auto w-full">
@@ -985,7 +1097,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
             <button key={c.id}
                     onClick={() => {
                       setFilter({ ...filter, category: c.id });
-                      go("search", { openFilters: true });
+                      go("search");
                     }}
                     className="anim-up shrink-0 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all min-w-[110px] text-left"
                     style={{ animationDelay: `${i * 30}ms` }}>
@@ -1003,9 +1115,13 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
           <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight flex items-center gap-2">
             <Calendar size={16} className="text-amber-500" />{t.upcomingExpos}
           </h3>
+          <button onClick={() => setShowAllExpos(true)}
+                  className="text-[11px] text-amber-400 font-bold hover:underline">
+            {lang === "it" ? "Vedi tutte" : "See all"} ({getUpcomingExpos().length}) →
+          </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {EXPOS.map((expo, i) => {
+          {getUpcomingExpos().slice(0, 3).map((expo, i) => {
             const expoAnimalsCount = LISTINGS.filter(l => l.expoId === expo.id).length;
             return (
               <button key={expo.id}
@@ -1022,7 +1138,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
                 </div>
                 <h4 className="font-display text-lg text-white mt-1 leading-tight">{expo.name}</h4>
                 <div className="flex items-center gap-1 text-white/80 text-xs mt-1.5">
-                  <MapPin size={11} />{expo.location}
+                  <MapPin size={11} />{expo.location} {expo.country !== "IT" && <span className="text-[9px] uppercase font-black ml-1 bg-white/20 px-1.5 py-0.5 rounded">{expo.country}</span>}
                 </div>
                 <ChevronRight size={16} className="absolute bottom-3 right-3 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </button>
@@ -1056,6 +1172,78 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
           {all.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
         </div>
       </section>
+
+      {/* All-expos modal */}
+      {showAllExpos && (
+        <AllExposModal onClose={() => setShowAllExpos(false)} go={go} t={t} lang={lang} />
+      )}
+    </div>
+  );
+}
+
+/* Modal listing every upcoming expo in chronological order, grouped by month */
+function AllExposModal({ onClose, go, t, lang }) {
+  const upcoming = getUpcomingExpos();
+  // Group by year-month for nicer reading
+  const groups = {};
+  upcoming.forEach(e => {
+    const key = e.dateISO.slice(0, 7); // YYYY-MM
+    (groups[key] ||= []).push(e);
+  });
+  const monthNames = lang === "it"
+    ? ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"]
+    : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthFull = lang === "it"
+    ? ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
+    : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()}
+           className="w-full md:max-w-2xl bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl max-h-[88vh] flex flex-col anim-up">
+        <header className="flex items-center justify-between px-5 py-4 border-b border-stone-800">
+          <div>
+            <h2 className="font-display text-lg text-stone-50 leading-tight">
+              {lang === "it" ? "Tutte le fiere in programma" : "All upcoming expos"}
+            </h2>
+            <p className="text-[11px] text-stone-500">{upcoming.length} {lang === "it" ? "fiere · Italia & Europa" : "expos · Italy & Europe"}</p>
+          </div>
+          <button onClick={onClose} className="text-stone-400 hover:text-stone-100"><X size={20} /></button>
+        </header>
+        <div className="overflow-y-auto hide-scrollbar p-5 space-y-6">
+          {Object.keys(groups).sort().map(monthKey => {
+            const [yr, mo] = monthKey.split("-");
+            return (
+              <div key={monthKey}>
+                <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3 sticky top-0 bg-stone-900 py-1">
+                  {monthFull[parseInt(mo, 10) - 1]} {yr}
+                </div>
+                <div className="space-y-2">
+                  {groups[monthKey].map(expo => (
+                    <button key={expo.id}
+                            onClick={() => { onClose(); go("expo", expo); }}
+                            className={`w-full bg-gradient-to-r ${expo.color} rounded-xl p-3 flex items-center gap-3 text-left hover:scale-[1.01] transition-transform group`}>
+                      <div className="bg-black/30 backdrop-blur rounded-lg px-2.5 py-1.5 text-center shrink-0 min-w-[58px]">
+                        <div className="text-[9px] uppercase tracking-widest text-white/70 font-bold leading-none">{monthNames[parseInt(expo.dateISO.slice(5, 7), 10) - 1]}</div>
+                        <div className="font-display text-lg text-white leading-none mt-0.5">{expo.dateISO.slice(8, 10)}</div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-white text-sm leading-tight truncate">{expo.name}</div>
+                        <div className="flex items-center gap-1.5 text-white/80 text-[11px] mt-0.5">
+                          <MapPin size={10} className="shrink-0" />
+                          <span className="truncate">{expo.location}</span>
+                          {expo.country !== "IT" && <span className="text-[9px] uppercase font-black bg-white/20 px-1.5 py-0.5 rounded">{expo.country}</span>}
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1935,6 +2123,9 @@ function SellScreen({ t, lang, go }) {
           <textarea rows="4" placeholder={t.describePlaceholder} className="form-input resize-none" />
         </FormBlock>
 
+        {/* ─── Delivery options ─── */}
+        <DeliverySection lang={lang} t={t} />
+
         <button onClick={() => setSuccess(true)}
                 className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4">
           {t.publishListing}
@@ -1966,6 +2157,189 @@ function FormBlock({ label, children }) {
       {label && <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{label}</div>}
       {children}
     </div>
+  );
+}
+
+/* DELIVERY SECTION — three independent toggles.
+   Expo pickup is positioned as HerpMarket's signature feature: amber accent,
+   highlighted card, escrow-deposit explanation; all upcoming expos available
+   as multi-select chips with date right on the chip.                       */
+function DeliverySection({ lang, t }) {
+  const [localPickup, setLocalPickup] = useState(true);
+  const [expoPickup, setExpoPickup] = useState(false);
+  const [shipping, setShipping] = useState(false);
+  const [shippingCost, setShippingCost] = useState("");
+  const [internationalShipping, setInternationalShipping] = useState(false);
+  const [selectedExpoIds, setSelectedExpoIds] = useState([]);
+  const upcomingExpos = getUpcomingExpos();
+
+  const toggleExpo = (id) => {
+    setSelectedExpoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const monthShort = lang === "it"
+    ? ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"]
+    : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  return (
+    <FormBlock label={lang === "it" ? "Consegna" : "Delivery"}>
+      <div className="space-y-2.5">
+        {/* Local pickup */}
+        <DeliveryCard
+          icon={<MapPin size={18} />}
+          title={lang === "it" ? "Ritiro a mano" : "Local pickup"}
+          subtitle={lang === "it" ? "L'acquirente ritira presso la tua sede" : "Buyer collects at your location"}
+          checked={localPickup}
+          onChange={() => setLocalPickup(!localPickup)}
+        />
+
+        {/* Expo pickup — the signature feature */}
+        <div className={`rounded-xl ring-1 transition-all overflow-hidden ${
+          expoPickup ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"
+        }`}>
+          <label className="flex items-start gap-3 p-4 cursor-pointer">
+            <input type="checkbox" checked={expoPickup} onChange={() => setExpoPickup(!expoPickup)}
+                   className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <Calendar size={16} className="text-amber-400" />
+                <span className="font-bold text-stone-100 text-sm">{lang === "it" ? "Consegna in fiera" : "Expo pickup"}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 rounded">
+                  ★ HerpMarket
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-400 leading-relaxed">
+                {lang === "it"
+                  ? "Acconto 10% in escrow, animale bloccato fino al ritiro al tuo stand. Maggiore protezione per acquirente e venditore."
+                  : "10% deposit in escrow, animal reserved until pickup at your stand. Better protection for both parties."}
+              </p>
+            </div>
+          </label>
+          {expoPickup && (
+            <div className="px-4 pb-4 pt-1 border-t border-amber-500/15">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2 mt-3">
+                {lang === "it" ? `A quali fiere parteciperai? (${upcomingExpos.length} disponibili)` : `Which expos will you attend? (${upcomingExpos.length} available)`}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-72 overflow-y-auto hide-scrollbar pr-1">
+                {upcomingExpos.map(expo => {
+                  const isSel = selectedExpoIds.includes(expo.id);
+                  const dd = expo.dateISO.slice(8, 10);
+                  const mm = monthShort[parseInt(expo.dateISO.slice(5, 7), 10) - 1];
+                  return (
+                    <button key={expo.id} type="button"
+                            onClick={() => toggleExpo(expo.id)}
+                            className={`text-left rounded-lg ring-1 px-2.5 py-2 flex items-center gap-2.5 transition-all ${
+                              isSel ? "bg-amber-500/15 ring-amber-500/40" : "bg-stone-900/60 ring-stone-800 hover:ring-stone-700"
+                            }`}>
+                      <div className={`rounded px-1.5 py-0.5 text-center shrink-0 min-w-[34px] ${
+                        isSel ? "bg-amber-500/20" : "bg-stone-800"
+                      }`}>
+                        <div className={`text-[8px] uppercase tracking-widest font-bold leading-none ${
+                          isSel ? "text-amber-300" : "text-stone-500"
+                        }`}>{mm}</div>
+                        <div className={`font-display text-sm leading-none mt-0.5 ${
+                          isSel ? "text-amber-100" : "text-stone-200"
+                        }`}>{dd}</div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-[12px] font-bold leading-tight truncate ${
+                          isSel ? "text-amber-100" : "text-stone-200"
+                        }`}>{expo.name}</div>
+                        <div className="text-[10px] text-stone-500 truncate flex items-center gap-1">
+                          {expo.location}
+                          {expo.country !== "IT" && <span className="text-[8px] uppercase font-black bg-stone-800 text-stone-400 px-1 rounded">{expo.country}</span>}
+                        </div>
+                      </div>
+                      {isSel && <Check size={14} className="text-amber-400 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedExpoIds.length > 0 && (
+                <div className="text-[10px] text-amber-400/80 font-bold mt-2.5">
+                  {selectedExpoIds.length} {lang === "it" ? "fiere selezionate" : "expos selected"}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Shipping */}
+        <div className={`rounded-xl ring-1 transition-all overflow-hidden ${
+          shipping ? "bg-stone-800/40 ring-stone-700" : "bg-stone-900/40 ring-stone-800"
+        }`}>
+          <label className="flex items-start gap-3 p-4 cursor-pointer">
+            <input type="checkbox" checked={shipping} onChange={() => setShipping(!shipping)}
+                   className="mt-0.5 w-4 h-4 rounded accent-stone-300 cursor-pointer shrink-0" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <Truck size={16} className="text-stone-300" />
+                <span className="font-bold text-stone-100 text-sm">{lang === "it" ? "Spedizione con corriere" : "Courier shipping"}</span>
+              </div>
+              <p className="text-[11px] text-stone-400 leading-relaxed">
+                {lang === "it"
+                  ? "Spedizione tramite corriere abilitato (Lun-Mer). Imballaggio a norma IATA."
+                  : "Authorised live-animal courier (Mon-Wed). IATA-compliant packaging."}
+              </p>
+            </div>
+          </label>
+          {shipping && (
+            <div className="px-4 pb-4 pt-1 border-t border-stone-800 space-y-3">
+              <div className="mt-3">
+                <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
+                  {lang === "it" ? "Costo spedizione nazionale" : "Domestic shipping cost"}
+                </div>
+                <div className="relative max-w-[160px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                  <input type="number" value={shippingCost} onChange={e => setShippingCost(e.target.value)}
+                         className="form-input pl-7" placeholder="45" />
+                </div>
+              </div>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" checked={internationalShipping} onChange={() => setInternationalShipping(!internationalShipping)}
+                       className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
+                <span className="text-xs text-stone-300">
+                  {lang === "it" ? "Disponibile anche per spedizione UE (TRACES richiesto)" : "Available for EU shipping (TRACES required)"}
+                </span>
+              </label>
+              {internationalShipping && (
+                <div className="bg-amber-500/5 ring-1 ring-amber-500/20 rounded-lg p-2.5 text-[10px] text-amber-200/80 leading-relaxed">
+                  {lang === "it"
+                    ? "Per spedizioni intra-UE è obbligatoria la registrazione TRACES e, per specie CITES Allegato A/B, autorizzazione specifica."
+                    : "EU shipping requires TRACES registration and, for CITES Annex A/B species, specific authorisation."}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Warning if nothing selected */}
+        {!localPickup && !expoPickup && !shipping && (
+          <div className="bg-rose-500/5 ring-1 ring-rose-500/20 rounded-lg p-3 text-[11px] text-rose-300 flex gap-2 items-center">
+            <Info size={14} className="shrink-0" />
+            {lang === "it" ? "Seleziona almeno una modalità di consegna." : "Select at least one delivery method."}
+          </div>
+        )}
+      </div>
+    </FormBlock>
+  );
+}
+
+function DeliveryCard({ icon, title, subtitle, checked, onChange }) {
+  return (
+    <label className={`flex items-start gap-3 p-4 rounded-xl ring-1 cursor-pointer transition-all ${
+      checked ? "bg-stone-800/40 ring-stone-700" : "bg-stone-900/40 ring-stone-800"
+    }`}>
+      <input type="checkbox" checked={checked} onChange={onChange}
+             className="mt-0.5 w-4 h-4 rounded accent-stone-300 cursor-pointer shrink-0" />
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-stone-300">{icon}</span>
+          <span className="font-bold text-stone-100 text-sm">{title}</span>
+        </div>
+        <p className="text-[11px] text-stone-400 leading-relaxed">{subtitle}</p>
+      </div>
+    </label>
   );
 }
 
@@ -2105,6 +2479,7 @@ function Profile({ t, go, lang, user, handleLogout }) {
         <ProfileGroup label={t.infoSupport}>
           <ProfileRow icon={<Info size={18} />} label={t.aboutContact} onClick={() => go("about")} />
           <ProfileRow icon={<ShieldCheck size={18} />} label={t.termsLegal} onClick={() => go("terms")} />
+          <ProfileRow icon={<FileText size={18} />} label={t.storePolicyLabel} onClick={() => go("storepolicy")} />
         </ProfileGroup>
 
         {/* GROUP 4: Configuration */}
@@ -2666,26 +3041,434 @@ function AboutContact({ t, go, lang }) {
   );
 }
 
-function TermsLegal({ t, go, lang }) {
+/* ═══════════════════════════════════════════════════════════════════
+   LEGAL DOCUMENTS
+   ──────────────────────────────────────────────────────────────────
+   Both TOS and Store Policy are structured documents. They share a
+   renderer (LegalDoc) that handles:
+     • IT (binding) / EN (courtesy translation) language toggle
+     • effective date + version
+     • table of contents that scrolls to section
+     • per-section ⚠ marker for "needs lawyer review" before launch
+   ──────────────────────────────────────────────────────────────────
+   IMPORTANT: this is a strong first draft modeled on MorphMarket's
+   structure but adapted to Italian/EU law. Before going live with
+   real money flowing through the platform it MUST be reviewed by an
+   Italian lawyer (e-commerce — D.Lgs. 70/2003, Codice del Consumo —
+   D.Lgs. 206/2005, GDPR/Reg. UE 2016/679, fauna — D.Lgs. 135/2022 e
+   Reg. CE 338/97). Sections requiring review are flagged with ⚠.
+   ═════════════════════════════════════════════════════════════════ */
+
+const TOS_CONTENT = {
+  effectiveDate: { it: "1 gennaio 2026", en: "1 January 2026" },
+  version: "1.0 (bozza)",
+  sections: [
+    {
+      id: "1", title: { it: "Premesse e definizioni", en: "Background and definitions" }, review: false,
+      body: {
+        it: [
+          "HerpMarket è un marketplace online che mette in contatto allevatori e acquirenti di rettili, anfibi e invertebrati nati in cattività. La piattaforma è gestita da [DENOMINAZIONE SOCIETARIA DA INDICARE], P.IVA [DA INDICARE], con sede in [DA INDICARE], Italia.",
+          "Ai sensi del D.Lgs. 70/2003, HerpMarket opera come prestatore di servizi della società dell'informazione e fornitore di servizio di hosting attivo. HerpMarket non è parte dei contratti di compravendita conclusi tra Utenti e non assume la posizione di venditore.",
+          "«Utente» indica qualunque persona fisica o giuridica che acceda alla piattaforma. «Venditore» indica l'Utente che pubblica un annuncio. «Acquirente» indica l'Utente che richiede l'acquisto di un Esemplare. «Esemplare» indica l'animale oggetto dell'annuncio.",
+        ],
+        en: [
+          "HerpMarket is an online marketplace connecting breeders and buyers of captive-bred reptiles, amphibians and invertebrates. The platform is operated by [COMPANY NAME TBD], VAT [TBD], registered in [TBD], Italy.",
+          "Pursuant to Italian Legislative Decree 70/2003, HerpMarket operates as an information-society service provider and active hosting provider. HerpMarket is not a party to sale contracts concluded between Users and does not act as seller.",
+          "'User' means any natural or legal person accessing the platform. 'Seller' means the User who publishes a listing. 'Buyer' means the User who requests to purchase a Specimen. 'Specimen' means the animal that is the subject of the listing.",
+        ],
+      },
+    },
+    {
+      id: "2", title: { it: "Requisiti di accesso", en: "Eligibility" }, review: true,
+      body: {
+        it: [
+          "L'accesso al servizio è riservato a soggetti maggiorenni (18 anni compiuti) capaci di concludere contratti giuridicamente vincolanti ai sensi della legge italiana.",
+          "Per pubblicare annunci, l'Utente deve dichiarare di essere in regola con la normativa italiana in materia di detenzione di animali esotici (D.Lgs. 135/2022) e, ove applicabile, con la disciplina CITES (Reg. CE 338/97 e Reg. CE 865/2006).",
+          "Gli allevatori che cedono Esemplari nell'esercizio di attività professionale devono essere in possesso delle autorizzazioni richieste dalla normativa nazionale e regionale (es. iscrizione al Registro Imprese, autorizzazione ASL ove dovuta) e dichiarare la propria qualifica all'atto della registrazione.",
+        ],
+        en: [
+          "Access to the service is reserved to adults (18 years or older) able to enter legally binding contracts under Italian law.",
+          "To publish listings, the User must declare compliance with Italian regulations on the keeping of exotic animals (Legislative Decree 135/2022) and, where applicable, with CITES rules (EU Reg. 338/97 and EU Reg. 865/2006).",
+          "Breeders selling Specimens in the course of a professional activity must hold all authorisations required by national and regional legislation (e.g. registration with the Business Register, health-authority — ASL — authorisation where required) and declare their status at registration.",
+        ],
+      },
+    },
+    {
+      id: "3", title: { it: "Specie consentite e specie vietate", en: "Allowed and prohibited species" }, review: true,
+      body: {
+        it: [
+          "Sono ammessi alla vendita esclusivamente Esemplari nati in cattività appartenenti a specie il cui possesso, vendita e trasporto siano leciti ai sensi del D.Lgs. 135/2022 e della normativa connessa.",
+          "È assolutamente vietato pubblicare annunci relativi a: (i) specie elencate come pericolose dal D.Lgs. 135/2022 (es. molte specie velenose, alcuni elapidi, viperidi del Vecchio Mondo, grandi varanidi); (ii) specie invasive esotiche di rilevanza unionale di cui al Reg. UE 1143/2014; (iii) Esemplari catturati in natura (WC — wild caught); (iv) uova, animali gravidi o pre-nati.",
+          "Per le specie incluse negli Allegati A, B, C e D del Reg. CE 338/97, l'Utente deve indicare nell'annuncio il documento di provenienza (certificato CITES individuale per Allegato A, dichiarazione di cessione per Allegato B). HerpMarket si riserva il diritto di rimuovere annunci non conformi senza preavviso.",
+        ],
+        en: [
+          "Only captive-bred Specimens of species whose possession, sale and transport are lawful under Legislative Decree 135/2022 and related legislation may be listed.",
+          "It is strictly prohibited to list: (i) species classified as dangerous under Legislative Decree 135/2022 (e.g. many venomous species, certain elapids, Old-World vipers, large monitor lizards); (ii) invasive alien species of EU concern under Reg. (EU) 1143/2014; (iii) wild-caught specimens (WC); (iv) eggs, gravid animals or pre-born animals.",
+          "For species listed in Annexes A, B, C and D of EU Reg. 338/97, the User must indicate in the listing the provenance document (individual CITES certificate for Annex A, transfer declaration for Annex B). HerpMarket reserves the right to remove non-compliant listings without notice.",
+        ],
+      },
+    },
+    {
+      id: "4", title: { it: "Pubblicazione degli annunci", en: "Listing rules" }, review: false,
+      body: {
+        it: [
+          "Il Venditore garantisce che ogni annuncio: (a) riguarda un Esemplare effettivamente in suo possesso da almeno 30 giorni (salvo Esemplari di propria riproduzione); (b) include fotografie originali dell'Esemplare effettivo posto in vendita; (c) riporta in modo veritiero specie, morph/tratti, sesso (se determinabile), data di nascita, peso e provenienza.",
+          "È vietato l'uso di immagini di stock, di esemplari diversi o di immagini protette da copyright di terzi.",
+          "Il Venditore è esclusivamente responsabile dell'esattezza delle informazioni pubblicate. HerpMarket non verifica preventivamente la veridicità dei contenuti pubblicati dagli Utenti.",
+        ],
+        en: [
+          "The Seller warrants that each listing: (a) concerns a Specimen actually held by them for at least 30 days (except Specimens bred by the Seller); (b) includes original photographs of the actual Specimen being sold; (c) accurately states species, morph/traits, sex (where determinable), date of birth, weight and provenance.",
+          "Use of stock images, images of different animals, or copyrighted third-party images is prohibited.",
+          "The Seller is solely responsible for the accuracy of the information published. HerpMarket does not pre-verify the truthfulness of user-published content.",
+        ],
+      },
+    },
+    {
+      id: "5", title: { it: "Conclusione del contratto e pagamenti", en: "Contract formation and payments" }, review: true,
+      body: {
+        it: [
+          "Il contratto di compravendita si conclude direttamente tra Acquirente e Venditore. HerpMarket fornisce strumenti per facilitare la transazione (richiesta di acquisto, approvazione del venditore, pagamento sicuro tramite escrow, generazione documentale) ma resta estraneo al rapporto contrattuale.",
+          "L'Acquirente effettua una richiesta di acquisto tramite la piattaforma. Il Venditore può approvare o rifiutare la richiesta. Nessun pagamento è dovuto fino all'approvazione del Venditore.",
+          "Una volta approvata la richiesta, l'Acquirente versa l'acconto (per ritiro in fiera) o il pagamento integrale (per spedizione o ritiro presso il Venditore) tramite il provider di pagamento integrato. I fondi sono trattenuti in escrow fino alla conferma reciproca della consegna.",
+          "Gli acconti versati per il ritiro in fiera non sono rimborsabili in caso di mancato ritiro da parte dell'Acquirente per causa a lui imputabile.",
+        ],
+        en: [
+          "The sale contract is concluded directly between Buyer and Seller. HerpMarket provides tools to facilitate the transaction (purchase request, seller approval, secure escrow payment, document generation) but is not a party to the contractual relationship.",
+          "The Buyer submits a purchase request via the platform. The Seller may approve or decline the request. No payment is due until Seller approval.",
+          "Once approved, the Buyer pays the deposit (for expo pickup) or the full amount (for shipping or seller pickup) via the integrated payment provider. Funds are held in escrow until handover is mutually confirmed.",
+          "Deposits paid for expo pickup are non-refundable where the Buyer fails to collect the Specimen for reasons attributable to them.",
+        ],
+      },
+    },
+    {
+      id: "6", title: { it: "Diritto di recesso (consumatori)", en: "Right of withdrawal (consumers)" }, review: true,
+      body: {
+        it: [
+          "Ai sensi dell'art. 59, comma 1, lett. d) del Codice del Consumo (D.Lgs. 206/2005), il diritto di recesso non si applica ai contratti aventi ad oggetto la fornitura di beni che rischiano di deteriorarsi o scadere rapidamente, categoria in cui rientrano gli animali vivi.",
+          "Resta ferma la responsabilità del Venditore per i vizi della cosa venduta ai sensi degli artt. 1490 e ss. c.c. e, ove ricorrano i presupposti di legge, la disciplina della garanzia di conformità di cui agli artt. 128 e ss. del Codice del Consumo.",
+        ],
+        en: [
+          "Pursuant to art. 59(1)(d) of the Italian Consumer Code (Legislative Decree 206/2005), the right of withdrawal does not apply to contracts for the supply of goods liable to deteriorate or expire rapidly — a category that includes live animals.",
+          "The Seller remains liable for defects under arts. 1490 ff. of the Italian Civil Code and, where applicable, under the conformity-guarantee provisions of arts. 128 ff. of the Consumer Code.",
+        ],
+      },
+    },
+    {
+      id: "7", title: { it: "Commissioni", en: "Fees" }, review: false,
+      body: {
+        it: [
+          "L'uso base della piattaforma è gratuito per gli Acquirenti. I Venditori possono pubblicare un numero limitato di annunci gratuiti; per volumi superiori sono disponibili piani a pagamento i cui dettagli sono illustrati nella sezione «Piani».",
+          "HerpMarket applica una commissione sulle transazioni completate tramite il sistema escrow integrato. L'importo della commissione è indicato in modo chiaro prima della conclusione del pagamento.",
+        ],
+        en: [
+          "Basic use of the platform is free for Buyers. Sellers may post a limited number of free listings; higher volumes are available through paid plans whose details are set out in the 'Plans' section.",
+          "HerpMarket charges a fee on transactions completed via the integrated escrow system. The fee amount is clearly displayed before payment is finalised.",
+        ],
+      },
+    },
+    {
+      id: "8", title: { it: "Spedizioni e ritiro", en: "Shipping and pickup" }, review: true,
+      body: {
+        it: [
+          "Sono ammesse tre modalità di consegna: (a) ritiro a mano presso la sede del Venditore; (b) ritiro presso una fiera autorizzata indicata nell'annuncio; (c) spedizione tramite corriere abilitato al trasporto di animali vivi, all'interno del territorio italiano e dell'Unione Europea.",
+          "Le spedizioni internazionali all'interno dell'UE sono consentite a condizione che entrambi le parti rispettino le disposizioni TRACES e, ove applicabile, i requisiti CITES per il movimento intra-UE.",
+          "Le spedizioni al di fuori dell'UE non sono attualmente supportate dalla piattaforma.",
+          "Il Venditore è responsabile dell'imballaggio adeguato dell'Esemplare secondo le linee guida IATA per il trasporto di animali vivi. HerpMarket può sospendere il servizio in condizioni climatiche estreme.",
+        ],
+        en: [
+          "Three delivery modes are allowed: (a) pickup at the Seller's premises; (b) pickup at an authorised expo listed in the ad; (c) shipping by a courier qualified to transport live animals, within Italy and the European Union.",
+          "International shipping within the EU is allowed provided both parties comply with TRACES requirements and, where applicable, with CITES rules for intra-EU movement.",
+          "Shipping outside the EU is not currently supported by the platform.",
+          "The Seller is responsible for proper packaging of the Specimen according to IATA Live Animal Regulations. HerpMarket may suspend the service in extreme weather.",
+        ],
+      },
+    },
+    {
+      id: "9", title: { it: "Garanzia di arrivo in vita e dispute", en: "Live arrival guarantee and disputes" }, review: true,
+      body: {
+        it: [
+          "Le condizioni standard di garanzia di arrivo in vita (Live Arrival Guarantee) sono illustrate nel Regolamento Marketplace. I Venditori possono integrare o modificare tali condizioni mediante la propria policy di negozio, purché non in contrasto con norme imperative di legge.",
+          "In caso di disputa, gli Utenti sono tenuti a tentare in buona fede una composizione amichevole tramite la funzione messaggi della piattaforma. HerpMarket può, su richiesta, intervenire come mediatore informale ma non è obbligato a farlo e non assume la veste di arbitro.",
+          "Resta impregiudicato il diritto del Consumatore di accedere alla piattaforma ODR (Online Dispute Resolution) della Commissione Europea: ec.europa.eu/consumers/odr.",
+        ],
+        en: [
+          "Standard live-arrival guarantee terms are set out in the Marketplace Policy. Sellers may supplement or modify those terms in their own store policy, provided this does not conflict with mandatory provisions of law.",
+          "In case of dispute, Users must attempt good-faith amicable resolution via the platform's messaging feature. HerpMarket may, on request, act as informal mediator but is not obliged to do so and does not act as arbitrator.",
+          "Consumers retain the right to access the European Commission's ODR platform: ec.europa.eu/consumers/odr.",
+        ],
+      },
+    },
+    {
+      id: "10", title: { it: "Responsabilità di HerpMarket", en: "HerpMarket liability" }, review: true,
+      body: {
+        it: [
+          "HerpMarket fornisce la piattaforma «così com'è» e non garantisce: (i) la veridicità degli annunci pubblicati dagli Utenti; (ii) l'effettiva conclusione delle transazioni; (iii) la qualità sanitaria o genetica degli Esemplari.",
+          "HerpMarket è responsabile esclusivamente per dolo e colpa grave nell'erogazione del servizio. Sono in ogni caso escluse responsabilità per danni indiretti, conseguenziali o per perdita di profitto, nei limiti consentiti dalla legge.",
+          "Nulla nei presenti Termini limita la responsabilità di HerpMarket nei confronti dei Consumatori per quanto disposto da norme imperative.",
+        ],
+        en: [
+          "HerpMarket provides the platform 'as is' and does not guarantee: (i) the truthfulness of user-published listings; (ii) the actual conclusion of transactions; (iii) the health or genetic quality of Specimens.",
+          "HerpMarket is liable solely for wilful misconduct or gross negligence in providing the service. Liability for indirect, consequential or lost-profit damages is excluded to the maximum extent permitted by law.",
+          "Nothing in these Terms limits HerpMarket's liability towards Consumers in respect of mandatory provisions of law.",
+        ],
+      },
+    },
+    {
+      id: "11", title: { it: "Trattamento dei dati personali", en: "Personal data" }, review: true,
+      body: {
+        it: [
+          "Il trattamento dei dati personali è disciplinato dalla Privacy Policy, redatta ai sensi del Reg. UE 2016/679 (GDPR) e del D.Lgs. 196/2003 come modificato.",
+          "HerpMarket agisce come titolare del trattamento per i dati raccolti durante la registrazione e l'uso della piattaforma. Per i dati condivisi tra Utenti nel contesto di una transazione, ciascun Utente agisce come titolare autonomo nei propri interessi.",
+        ],
+        en: [
+          "Personal data processing is governed by the Privacy Policy, drafted under EU Reg. 2016/679 (GDPR) and Italian Legislative Decree 196/2003 as amended.",
+          "HerpMarket acts as data controller for data collected during registration and platform use. For data shared between Users in the context of a transaction, each User acts as autonomous controller for their own purposes.",
+        ],
+      },
+    },
+    {
+      id: "12", title: { it: "Legge applicabile e foro competente", en: "Governing law and jurisdiction" }, review: true,
+      body: {
+        it: [
+          "I presenti Termini sono regolati dalla legge italiana.",
+          "Per ogni controversia derivante dai presenti Termini è competente in via esclusiva il Foro di [DA INDICARE], salvo il foro inderogabile del consumatore di cui all'art. 66-bis del Codice del Consumo.",
+          "La versione italiana dei presenti Termini è quella giuridicamente vincolante. Eventuali traduzioni sono fornite a titolo di mera cortesia.",
+        ],
+        en: [
+          "These Terms are governed by Italian law.",
+          "Any dispute arising from these Terms is subject to the exclusive jurisdiction of the Court of [TBD], without prejudice to the consumer's mandatory forum under art. 66-bis of the Italian Consumer Code.",
+          "The Italian version of these Terms is the legally binding version. Translations are provided as a courtesy only.",
+        ],
+      },
+    },
+  ],
+};
+
+const STORE_POLICY_CONTENT = {
+  effectiveDate: { it: "1 gennaio 2026", en: "1 January 2026" },
+  version: "1.0 (bozza)",
+  sections: [
+    {
+      id: "1", title: { it: "Ambito di applicazione", en: "Scope" }, review: false,
+      body: {
+        it: [
+          "Il presente Regolamento Marketplace si applica a tutte le compravendite concluse tramite HerpMarket. I Venditori possono adottare una propria Store Policy che integri il presente regolamento, ma non possono derogare alle disposizioni qui contenute laddove ciò comporti un peggioramento della tutela dell'Acquirente Consumatore o una violazione di norme imperative.",
+        ],
+        en: [
+          "This Marketplace Policy applies to all sales concluded via HerpMarket. Sellers may adopt their own Store Policy supplementing this regulation, but may not deviate from these provisions where this would worsen the protection of Consumer Buyers or breach mandatory law.",
+        ],
+      },
+    },
+    {
+      id: "2", title: { it: "Modalità di pagamento", en: "Payment methods" }, review: false,
+      body: {
+        it: [
+          "I pagamenti devono essere effettuati esclusivamente tramite il sistema di pagamento integrato della piattaforma (Stripe o provider equivalente), che garantisce la conservazione dei fondi in escrow fino alla conferma di consegna.",
+          "È espressamente vietato richiedere o effettuare pagamenti al di fuori della piattaforma. Le richieste di pagamento mediante bonifico diretto, PayPal Amici e Familiari, criptovalute o contanti senza fattura sono motivo di sospensione dell'account.",
+          "L'Acquirente può versare un acconto del 10% per bloccare l'Esemplare in vista del ritiro in fiera; il saldo è dovuto al momento del ritiro presso lo stand del Venditore. L'acconto non è rimborsabile in caso di mancato ritiro per causa imputabile all'Acquirente.",
+        ],
+        en: [
+          "Payments must be made exclusively via the platform's integrated payment system (Stripe or equivalent provider), which holds funds in escrow until handover confirmation.",
+          "Requesting or making payments outside the platform is strictly prohibited. Requests for direct bank transfer, PayPal Friends & Family, cryptocurrency or undocumented cash payments are grounds for account suspension.",
+          "The Buyer may pay a 10% deposit to reserve the Specimen for expo pickup; the balance is due at the time of pickup at the Seller's stand. The deposit is non-refundable where the Buyer fails to collect for reasons attributable to them.",
+        ],
+      },
+    },
+    {
+      id: "3", title: { it: "Garanzia di arrivo in vita (DOA)", en: "Live arrival guarantee (DOA)" }, review: true,
+      body: {
+        it: [
+          "Il Venditore garantisce l'arrivo in vita dell'Esemplare alle seguenti condizioni:",
+          "(a) la spedizione avviene tramite corriere abilitato e nei giorni concordati (di norma lunedì–mercoledì, escluse festività);",
+          "(b) l'imballaggio rispetta le linee guida IATA per animali vivi, con materiali isolanti adeguati e ove necessario heat pack o cold pack a norma;",
+          "(c) la consegna avviene presso il punto di ritiro (Hub) del corriere e non all'indirizzo residenziale, salvo diverso accordo scritto.",
+          "In caso di Esemplare morto all'arrivo (DOA), l'Acquirente deve: (i) notificare il Venditore e HerpMarket entro 2 ore dalla disponibilità del pacco al ritiro; (ii) fornire fotografie e video dell'Esemplare nella sua confezione originale entro 6 ore; (iii) conservare l'Esemplare a temperatura adeguata fino a istruzioni del Venditore.",
+          "La garanzia DOA non si applica a: (a) Esemplari ritirati personalmente dall'Acquirente (in fiera o presso il Venditore); (b) consegne ritardate per cause attribuibili al corriere ma il pacco arriva in vita; (c) decessi sopravvenuti dopo l'apertura del pacco.",
+        ],
+        en: [
+          "The Seller guarantees the Specimen's live arrival subject to the following conditions:",
+          "(a) shipping is made by a qualified courier on agreed days (typically Monday–Wednesday, holidays excluded);",
+          "(b) packaging complies with IATA Live Animal Regulations, with proper insulation and, where needed, compliant heat or cold packs;",
+          "(c) delivery is made to the courier's pickup point (Hub) and not to a residential address, unless otherwise agreed in writing.",
+          "If the Specimen arrives dead (DOA), the Buyer must: (i) notify the Seller and HerpMarket within 2 hours of the package being available for pickup; (ii) provide photos and video of the Specimen in its original packaging within 6 hours; (iii) keep the Specimen at proper temperature until instructed by the Seller.",
+          "The DOA guarantee does NOT apply to: (a) Specimens picked up in person by the Buyer (at expo or at Seller's premises); (b) delayed deliveries where the package nonetheless arrives alive; (c) deaths occurring after the package has been opened.",
+        ],
+      },
+    },
+    {
+      id: "4", title: { it: "Esemplari non pronti («Not Ready»)", en: "Not-ready specimens" }, review: false,
+      body: {
+        it: [
+          "I Venditori possono indicare un Esemplare come «Non pronto» quando questi è troppo giovane per essere spedito in sicurezza o non ha ancora completato lo svezzamento alimentare.",
+          "Per gli Esemplari «Non pronti» il pagamento integrale non può essere richiesto. È ammesso un acconto pari al massimo al 30% del prezzo, da versare in escrow.",
+          "Il saldo è dovuto solo dopo conferma di idoneità alla spedizione/ritiro da parte del Venditore.",
+        ],
+        en: [
+          "Sellers may flag a Specimen as 'Not Ready' when it is too young to ship safely or has not yet completed feeding establishment.",
+          "Full payment may not be requested for 'Not Ready' Specimens. A deposit of up to 30% of the price may be held in escrow.",
+          "The balance is due only after the Seller confirms readiness for shipping/pickup.",
+        ],
+      },
+    },
+    {
+      id: "5", title: { it: "Conferma di consegna e documenti", en: "Handover confirmation and documents" }, review: false,
+      body: {
+        it: [
+          "La transazione si considera completata quando entrambe le parti confermano l'avvenuta consegna tramite la piattaforma. Fino a tale conferma, i fondi restano vincolati in escrow.",
+          "Una volta confermata la consegna da entrambe le parti, HerpMarket genera automaticamente il documento di cessione (CITES per Allegato A/B; certificato di origine per le altre specie). Il documento è disponibile nell'archivio digitale di entrambe le parti.",
+          "Il documento generato dalla piattaforma è un ausilio amministrativo. Per le specie CITES, la cessione formale richiede comunque la conservazione dei documenti originali secondo la normativa vigente.",
+        ],
+        en: [
+          "The transaction is deemed completed when both parties confirm handover via the platform. Until such confirmation, funds remain held in escrow.",
+          "Once both parties confirm handover, HerpMarket automatically generates the transfer document (CITES for Annex A/B; certificate of origin for other species). The document is available in both parties' digital archive.",
+          "The platform-generated document is an administrative aid. For CITES species, formal transfer still requires retention of original documents per applicable law.",
+        ],
+      },
+    },
+    {
+      id: "6", title: { it: "Recensioni", en: "Reviews" }, review: false,
+      body: {
+        it: [
+          "Solo gli Acquirenti che hanno completato una transazione possono lasciare una recensione al Venditore. Le recensioni devono essere veritiere, riferirsi all'esperienza effettiva e rispettare la dignità del Venditore.",
+          "HerpMarket si riserva il diritto di rimuovere recensioni manifestamente offensive, contenenti dati personali di terzi o non collegate alla transazione.",
+        ],
+        en: [
+          "Only Buyers who have completed a transaction may leave a review for the Seller. Reviews must be truthful, refer to actual experience and respect the Seller's dignity.",
+          "HerpMarket reserves the right to remove reviews that are manifestly offensive, contain third-party personal data, or are unrelated to the transaction.",
+        ],
+      },
+    },
+    {
+      id: "7", title: { it: "Comportamenti vietati", en: "Prohibited conduct" }, review: false,
+      body: {
+        it: [
+          "È vietato: (a) condurre transazioni al di fuori della piattaforma una volta avviato il contatto su HerpMarket; (b) creare account multipli, falsi o intestati a soggetti diversi; (c) pubblicare contenuti diffamatori, fraudolenti o ingannevoli; (d) sollecitare gli Utenti per scopi diversi dall'acquisto (es. spam, pubblicità non autorizzata); (e) tentare di aggirare le commissioni della piattaforma.",
+        ],
+        en: [
+          "It is prohibited to: (a) conduct transactions outside the platform once contact has been initiated on HerpMarket; (b) create multiple, fake or third-party accounts; (c) post defamatory, fraudulent or misleading content; (d) solicit Users for purposes other than purchase (e.g. spam, unauthorised advertising); (e) attempt to circumvent platform fees.",
+        ],
+      },
+    },
+    {
+      id: "8", title: { it: "Sanzioni", en: "Sanctions" }, review: true,
+      body: {
+        it: [
+          "In caso di violazione del presente Regolamento o dei Termini di servizio, HerpMarket può adottare le seguenti misure proporzionate alla gravità: avvertimento; rimozione dell'annuncio; sospensione temporanea dell'account; chiusura definitiva dell'account; segnalazione alle autorità competenti.",
+          "Le violazioni che comportano rischi per la salute degli animali o per la sicurezza pubblica determinano l'esclusione definitiva senza preavviso.",
+        ],
+        en: [
+          "In case of breach of this Policy or the Terms of Service, HerpMarket may take the following measures, proportionate to severity: warning; listing removal; temporary account suspension; permanent account closure; reporting to competent authorities.",
+          "Breaches involving risk to animal welfare or public safety result in permanent exclusion without notice.",
+        ],
+      },
+    },
+  ],
+};
+
+function LegalDoc({ doc, title, t, go, lang: outerLang }) {
+  // Local override: even when the app language is EN, the binding version stays IT.
+  // We surface this clearly with a toggle showing which version is binding.
+  const [docLang, setDocLang] = useState(outerLang === "en" ? "en" : "it");
+  const isBinding = docLang === "it";
+
   return (
-    <div className="max-w-2xl mx-auto w-full pb-10">
-      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
-        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
-        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.termsLegal}</h1>
-      </header>
-      <div className="p-5 md:p-8 space-y-4">
-        <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5 text-sm text-stone-300 leading-relaxed space-y-3">
-          <p>{lang === "it"
-            ? "Utilizzando questa piattaforma accetti i nostri termini di servizio. HerpMarket agisce esclusivamente come intermediario tra acquirenti e venditori."
-            : "By using this platform you accept our terms of service. HerpMarket acts solely as an intermediary between buyers and sellers."}</p>
-          <p>{lang === "it"
-            ? "I venditori sono responsabili della legalità, salute e correttezza della documentazione dei propri esemplari. HerpMarket non si assume responsabilità per le transazioni tra utenti."
-            : "Sellers are responsible for the legality, health and accurate documentation of their animals. HerpMarket assumes no liability for transactions between users."}</p>
-          <p className="text-stone-400 italic">{lang === "it"
-            ? "Disclaimer legale: la documentazione CITES generata tramite la piattaforma deve essere sempre verificata presso le autorità competenti."
-            : "Legal disclaimer: any CITES paperwork generated via the platform must always be verified with the competent authorities."}</p>
+    <div className="max-w-3xl mx-auto w-full pb-16">
+      <header className="px-5 md:px-8 pt-8 pb-5 border-b border-stone-800 sticky top-0 bg-stone-950/95 backdrop-blur-xl z-10">
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{title}</h1>
         </div>
+        {/* Effective + version + language switcher */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-[10px] text-stone-500 leading-snug">
+            <div className="font-bold uppercase tracking-widest">{outerLang === "it" ? "In vigore dal" : "Effective from"}</div>
+            <div className="text-stone-300 font-bold">{doc.effectiveDate[outerLang === "it" ? "it" : "en"]} · v{doc.version}</div>
+          </div>
+          <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-0.5">
+            <button onClick={() => setDocLang("it")}
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                      docLang === "it" ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
+                    }`}>
+              IT {outerLang === "it" ? "· Vincolante" : "· Binding"}
+            </button>
+            <button onClick={() => setDocLang("en")}
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                      docLang === "en" ? "bg-stone-700 text-stone-100" : "text-stone-400 hover:text-stone-200"
+                    }`}>
+              EN {outerLang === "it" ? "· Cortesia" : "· Courtesy"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Courtesy translation banner */}
+      {!isBinding && (
+        <div className="mx-5 md:mx-8 mt-5 bg-sky-500/5 ring-1 ring-sky-500/20 rounded-lg p-3 flex gap-2.5 items-start">
+          <Info size={14} className="text-sky-400 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-sky-200/90 leading-relaxed">
+            {outerLang === "it"
+              ? "Stai leggendo la traduzione di cortesia in inglese. La versione italiana è quella giuridicamente vincolante."
+              : "You are reading the English courtesy translation. The Italian version is the legally binding one."}
+          </p>
+        </div>
+      )}
+
+      {/* Table of contents */}
+      <nav className="px-5 md:px-8 pt-6">
+        <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{outerLang === "it" ? "Indice" : "Contents"}</div>
+        <ol className="space-y-0.5 text-[13px]">
+          {doc.sections.map(s => (
+            <li key={s.id}>
+              <a href={`#sec-${s.id}`}
+                 className="text-stone-400 hover:text-amber-300 transition-colors flex items-baseline gap-2">
+                <span className="font-bold text-stone-500 w-5 shrink-0">{s.id}.</span>
+                <span className="flex-1">{s.title[docLang]}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      {/* Sections */}
+      <article className="px-5 md:px-8 pt-8 space-y-8">
+        {doc.sections.map(s => (
+          <section key={s.id} id={`sec-${s.id}`} className="scroll-mt-32">
+            <header className="flex items-baseline gap-3 mb-3">
+              <span className="font-display text-stone-600 text-2xl tracking-tight">{s.id}</span>
+              <h2 className="font-display text-stone-100 text-xl tracking-tight leading-tight">{s.title[docLang]}</h2>
+              {s.review && (
+                <span title={outerLang === "it" ? "Richiede revisione legale prima del lancio" : "Requires legal review before launch"}
+                      className="ml-auto text-[9px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 ring-1 ring-amber-500/20 px-1.5 py-0.5 rounded">
+                  ⚠ {outerLang === "it" ? "Revisione" : "Review"}
+                </span>
+              )}
+            </header>
+            <div className="space-y-3 text-sm text-stone-300 leading-relaxed pl-1">
+              {s.body[docLang].map((p, i) => <p key={i}>{p}</p>)}
+            </div>
+          </section>
+        ))}
+      </article>
+
+      {/* Final disclaimer */}
+      <div className="mx-5 md:mx-8 mt-12 bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
+        <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
+          {outerLang === "it" ? "Versione preliminare" : "Preliminary version"}
+        </div>
+        <p className="text-xs text-stone-400 leading-relaxed">
+          {outerLang === "it"
+            ? "Questo documento è una bozza redatta come base di lavoro. Le sezioni contrassegnate con ⚠ richiedono revisione da parte di un avvocato italiano prima del lancio operativo della piattaforma. I riferimenti normativi sono al diritto italiano ed europeo vigente alla data di stesura."
+            : "This document is a working draft. Sections marked ⚠ require review by an Italian lawyer before the platform goes live. Legal references are to Italian and EU law as of the drafting date."}
+        </p>
       </div>
     </div>
   );
+}
+
+function TermsLegal({ t, go, lang }) {
+  return <LegalDoc doc={TOS_CONTENT} title={lang === "it" ? "Termini di servizio" : "Terms of service"} t={t} go={go} lang={lang} />;
+}
+
+function StorePolicy({ t, go, lang }) {
+  return <LegalDoc doc={STORE_POLICY_CONTENT} title={lang === "it" ? "Regolamento marketplace" : "Marketplace policy"} t={t} go={go} lang={lang} />;
 }
