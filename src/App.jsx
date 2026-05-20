@@ -4,7 +4,9 @@ import {
   ChevronRight, ChevronLeft, ShieldCheck, MapPin,
   Star, Calendar, SlidersHorizontal, FileText, CheckCircle,
   Camera, Heart, Mars, Venus, HelpCircle, X,
-  ArrowUpDown, Lock, CreditCard, Info, Languages, Send
+  ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
+  LogIn, LogOut, Globe, Facebook, Instagram, Truck, Scale,
+  ListOrdered, Grid3x3, Settings as SettingsIcon, Mail
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -38,6 +40,27 @@ const I18N = {
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
+    inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
+    aboutContact: "Chi siamo & Contatti", termsLegal: "Termini & Disclaimer", settingsKyc: "Impostazioni & KYC",
+    citesArchive: "Archivio CITES",
+    breedingMgmt: "Gestione allevamento", bureaucracyLegal: "Burocrazia & Legale", infoSupport: "Informazioni & Supporto", configuration: "Configurazione",
+    login: "Accedi", signup: "Iscriviti", joinCommunity: "Unisciti", loginOrJoin: "Accedi / Iscriviti",
+    loginRequired: "Accedi per continuare",
+    loginToMessage: "Accedi per inviare messaggi all'allevatore.",
+    loginToReserve: "Accedi per prenotare l'esemplare in fiera.",
+    loginToSell: "Accedi per pubblicare i tuoi annunci.",
+    loginToFavorite: "Accedi per salvare i tuoi preferiti.",
+    emailPlaceholder: "Email", passwordPlaceholder: "Password", continueWithEmail: "Continua con email",
+    noAccount: "Non hai un account?", alreadyMember: "Hai già un account?",
+    welcomeBack: "Bentornato", createAccount: "Crea il tuo account",
+    nameLabel: "Nome", signUpFree: "Iscriviti gratis",
+    expoAnimals: "Animali disponibili in fiera",
+    searchAtExpo: "Cerca in fiera...",
+    officialChannels: "Canali ufficiali", expoInfo: "Informazioni",
+    visitWebsite: "Sito ufficiale",
+    noAnimalsAtExpo: "Nessun esemplare ancora segnalato per questa fiera.",
+    pickupAtExpo: "Ritiro in fiera",
+    availableAt: "Disponibile a",
     emptyWishlist: "Nessun esemplare salvato. Tocca il cuore per aggiungere.",
     backToBrowse: "Torna agli annunci",
     legalIntro: "Il mercato italiano dei rettili è regolato dal D.Lgs. 135/2022 e dal Reg. CE 338/97. Verifica sempre la categoria CITES prima di acquistare.",
@@ -69,6 +92,27 @@ const I18N = {
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
+    inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
+    aboutContact: "About us & Contact", termsLegal: "Terms & Disclaimer", settingsKyc: "Settings & KYC",
+    citesArchive: "CITES archive",
+    breedingMgmt: "Breeding management", bureaucracyLegal: "Bureaucracy & Legal", infoSupport: "Information & Support", configuration: "Configuration",
+    login: "Sign in", signup: "Sign up", joinCommunity: "Join us", loginOrJoin: "Sign in / Join",
+    loginRequired: "Sign in to continue",
+    loginToMessage: "Sign in to message the breeder.",
+    loginToReserve: "Sign in to reserve this animal at the expo.",
+    loginToSell: "Sign in to publish your listings.",
+    loginToFavorite: "Sign in to save favorites.",
+    emailPlaceholder: "Email", passwordPlaceholder: "Password", continueWithEmail: "Continue with email",
+    noAccount: "Don't have an account?", alreadyMember: "Already a member?",
+    welcomeBack: "Welcome back", createAccount: "Create your account",
+    nameLabel: "Name", signUpFree: "Sign up free",
+    expoAnimals: "Animals available at this expo",
+    searchAtExpo: "Search at this expo...",
+    officialChannels: "Official channels", expoInfo: "Information",
+    visitWebsite: "Official website",
+    noAnimalsAtExpo: "No animals have been listed for this expo yet.",
+    pickupAtExpo: "Pickup at expo",
+    availableAt: "Available at",
     emptyWishlist: "No saved animals yet. Tap the heart to add.",
     backToBrowse: "Back to listings",
     legalIntro: "The Italian reptile market is governed by D.Lgs. 135/2022 and EU Reg. 338/97. Always check the CITES annex before buying.",
@@ -127,7 +171,7 @@ const LISTINGS = [
     price: 180, deposit: 18, sex: "F", ageMonths: 14, weight: "38g",
     region: "Piemonte", city: "Torino", distanceKm: 8,
     seller: "Piedmont Geckos", verified: true, rating: 4.9, reviews: 47,
-    image: IMG.crested, category: "geckos", expo: "Verona Reptiles 2026",
+    image: IMG.crested, category: "geckos", expoId: 1,
     sire: "Axanthic Lilly White", dam: "Red Harlequin",
     desc: "Esemplare nato in casa, alimentazione a base di Pangea e insetti vivi. Carattere molto docile, abituata alla manipolazione."
   },
@@ -137,7 +181,7 @@ const LISTINGS = [
     price: 320, deposit: 32, sex: "M", ageMonths: 8, weight: "82g",
     region: "Lombardia", city: "Milano", distanceKm: 0,
     seller: "ExoBreed Italia", verified: true, rating: 4.8, reviews: 62,
-    image: IMG.panther, category: "chameleons", expo: "Verona Reptiles 2026",
+    image: IMG.panther, category: "chameleons", expoId: 1,
     sire: "Ambilobe Blue Bar", dam: "Ambilobe Red Bar",
     desc: "Maschio dai colori spettacolari, in piena salute. CITES Allegato B completo."
   },
@@ -147,7 +191,7 @@ const LISTINGS = [
     price: 75, deposit: 8, sex: "U", ageMonths: 3, weight: "16g",
     region: "Campania", city: "Napoli", distanceKm: 720,
     seller: "LeoMorphs Campania", verified: true, rating: 4.7, reviews: 38,
-    image: IMG.leopard, category: "geckos", expo: null,
+    image: IMG.leopard, category: "geckos", expoId: null,
     sire: "Tremper Albino", dam: "het Tremper het Eclipse",
     desc: "Cucciolo svezzato, mangia camole e tarme regolarmente."
   },
@@ -157,7 +201,7 @@ const LISTINGS = [
     price: 240, deposit: 24, sex: "M", ageMonths: 5, weight: "180g",
     region: "Veneto", city: "Verona", distanceKm: 145,
     seller: "Veneto Royals", verified: true, rating: 4.9, reviews: 91,
-    image: IMG.ball, category: "snakes", expo: "Verona Reptiles 2026",
+    image: IMG.ball, category: "snakes", expoId: 1,
     sire: "Banana Pastel", dam: "Clown",
     desc: "Mangia regolarmente topi decongelati. Tre mute completate."
   },
@@ -167,7 +211,7 @@ const LISTINGS = [
     price: 160, deposit: 16, sex: "P", ageMonths: 4, weight: "45g",
     region: "Piemonte", city: "Cuneo", distanceKm: 95,
     seller: "DragoMania Piemonte", verified: false, rating: 4.4, reviews: 18,
-    image: IMG.beardie, category: "lizards", expo: null,
+    image: IMG.beardie, category: "lizards", expoId: 2,
     sire: null, dam: null,
     desc: "Coppia giovane, ottimi mangiatori. Pronti per nuovo terrario."
   },
@@ -177,7 +221,7 @@ const LISTINGS = [
     price: 220, deposit: 22, sex: "F", ageMonths: 18, weight: "180g",
     region: "Toscana", city: "Firenze", distanceKm: 340,
     seller: "Testudo Toscana", verified: true, rating: 5.0, reviews: 24,
-    image: IMG.tortoise, category: "tortoises", expo: null,
+    image: IMG.tortoise, category: "tortoises", expoId: null,
     sire: null, dam: null,
     desc: "Esemplare nato in cattività con documenti CITES Allegato A in regola."
   },
@@ -187,7 +231,7 @@ const LISTINGS = [
     price: 85, deposit: 9, sex: "F", ageMonths: 6, weight: "55g",
     region: "Lombardia", city: "Bergamo", distanceKm: 45,
     seller: "Snake Italia BG", verified: true, rating: 4.6, reviews: 33,
-    image: IMG.corn, category: "snakes", expo: "Squamata Bologna",
+    image: IMG.corn, category: "snakes", expoId: 2,
     sire: "Anery Motley", dam: "Anery",
     desc: "Femmina giovane, alimentazione regolare con topi decongelati."
   },
@@ -197,16 +241,37 @@ const LISTINGS = [
     price: 280, deposit: 28, sex: "M", ageMonths: 4, weight: "32g",
     region: "Piemonte", city: "Asti", distanceKm: 55,
     seller: "Piedmont Geckos", verified: true, rating: 4.9, reviews: 47,
-    image: IMG.hognose, category: "snakes", expo: "Verona Reptiles 2026",
+    image: IMG.hognose, category: "snakes", expoId: 1,
     sire: "Albino Conda", dam: "het Albino Conda",
     desc: "Mangia regolarmente in pinzetta. Carattere tipico hognose."
   },
 ];
 
 const EXPOS = [
-  { id: 1, name: "Verona Reptiles", location: "Cerea (VR)", date: "3 ott 2026", color: "from-orange-700 to-amber-600" },
-  { id: 2, name: "Squamata Bologna", location: "Bologna", date: "21 giu 2026", color: "from-emerald-700 to-teal-600" },
-  { id: 3, name: "Esotika Pet Show", location: "Arezzo",   date: "12 set 2026", color: "from-sky-700 to-cyan-600" },
+  {
+    id: 1, name: "Verona Reptiles", location: "Cerea (VR)", date: "10 mag 2026", color: "from-orange-700 to-amber-600",
+    description: "La più grande fiera di animali esotici d'Europa. 20ª edizione presso l'Area Exp di Cerea, oltre 800 spazi espositivi e 300 espositori da tutta Europa.",
+    website: "https://www.veronareptiles.it",
+    facebook: "https://www.facebook.com/veronareptiles",
+    instagram: "https://www.instagram.com/veronareptiles",
+    venue: "Area Exp · Via Libertà, 57",
+  },
+  {
+    id: 2, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "21 giu 2026", color: "from-emerald-700 to-teal-600",
+    description: "Mostra mercato di terraristica nata nel 2006. Punto d'incontro per appassionati italiani in un ambiente familiare al Palagira di Ozzano.",
+    website: "https://www.squamata.it",
+    facebook: "https://www.facebook.com/Squamata.it",
+    instagram: null,
+    venue: "Palagira · Viale 2 Giugno, 3",
+  },
+  {
+    id: 3, name: "Esotika Pet Show", location: "Arezzo", date: "12 set 2026", color: "from-sky-700 to-cyan-600",
+    description: "Circuito di fiere itineranti dedicate agli animali esotici, con tappe in tutta Italia.",
+    website: "https://www.esotika.it",
+    facebook: "https://www.facebook.com/Esotika",
+    instagram: "https://www.instagram.com/esotikapetshow",
+    venue: "Arezzo Fiere e Congressi",
+  },
 ];
 
 const CHATS = [
@@ -229,37 +294,65 @@ const fallback = (label) =>
 /* ═══════════════════════════════════════════════════════════════════
    MAIN APP
    ═════════════════════════════════════════════════════════════════ */
-export default function RettiliMarket() {
+export default function HerpMarket() {
   const [view, setView] = useState("home");
   const [viewData, setViewData] = useState(null);
   const [lang, setLang] = useState("it");
   const [favorites, setFavorites] = useState([1, 4]);
   const [filter, setFilter] = useState({ category: null, sex: null, region: null, sort: "newest", search: "" });
 
+  // Auth state — null = logged out
+  const [user, setUser] = useState(null);
+  const [authModal, setAuthModal] = useState(null); // null | { mode: "login"|"signup", reason: string|null, after: fn|null }
+
   const t = I18N[lang];
 
   const go = (v, data = null) => { setView(v); setViewData(data); window.scrollTo(0, 0); };
+  const requireAuth = (reason, after) => {
+    if (user) { after && after(); return true; }
+    setAuthModal({ mode: "login", reason, after });
+    return false;
+  };
   const toggleFav = (id, e) => {
     e?.stopPropagation();
+    if (!user) { setAuthModal({ mode: "login", reason: t.loginToFavorite, after: null }); return; }
     setFavorites(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
+  const handleLogin = (name) => {
+    setUser({ name: name || "Marco R.", region: "Piemonte", verified: true });
+    const after = authModal?.after;
+    setAuthModal(null);
+    after && setTimeout(after, 100);
+  };
+  const handleLogout = () => { setUser(null); go("home"); };
 
-  const props = { t, lang, setLang, go, favorites, toggleFav, filter, setFilter };
+  const props = { t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout };
 
   const screen = () => {
     switch (view) {
-      case "home":     return <Home_ {...props} />;
-      case "search":   return <SearchScreen {...props} />;
-      case "detail":   return <Detail listing={viewData} {...props} />;
-      case "sell":     return <SellScreen {...props} />;
-      case "chat":     return <ChatList {...props} />;
-      case "thread":   return <ChatThread chat={viewData} {...props} />;
-      case "profile":  return <Profile {...props} />;
-      case "wishlist": return <Wishlist {...props} />;
-      case "legal":    return <Legal {...props} />;
-      default:         return <Home_ {...props} />;
+      case "home":      return <Home_ {...props} />;
+      case "search":    return <SearchScreen {...props} />;
+      case "detail":    return <Detail listing={viewData} {...props} />;
+      case "expo":      return <ExpoDetail expo={viewData} {...props} />;
+      case "sell":      return user ? <SellScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
+      case "chat":      return user ? <ChatList {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "thread":    return user ? <ChatThread chat={viewData} {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
+      case "wishlist":  return <Wishlist {...props} />;
+      case "legal":     return <Legal {...props} />;
+      case "inventory": return <PlaceholderScreen title={t.inventory} {...props} icon={<ListOrdered size={28} />} />;
+      case "lineage":   return <PlaceholderScreen title={t.lineage} {...props} icon={<Grid3x3 size={28} />} badge="PRO" />;
+      case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
+      case "reviews":   return <PlaceholderScreen title={t.reviews} {...props} icon={<Star size={28} />} />;
+      case "documents": return <PlaceholderScreen title={t.citesArchive} {...props} icon={<FileText size={28} />} />;
+      case "about":     return <AboutContact {...props} />;
+      case "terms":     return <TermsLegal {...props} />;
+      case "settings":  return <PlaceholderScreen title={t.settingsKyc} {...props} icon={<SettingsIcon size={28} />} />;
+      default:          return <Home_ {...props} />;
     }
   };
+
+  const profileViews = ["profile", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   return (
     <div className="flex h-screen w-full bg-stone-950 text-stone-100 antialiased overflow-hidden"
@@ -282,16 +375,61 @@ export default function RettiliMarket() {
           <SideBtn icon={<Search size={18} />} label={t.search} active={view === "search"}  onClick={() => go("search")} />
           <SideBtn icon={<PlusCircle size={18} />} label={t.sell} active={view === "sell"} onClick={() => go("sell")} />
           <SideBtn icon={<MessageCircle size={18} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
-          <SideBtn icon={<User size={18} />} label={t.profile} active={["profile", "wishlist", "legal"].includes(view)} onClick={() => go("profile")} />
+          <SideBtn icon={<User size={18} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
         </nav>
-        <div className="mt-auto text-[10px] text-stone-500 leading-relaxed pt-4 border-t border-stone-800">
-          <p className="font-display italic text-stone-400 text-xs mb-1">RettiliMarket</p>
-          <p>v0.1 · Beta</p>
+        {/* Login / user block in sidebar */}
+        <div className="mt-auto pt-4 border-t border-stone-800">
+          {user ? (
+            <button onClick={() => go("profile")}
+                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-stone-800/60 transition-colors text-left">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-sm text-stone-50 font-bold">
+                {user.name[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-stone-100 truncate">{user.name}</div>
+                <div className="text-[10px] text-amber-400">{t.verifiedBreeder}</div>
+              </div>
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
+                      className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                <LogIn size={14} />{t.login}
+              </button>
+              <button onClick={() => setAuthModal({ mode: "signup", reason: null, after: null })}
+                      className="w-full bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-xs py-2.5 rounded-lg transition-colors">
+                {t.signup}
+              </button>
+            </div>
+          )}
+          <p className="text-[10px] text-stone-600 mt-3 text-center">HerpMarket · v0.1 · Beta</p>
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex-1 relative flex flex-col overflow-hidden">
+        {/* Mobile top header (visible on home only — other screens have their own headers) */}
+        {view === "home" && (
+          <header className="md:hidden absolute top-0 inset-x-0 z-40 px-5 pt-3 flex justify-end pointer-events-none">
+            <div className="pointer-events-auto">
+              {user ? (
+                <button onClick={() => go("profile")}
+                        className="flex items-center gap-2 bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 rounded-full pl-1 pr-3 py-1">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-xs text-stone-50 font-bold">
+                    {user.name[0]}
+                  </div>
+                  <span className="text-xs font-bold text-stone-100">{user.name.split(" ")[0]}</span>
+                </button>
+              ) : (
+                <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
+                        className="bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-lg">
+                  <LogIn size={12} />{t.loginOrJoin}
+                </button>
+              )}
+            </div>
+          </header>
+        )}
+
         <div className="flex-1 overflow-y-auto hide-scrollbar pb-24 md:pb-0">
           {screen()}
         </div>
@@ -301,9 +439,48 @@ export default function RettiliMarket() {
           <TabBtn icon={<Search size={20} />} label={t.search} active={view === "search"} onClick={() => go("search")} />
           <TabBtn icon={<PlusCircle size={24} />} label={t.sell} active={view === "sell"} onClick={() => go("sell")} accent />
           <TabBtn icon={<MessageCircle size={20} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
-          <TabBtn icon={<User size={20} />} label={t.profile} active={["profile", "wishlist", "legal"].includes(view)} onClick={() => go("profile")} />
+          <TabBtn icon={<User size={20} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
         </nav>
       </div>
+
+      {/* Auth modal */}
+      {authModal && (
+        <AuthModal modal={authModal} setModal={setAuthModal} onLogin={handleLogin} t={t} lang={lang} />
+      )}
+
+      {/* Demo state toggle — floating, dismissible. Lets you instantly flip auth for demos. */}
+      <DemoToggle user={user} onLogin={() => handleLogin("Marco R.")} onLogout={handleLogout} />
+    </div>
+  );
+}
+
+function DemoToggle({ user, onLogin, onLogout }) {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <div className="fixed bottom-24 md:bottom-4 right-3 z-[55] flex items-center gap-1.5">
+      {collapsed ? (
+        <button onClick={() => setCollapsed(false)}
+                className="bg-stone-900/90 backdrop-blur ring-1 ring-stone-700 text-stone-400 hover:text-amber-400 rounded-full w-8 h-8 flex items-center justify-center text-[10px] font-black shadow-xl transition-colors"
+                title="Show demo toggle">
+          ⚙
+        </button>
+      ) : (
+        <div className="bg-stone-900/90 backdrop-blur ring-1 ring-stone-700 rounded-full pl-2.5 pr-1 py-1 flex items-center gap-2 shadow-xl">
+          <span className="text-[9px] font-black uppercase tracking-widest text-stone-500">Demo</span>
+          <button onClick={user ? onLogout : onLogin}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-colors ${
+                    user ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30 hover:bg-emerald-500/25"
+                         : "bg-stone-700 text-stone-300 hover:bg-stone-600"
+                  }`}>
+            {user ? "● Logged in" : "○ Logged out"}
+          </button>
+          <button onClick={() => setCollapsed(true)}
+                  className="text-stone-500 hover:text-stone-200 w-5 h-5 flex items-center justify-center text-xs"
+                  title="Hide">
+            <X size={12} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -314,7 +491,7 @@ function Brand({ t, lang, setLang }) {
     <div>
       <div className="flex items-baseline gap-1.5">
         <h1 className="font-display text-2xl text-stone-50 leading-none tracking-tight" style={{ fontVariationSettings: "'opsz' 100" }}>
-          Rettili<span className="italic text-amber-500">Market</span>
+          Herp<span className="italic text-amber-500">Market</span>
         </h1>
       </div>
       <p className="text-[10px] text-stone-400 mt-2 leading-snug max-w-[180px]">{t.tagline}</p>
@@ -387,11 +564,14 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
           <Heart size={12} className={favorites.includes(item.id) ? "fill-rose-500 text-rose-500" : "text-stone-300"} />
         </button>
         {/* Expo flag bottom-left */}
-        {item.expo && (
-          <div className="absolute bottom-2 left-2 bg-amber-500/95 text-stone-950 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shadow-lg">
-            ★ {item.expo.split(" ")[0]}
-          </div>
-        )}
+        {item.expoId && (() => {
+          const expo = EXPOS.find(e => e.id === item.expoId);
+          return expo ? (
+            <div className="absolute bottom-2 left-2 bg-amber-500/95 text-stone-950 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shadow-lg">
+              ★ {expo.name.split(" ")[0]}
+            </div>
+          ) : null;
+        })()}
       </div>
 
       <div className="p-2.5 flex-1 flex flex-col gap-1.5">
@@ -432,25 +612,20 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
   return (
     <div className="max-w-7xl mx-auto w-full">
       {/* Mobile header */}
-      <header className="md:hidden px-5 pt-8 pb-5 bg-gradient-to-b from-stone-900 to-stone-950 border-b border-stone-800/60">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="font-display text-3xl text-stone-50 leading-none tracking-tight" style={{ fontVariationSettings: "'opsz' 144" }}>
-              Rettili<span className="italic text-amber-500">Market</span>
-            </h1>
-            <p className="text-[11px] text-stone-400 mt-2 italic font-display">{t.tagline}</p>
-          </div>
-          <button onClick={() => setLang(lang === "it" ? "en" : "it")}
-                  className="bg-stone-800/80 ring-1 ring-stone-700 text-stone-300 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-md flex items-center gap-1.5">
-            <Languages size={11} />{lang}
-          </button>
+      <header className="md:hidden px-5 pt-14 pb-5 bg-gradient-to-b from-stone-900 to-stone-950 border-b border-stone-800/60">
+        <div>
+          <h1 className="font-display text-3xl text-stone-50 leading-none tracking-tight" style={{ fontVariationSettings: "'opsz' 144" }}>
+            Herp<span className="italic text-amber-500">Market</span>
+          </h1>
+          <p className="text-[11px] text-stone-400 mt-2 italic font-display">{t.tagline}</p>
         </div>
       </header>
 
       {/* Desktop hero */}
       <header className="hidden md:block px-8 pt-10 pb-6 border-b border-stone-800/60">
         <h2 className="font-display text-4xl text-stone-50 tracking-tight" style={{ fontVariationSettings: "'opsz' 144" }}>
-          Trova il tuo prossimo <span className="italic text-amber-500">esemplare</span>.
+          {lang === "it" ? <>Trova il tuo prossimo <span className="italic text-amber-500">esemplare</span>.</> :
+                           <>Find your next <span className="italic text-amber-500">animal</span>.</>}
         </h2>
         <p className="text-stone-400 text-sm mt-2 max-w-xl">
           {lang === "it"
@@ -485,17 +660,29 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
           </h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {EXPOS.map((expo, i) => (
-            <div key={expo.id}
-                 className={`anim-up bg-gradient-to-br ${expo.color} rounded-xl p-4 cursor-pointer hover:scale-[1.02] transition-transform`}
-                 style={{ animationDelay: `${i * 50}ms` }}>
-              <div className="text-[10px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
-              <h4 className="font-display text-lg text-white mt-1 leading-tight">{expo.name}</h4>
-              <div className="flex items-center gap-1 text-white/80 text-xs mt-1.5">
-                <MapPin size={11} />{expo.location}
-              </div>
-            </div>
-          ))}
+          {EXPOS.map((expo, i) => {
+            const expoAnimalsCount = LISTINGS.filter(l => l.expoId === expo.id).length;
+            return (
+              <button key={expo.id}
+                      onClick={() => go("expo", expo)}
+                      className={`anim-up bg-gradient-to-br ${expo.color} rounded-xl p-4 cursor-pointer hover:scale-[1.02] transition-transform text-left relative overflow-hidden group`}
+                      style={{ animationDelay: `${i * 50}ms` }}>
+                <div className="flex items-start justify-between">
+                  <div className="text-[10px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
+                  {expoAnimalsCount > 0 && (
+                    <div className="bg-white/15 backdrop-blur ring-1 ring-white/20 rounded-full px-2 py-0.5 text-[10px] font-bold text-white">
+                      {expoAnimalsCount} {lang === "it" ? "animali" : "animals"}
+                    </div>
+                  )}
+                </div>
+                <h4 className="font-display text-lg text-white mt-1 leading-tight">{expo.name}</h4>
+                <div className="flex items-center gap-1 text-white/80 text-xs mt-1.5">
+                  <MapPin size={11} />{expo.location}
+                </div>
+                <ChevronRight size={16} className="absolute bottom-3 right-3 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -723,20 +910,25 @@ function BottomSheet({ title, onClose, children }) {
 /* ═══════════════════════════════════════════════════════════════════
    DETAIL
    ═════════════════════════════════════════════════════════════════ */
-function Detail({ listing, go, t, favorites, toggleFav }) {
+function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang }) {
   const [reserveState, setReserveState] = useState("idle"); // idle | pending | approved | paid
   const [showCheckout, setShowCheckout] = useState(false);
 
   if (!listing) return null;
   const a = listing;
+  const expo = a.expoId ? EXPOS.find(e => e.id === a.expoId) : null;
 
   const handleReserve = () => {
+    if (!requireAuth(t.loginToReserve, () => {})) return;
     if (reserveState === "idle") {
       setReserveState("pending");
       setTimeout(() => setReserveState("approved"), 2500);
     } else if (reserveState === "approved") {
       setShowCheckout(true);
     }
+  };
+  const handleMessage = () => {
+    requireAuth(t.loginToMessage, () => go("thread", { id: 99, listing: a, lastMsg: "", time: "" }));
   };
 
   return (
@@ -832,14 +1024,30 @@ function Detail({ listing, go, t, favorites, toggleFav }) {
         </Section>
       )}
 
+      {/* Expo pickup notice */}
+      {expo && (
+        <Section title={t.pickupAtExpo}>
+          <button onClick={() => go("expo", expo)}
+                  className={`w-full bg-gradient-to-br ${expo.color} rounded-xl p-4 text-left hover:scale-[1.01] transition-transform flex items-center gap-3`}>
+            <Calendar size={20} className="text-white shrink-0" />
+            <div className="flex-1">
+              <div className="text-[10px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
+              <div className="font-display text-base text-white leading-tight">{expo.name}</div>
+              <div className="text-[11px] text-white/80 mt-0.5">{expo.location}</div>
+            </div>
+            <ChevronRight size={16} className="text-white/60 shrink-0" />
+          </button>
+        </Section>
+      )}
+
       {/* Sticky action bar */}
       <div className="fixed md:absolute bottom-16 md:bottom-0 inset-x-0 z-30 bg-stone-950/95 backdrop-blur-xl border-t border-stone-800 px-4 py-3">
         <div className="max-w-3xl mx-auto flex gap-2">
-          <button onClick={() => go("thread", { id: 99, listing: a, lastMsg: "", time: "" })}
+          <button onClick={handleMessage}
                   className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
             <MessageCircle size={16} />{t.message}
           </button>
-          {a.expo && (
+          {expo && (
             <button onClick={handleReserve} disabled={reserveState === "pending" || reserveState === "paid"}
                     className={`flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
                       reserveState === "idle" ? "bg-amber-500 hover:bg-amber-400 text-stone-950" :
@@ -1169,55 +1377,88 @@ function ChatThread({ chat, t, lang, go }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   PROFILE — drastically simplified
+   PROFILE — grouped sections, logout, user info from auth state
    ═════════════════════════════════════════════════════════════════ */
-function Profile({ t, go, lang }) {
+function Profile({ t, go, lang, user, handleLogout }) {
   return (
     <div className="max-w-2xl mx-auto w-full pb-10">
       <header className="px-5 md:px-8 pt-8 pb-6 border-b border-stone-800">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-2xl text-stone-50 font-bold">
-            M
+            {user?.name?.[0] || "M"}
           </div>
           <div>
             <h1 className="font-display text-2xl text-stone-50 tracking-tight flex items-center gap-2">
-              Marco R. <ShieldCheck size={16} className="text-sky-400" />
+              {user?.name || "Marco R."} {user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
             </h1>
-            <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder} · Piemonte</p>
+            <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder} · {user?.region || "Piemonte"}</p>
           </div>
         </div>
       </header>
 
-      <div className="p-3 md:p-5 space-y-1">
-        <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub="2" onClick={() => go("wishlist")} />
-        <ProfileRow icon={<PlusCircle size={18} />} label={t.myListings} sub="3" onClick={() => go("sell")} />
-        <ProfileRow icon={<FileText size={18} />} label={t.documents} sub={lang === "it" ? "Archivio CITES" : "CITES archive"} />
-        <ProfileRow icon={<Star size={18} />} label={t.reviews} sub="4.9 · 47" />
-        <div className="h-2" />
-        <ProfileRow icon={<Info size={18} />} label={t.legalGuide} onClick={() => go("legal")} />
-        <ProfileRow icon={<User size={18} />} label={t.settings} />
+      <div className="p-4 md:p-6 space-y-6">
+        {/* GROUP 1: Breeding Management */}
+        <ProfileGroup label={t.breedingMgmt}>
+          <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub="2" onClick={() => go("wishlist")} />
+          <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
+          <ProfileRow icon={<Grid3x3 size={18} />} label={t.lineage} badge="PRO" onClick={() => go("lineage")} />
+          <ProfileRow icon={<Star size={18} />} label={t.reviews} sub="4.9 · 47" onClick={() => go("reviews")} />
+        </ProfileGroup>
+
+        {/* GROUP 2: Bureaucracy & Legal */}
+        <ProfileGroup label={t.bureaucracyLegal}>
+          <ProfileRow icon={<FileText size={18} />} label={t.citesArchive} onClick={() => go("documents")} />
+          <ProfileRow icon={<Truck size={18} />} label={t.transport} onClick={() => go("transport")} />
+          <ProfileRow icon={<Scale size={18} />} label={t.legalGuide} onClick={() => go("legal")} />
+        </ProfileGroup>
+
+        {/* GROUP 3: Information & Support */}
+        <ProfileGroup label={t.infoSupport}>
+          <ProfileRow icon={<Info size={18} />} label={t.aboutContact} onClick={() => go("about")} />
+          <ProfileRow icon={<ShieldCheck size={18} />} label={t.termsLegal} onClick={() => go("terms")} />
+        </ProfileGroup>
+
+        {/* GROUP 4: Configuration */}
+        <ProfileGroup label={t.configuration}>
+          <ProfileRow icon={<SettingsIcon size={18} />} label={t.settingsKyc} onClick={() => go("settings")} />
+        </ProfileGroup>
       </div>
 
-      <div className="px-5 md:px-8 mt-6">
-        <button className="w-full py-3 rounded-lg text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-rose-400 transition-colors">
-          {t.logout}
+      <div className="px-5 md:px-8 mt-2">
+        <button onClick={handleLogout}
+                className="w-full py-3 rounded-lg text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-rose-400 transition-colors flex items-center justify-center gap-2">
+          <LogOut size={14} />{t.logout}
         </button>
       </div>
     </div>
   );
 }
 
-function ProfileRow({ icon, label, sub, onClick }) {
+function ProfileGroup({ label, children }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2 px-1">{label}</div>
+      <div className="space-y-1">{children}</div>
+    </div>
+  );
+}
+
+function ProfileRow({ icon, label, sub, onClick, badge }) {
   return (
     <button onClick={onClick}
-            className="w-full flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-stone-900/60 transition-colors text-left">
+            className="w-full flex items-center gap-3.5 px-3 py-3 rounded-xl bg-stone-900/40 ring-1 ring-stone-800/60 hover:bg-stone-900/80 hover:ring-stone-700 transition-colors text-left">
       <div className="w-9 h-9 rounded-lg bg-stone-900 ring-1 ring-stone-800 flex items-center justify-center text-amber-400">
         {icon}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="font-bold text-sm text-stone-100">{label}</div>
         {sub && <div className="text-[11px] text-stone-500">{sub}</div>}
       </div>
+      {badge && (
+        <span className="bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded">
+          {badge}
+        </span>
+      )}
       <ChevronRight size={16} className="text-stone-600" />
     </button>
   );
@@ -1271,6 +1512,284 @@ function Legal({ t, go, lang }) {
             ? "Le specie in Allegato B (molti camaleonti, pitoni) richiedono dichiarazione di cessione tra le parti."
             : "Annex B species (many chameleons, pythons) require a transfer declaration between parties."}</p>
         </article>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AUTH MODAL — login or signup, with reason context
+   ═════════════════════════════════════════════════════════════════ */
+function AuthModal({ modal, setModal, onLogin, t, lang }) {
+  const [mode, setMode] = useState(modal.mode);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const submit = () => {
+    if (!email || !password) return;
+    onLogin(mode === "signup" ? name : null);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4" onClick={() => setModal(null)}>
+      <div onClick={e => e.stopPropagation()}
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up">
+        {/* Header */}
+        <div className="relative p-6 pb-4 bg-gradient-to-br from-stone-900 to-stone-950 border-b border-stone-800">
+          <button onClick={() => setModal(null)} className="absolute top-4 right-4 text-stone-400 hover:text-stone-100">
+            <X size={20} />
+          </button>
+          <div className="font-display text-2xl text-stone-50 tracking-tight">
+            Herp<span className="italic text-amber-500">Market</span>
+          </div>
+          <h2 className="font-display text-xl text-stone-100 mt-3">
+            {mode === "login" ? t.welcomeBack : t.createAccount}
+          </h2>
+          {modal.reason && (
+            <p className="text-xs text-amber-300/90 mt-2 bg-amber-500/10 ring-1 ring-amber-500/20 rounded-lg px-3 py-2 flex items-start gap-2">
+              <Lock size={12} className="mt-0.5 shrink-0" />
+              <span>{modal.reason}</span>
+            </p>
+          )}
+        </div>
+
+        {/* Form */}
+        <div className="p-6 space-y-3">
+          {mode === "signup" && (
+            <div>
+              <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.nameLabel}</label>
+              <input value={name} onChange={e => setName(e.target.value)} placeholder={lang === "it" ? "Mario Rossi" : "John Smith"}
+                     className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+            </div>
+          )}
+          <div>
+            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.emailPlaceholder}</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
+                   className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.passwordPlaceholder}</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
+                   className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+          </div>
+          <button onClick={submit}
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors mt-2">
+            {mode === "login" ? t.continueWithEmail : t.signUpFree}
+          </button>
+          <div className="text-center pt-1">
+            <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                    className="text-xs text-stone-400 hover:text-amber-400 transition-colors">
+              {mode === "login" ? <>{t.noAccount} <span className="text-amber-400 font-bold">{t.signup}</span></> : <>{t.alreadyMember} <span className="text-amber-400 font-bold">{t.login}</span></>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AUTH GATE — shown when a logged-out user tries to access a private screen
+   ═════════════════════════════════════════════════════════════════ */
+function AuthGate({ reason, t, go, setAuthModal }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full px-6 text-center max-w-md mx-auto">
+      <div className="w-16 h-16 bg-amber-500/15 ring-1 ring-amber-500/30 rounded-full flex items-center justify-center text-amber-400 mb-5">
+        <Lock size={28} />
+      </div>
+      <h2 className="font-display text-2xl text-stone-50">{t.loginRequired}</h2>
+      <p className="text-stone-400 text-sm mt-2 leading-relaxed">{reason}</p>
+      <div className="flex gap-2 mt-6 w-full max-w-xs">
+        <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
+                className="flex-1 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
+          {t.login}
+        </button>
+        <button onClick={() => setAuthModal({ mode: "signup", reason: null, after: null })}
+                className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm py-3 rounded-lg transition-colors">
+          {t.signup}
+        </button>
+      </div>
+      <button onClick={() => go("home")}
+              className="mt-4 text-xs text-stone-500 hover:text-stone-300 transition-colors">
+        {t.backToBrowse}
+      </button>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXPO DETAIL — animals available at this expo + search + social links
+   ═════════════════════════════════════════════════════════════════ */
+function ExpoDetail({ expo, t, lang, go, favorites, toggleFav }) {
+  const [expoSearch, setExpoSearch] = useState("");
+  if (!expo) return null;
+
+  const expoAnimals = LISTINGS.filter(l => l.expoId === expo.id);
+  const filteredAnimals = expoAnimals.filter(l => {
+    if (!expoSearch.trim()) return true;
+    const q = expoSearch.toLowerCase();
+    return l.species.toLowerCase().includes(q)
+        || l.common.toLowerCase().includes(q)
+        || l.traits.some(tr => tr.name.toLowerCase().includes(q))
+        || l.seller.toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="max-w-5xl mx-auto w-full pb-10">
+      {/* Hero header */}
+      <div className={`relative bg-gradient-to-br ${expo.color} px-5 md:px-8 pt-6 pb-7`}>
+        <button onClick={() => go("home")}
+                className="p-2 bg-black/30 hover:bg-black/50 backdrop-blur rounded-full text-white transition-colors mb-4">
+          <ChevronLeft size={20} />
+        </button>
+        <div className="text-[11px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
+        <h1 className="font-display text-3xl md:text-4xl text-white mt-1 tracking-tight leading-tight">{expo.name}</h1>
+        <div className="flex items-center gap-1.5 text-white/90 text-sm mt-2">
+          <MapPin size={14} />{expo.location} · <span className="text-white/70">{expo.venue}</span>
+        </div>
+        <p className="text-sm text-white/85 mt-4 leading-relaxed max-w-2xl">{expo.description}</p>
+
+        {/* Official links */}
+        <div className="flex flex-wrap gap-2 mt-5">
+          {expo.website && (
+            <a href={expo.website} target="_blank" rel="noopener noreferrer"
+               className="bg-black/30 hover:bg-black/50 backdrop-blur ring-1 ring-white/20 text-white font-bold text-[11px] uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
+              <Globe size={13} />{t.visitWebsite}
+            </a>
+          )}
+          {expo.facebook && (
+            <a href={expo.facebook} target="_blank" rel="noopener noreferrer"
+               className="bg-black/30 hover:bg-black/50 backdrop-blur ring-1 ring-white/20 text-white font-bold text-[11px] uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
+              <Facebook size={13} />Facebook
+            </a>
+          )}
+          {expo.instagram && (
+            <a href={expo.instagram} target="_blank" rel="noopener noreferrer"
+               className="bg-black/30 hover:bg-black/50 backdrop-blur ring-1 ring-white/20 text-white font-bold text-[11px] uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
+              <Instagram size={13} />Instagram
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Animals section */}
+      <div className="px-5 md:px-8 pt-6">
+        <div className="flex items-baseline justify-between mb-3">
+          <h3 className="font-display text-lg text-stone-100 tracking-tight flex items-center gap-2">
+            <CheckCircle size={16} className="text-amber-500" />{t.expoAnimals}
+          </h3>
+          <span className="text-[11px] text-stone-500 font-bold uppercase tracking-widest">
+            {filteredAnimals.length} {lang === "it" ? "esemplari" : "animals"}
+          </span>
+        </div>
+
+        {/* In-expo search */}
+        <div className="relative mb-5">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+          <input
+            value={expoSearch}
+            onChange={e => setExpoSearch(e.target.value)}
+            placeholder={t.searchAtExpo}
+            className="w-full bg-stone-900 ring-1 ring-stone-800 rounded-lg pl-10 pr-3 py-3 text-sm text-stone-100 placeholder:text-stone-500 outline-none focus:ring-amber-500/60 transition-all"
+          />
+        </div>
+
+        {filteredAnimals.length === 0 ? (
+          <div className="text-center py-16 text-stone-500">
+            <Calendar size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-display italic">{expoAnimals.length === 0 ? t.noAnimalsAtExpo : (lang === "it" ? "Nessun risultato per la ricerca." : "No matches for that search.")}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
+            {filteredAnimals.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PLACEHOLDER for sections like Inventory, Pedigree, Reviews, etc.
+   Real implementations come later — these stub screens keep the nav
+   alive so all profile links actually go somewhere.
+   ═════════════════════════════════════════════════════════════════ */
+function PlaceholderScreen({ title, icon, badge, t, go, lang }) {
+  return (
+    <div className="max-w-2xl mx-auto w-full">
+      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight flex items-center gap-2">
+          {title}
+          {badge && (
+            <span className="bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded">{badge}</span>
+          )}
+        </h1>
+      </header>
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+        <div className="w-16 h-16 bg-stone-900 ring-1 ring-stone-800 rounded-2xl flex items-center justify-center text-amber-400 mb-5">
+          {icon}
+        </div>
+        <h2 className="font-display text-xl text-stone-100">{lang === "it" ? "In arrivo" : "Coming soon"}</h2>
+        <p className="text-stone-400 text-sm mt-2 max-w-xs leading-relaxed">
+          {lang === "it"
+            ? "Questa sezione sarà disponibile a breve. Stiamo lavorando per offrirti la migliore esperienza."
+            : "This section will be available shortly. We're working to bring you the best experience."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AboutContact({ t, go, lang }) {
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-10">
+      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.aboutContact}</h1>
+      </header>
+      <div className="p-5 md:p-8 space-y-5">
+        <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-6">
+          <div className="font-display text-2xl text-stone-50 tracking-tight mb-2">
+            Herp<span className="italic text-amber-500">Market</span>
+          </div>
+          <p className="text-sm text-stone-300 leading-relaxed">
+            {lang === "it"
+              ? "HerpMarket è il marketplace italiano dedicato agli appassionati di rettili e animali esotici. Connettiamo allevatori verificati e acquirenti con strumenti pensati per il mercato italiano: documentazione CITES integrata, prenotazioni sicure per le fiere e una community basata sulla fiducia."
+              : "HerpMarket is the Italian marketplace for reptile and exotic-animal enthusiasts. We connect verified breeders with buyers through tools tailored to the Italian market: integrated CITES paperwork, secure expo reservations and a trust-based community."}
+          </p>
+        </div>
+        <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.expoInfo}</div>
+          <a href="mailto:support@herpmarket.it" className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors">
+            <Mail size={16} />support@herpmarket.it
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TermsLegal({ t, go, lang }) {
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-10">
+      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.termsLegal}</h1>
+      </header>
+      <div className="p-5 md:p-8 space-y-4">
+        <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5 text-sm text-stone-300 leading-relaxed space-y-3">
+          <p>{lang === "it"
+            ? "Utilizzando questa piattaforma accetti i nostri termini di servizio. HerpMarket agisce esclusivamente come intermediario tra acquirenti e venditori."
+            : "By using this platform you accept our terms of service. HerpMarket acts solely as an intermediary between buyers and sellers."}</p>
+          <p>{lang === "it"
+            ? "I venditori sono responsabili della legalità, salute e correttezza della documentazione dei propri esemplari. HerpMarket non si assume responsabilità per le transazioni tra utenti."
+            : "Sellers are responsible for the legality, health and accurate documentation of their animals. HerpMarket assumes no liability for transactions between users."}</p>
+          <p className="text-stone-400 italic">{lang === "it"
+            ? "Disclaimer legale: la documentazione CITES generata tramite la piattaforma deve essere sempre verificata presso le autorità competenti."
+            : "Legal disclaimer: any CITES paperwork generated via the platform must always be verified with the competent authorities."}</p>
+        </div>
       </div>
     </div>
   );
