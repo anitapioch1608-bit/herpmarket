@@ -31,6 +31,10 @@ const I18N = {
     male: "Maschio", female: "Femmina", unsexed: "Non sessato", pair: "Coppia",
     months: "mesi", year: "anno", years: "anni",
     seller: "Venditore", verifiedBreeder: "Allevatore verificato", message: "Messaggia",
+    sellerStorefront: "Negozio", sellerAnimals: "Animali", sellerReviews: "Recensioni", sellerAbout: "Info",
+    sellerMemberSince: "Membro dal", sellerTotalSales: "Vendite totali", sellerSpecialties: "Specializzazioni",
+    sellerAttendsExpos: "Partecipa alle fiere", sellerNoExpos: "Nessuna fiera in programma",
+    sellerNoReviews: "Nessuna recensione ancora",
     reserveAtExpo: "Prenota per la fiera", payDeposit: "Paga acconto",
     reservationPending: "In attesa di approvazione…", reserved: "Riservato a te",
     description: "Descrizione", parentage: "Genealogia", sire: "Padre", dam: "Madre", unknown: "Sconosciuto",
@@ -83,6 +87,10 @@ const I18N = {
     male: "Male", female: "Female", unsexed: "Unsexed", pair: "Pair",
     months: "months", year: "year", years: "years",
     seller: "Seller", verifiedBreeder: "Verified breeder", message: "Message",
+    sellerStorefront: "Store", sellerAnimals: "Animals", sellerReviews: "Reviews", sellerAbout: "About",
+    sellerMemberSince: "Member since", sellerTotalSales: "Total sales", sellerSpecialties: "Specialties",
+    sellerAttendsExpos: "Attending expos", sellerNoExpos: "No upcoming expos",
+    sellerNoReviews: "No reviews yet",
     reserveAtExpo: "Reserve for expo", payDeposit: "Pay deposit",
     reservationPending: "Awaiting approval…", reserved: "Reserved for you",
     description: "Description", parentage: "Parentage", sire: "Sire", dam: "Dam", unknown: "Unknown",
@@ -268,6 +276,90 @@ const EXPOS = [
   },
 ];
 
+const SELLERS = {
+  "Piedmont Geckos": {
+    name: "Piedmont Geckos", region: "Piemonte", city: "Torino", verified: true,
+    memberSince: "2021", totalSales: 287, rating: 4.9, reviewCount: 47,
+    specialties: ["Correlophus ciliatus", "Heterodon nasicus", "Eublepharis macularius"],
+    expoIds: [1, 2],
+    bioIt: "Allevamento amatoriale specializzato in gechi crestati morph ad alta qualità e hognose albini. Nato nel 2021 come progetto familiare, oggi conta oltre 80 esemplari riproduttori in struttura dedicata.",
+    bioEn: "Amateur breeding focused on high-end crested gecko morphs and albino hognose snakes. Started in 2021 as a family project, now home to 80+ breeder animals in a dedicated facility.",
+    reviews: [
+      { buyer: "Marco T.", rating: 5, date: "03/2026", text: "Esemplare in forma perfetta, ritirato in fiera a Verona. Allevatore molto disponibile e preparato." },
+      { buyer: "Sara B.", rating: 5, date: "02/2026", text: "Imballaggio impeccabile per il trasporto. Geco arrivato perfetto e già abituato al cibo." },
+      { buyer: "Luca D.", rating: 4, date: "01/2026", text: "Tutto regolare, comunicazione un po' lenta ma risultato ottimo." },
+    ],
+  },
+  "ExoBreed Italia": {
+    name: "ExoBreed Italia", region: "Lombardia", city: "Milano", verified: true,
+    memberSince: "2019", totalSales: 412, rating: 4.8, reviewCount: 62,
+    specialties: ["Furcifer pardalis", "Chamaeleo calyptratus"],
+    expoIds: [1],
+    bioIt: "Allevamento professionale di camaleonti pantera con linee Ambilobe, Ambanja e Nosy Be. Tutti gli esemplari sono nati in cattività con documentazione CITES completa.",
+    bioEn: "Professional panther chameleon breeder working with Ambilobe, Ambanja and Nosy Be locales. All animals are captive-bred with full CITES documentation.",
+    reviews: [
+      { buyer: "Paolo M.", rating: 5, date: "04/2026", text: "Camaleonte stupendo, colori esattamente come nelle foto. CITES Allegato B perfetto." },
+      { buyer: "Elena R.", rating: 5, date: "03/2026", text: "Professionali e seri. Consiglio anche ai principianti." },
+    ],
+  },
+  "LeoMorphs Campania": {
+    name: "LeoMorphs Campania", region: "Campania", city: "Napoli", verified: true,
+    memberSince: "2022", totalSales: 156, rating: 4.7, reviewCount: 38,
+    specialties: ["Eublepharis macularius"],
+    expoIds: [2, 3],
+    bioIt: "Specializzati esclusivamente in gechi leopardini. Lavoriamo con linee Tremper, Bell, Eclipse e combinazioni recessive.",
+    bioEn: "Exclusively focused on leopard geckos. We work with Tremper, Bell, Eclipse lines and recessive combinations.",
+    reviews: [
+      { buyer: "Andrea V.", rating: 5, date: "02/2026", text: "Genetica chiara e ben documentata. Ottimo allevatore." },
+    ],
+  },
+  "Veneto Royals": {
+    name: "Veneto Royals", region: "Veneto", city: "Verona", verified: true,
+    memberSince: "2020", totalSales: 523, rating: 4.9, reviewCount: 91,
+    specialties: ["Python regius"],
+    expoIds: [1, 2],
+    bioIt: "Uno dei maggiori allevamenti italiani di pitone reale. Oltre 200 morph diversi in stock, dalla genetica base alle combinazioni più rare.",
+    bioEn: "One of Italy's largest ball python breeders. Over 200 different morphs in stock, from baseline genetics to rare combinations.",
+    reviews: [
+      { buyer: "Stefano L.", rating: 5, date: "04/2026", text: "Pitone arrivato in salute perfetta, già mangia in pinzetta. Veramente professionali." },
+      { buyer: "Davide G.", rating: 5, date: "03/2026", text: "Quinto acquisto da loro, sempre top." },
+    ],
+  },
+  "DragoMania Piemonte": {
+    name: "DragoMania Piemonte", region: "Piemonte", city: "Cuneo", verified: false,
+    memberSince: "2024", totalSales: 34, rating: 4.4, reviewCount: 18,
+    specialties: ["Pogona vitticeps"],
+    expoIds: [],
+    bioIt: "Piccolo allevamento amatoriale di pogona vitticeps morph. Vendita preferibilmente con ritiro a mano.",
+    bioEn: "Small amateur breeder of bearded dragon morphs. Prefer in-person pickup.",
+    reviews: [
+      { buyer: "Giovanni P.", rating: 4, date: "01/2026", text: "Animale in salute, allevatore disponibile per consigli." },
+    ],
+  },
+  "Testudo Toscana": {
+    name: "Testudo Toscana", region: "Toscana", city: "Firenze", verified: true,
+    memberSince: "2018", totalSales: 89, rating: 5.0, reviewCount: 24,
+    specialties: ["Testudo hermanni", "Testudo graeca"],
+    expoIds: [3],
+    bioIt: "Allevamento ufficialmente registrato di testuggini di Hermann e graeca. Tutti gli esemplari sono nati in cattività con CITES Allegato A individuale.",
+    bioEn: "Officially registered Hermann's and Greek tortoise breeder. All animals captive-bred with individual CITES Annex A certificates.",
+    reviews: [
+      { buyer: "Maria F.", rating: 5, date: "05/2026", text: "Documentazione CITES perfetta, microchip già inserito. Allevatore serissimo." },
+    ],
+  },
+  "Snake Italia BG": {
+    name: "Snake Italia BG", region: "Lombardia", city: "Bergamo", verified: true,
+    memberSince: "2020", totalSales: 178, rating: 4.6, reviewCount: 33,
+    specialties: ["Pantherophis guttatus", "Lampropeltis"],
+    expoIds: [2],
+    bioIt: "Allevamento dedicato a serpenti del grano e re. Lavoriamo principalmente con morph recessive e combo.",
+    bioEn: "Focused on corn snakes and king snakes. We mainly work with recessive morphs and combos.",
+    reviews: [
+      { buyer: "Roberto S.", rating: 5, date: "03/2026", text: "Animale arrivato perfetto. Risposta veloce ai messaggi." },
+    ],
+  },
+};
+
 const CHATS = [
   { id: 1, listing: LISTINGS[0], lastMsg: "Perfetto, ci vediamo allo stand di Verona!", time: "14:20", unread: 0 },
   { id: 2, listing: LISTINGS[3], lastMsg: "I documenti CITES sono pronti.", time: "Ieri", unread: 2 },
@@ -325,9 +417,10 @@ export default function HerpMarket() {
   const screen = () => {
     switch (view) {
       case "home":      return <Home_ {...props} />;
-      case "search":    return <SearchScreen {...props} />;
+      case "search":    return <SearchScreen initialState={viewData} {...props} />;
       case "detail":    return <Detail listing={viewData} {...props} />;
       case "expo":      return <ExpoDetail expo={viewData} {...props} />;
+      case "seller":    return <SellerProfile sellerName={viewData} {...props} />;
       case "sell":      return user ? <SellScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "chat":      return user ? <ChatList {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "thread":    return user ? <ChatThread chat={viewData} {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
@@ -582,6 +675,16 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
           )}
         </div>
 
+        {/* Seller chip — clickable, opens storefront */}
+        <button
+          onClick={(e) => { e.stopPropagation(); go("seller", item.seller); }}
+          className="flex items-center gap-1 text-[10px] text-stone-400 hover:text-amber-300 transition-colors -ml-0.5 self-start max-w-full"
+        >
+          <Star size={9} fill="currentColor" className="text-amber-400 shrink-0" />
+          <span className="font-bold text-stone-300 group-hover:text-amber-300 transition-colors">{item.rating}</span>
+          <span className="truncate underline decoration-stone-700 underline-offset-2 hover:decoration-amber-400">{item.seller}</span>
+        </button>
+
         {/* Footer: price + age */}
         <div className="flex items-end justify-between pt-1.5 mt-auto border-t border-stone-800/60">
           <div>
@@ -635,7 +738,11 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
         </div>
         <div className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5 md:mx-0 md:px-0 pb-2">
           {CATEGORIES.map((c, i) => (
-            <button key={c.id} onClick={() => go("search")}
+            <button key={c.id}
+                    onClick={() => {
+                      setFilter({ ...filter, category: c.id });
+                      go("search", { openFilters: true });
+                    }}
                     className="anim-up shrink-0 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all min-w-[110px] text-left"
                     style={{ animationDelay: `${i * 30}ms` }}>
               <div className="text-2xl mb-1.5">{c.emoji}</div>
@@ -712,8 +819,8 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav }) {
 /* ═══════════════════════════════════════════════════════════════════
    SEARCH — filters drawer + grid (the real MorphMarket workhorse)
    ═════════════════════════════════════════════════════════════════ */
-function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter }) {
-  const [showFilters, setShowFilters] = useState(false);
+function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState }) {
+  const [showFilters, setShowFilters] = useState(initialState?.openFilters || false);
   const [showSort, setShowSort] = useState(false);
 
   const filtered = useMemo(() => {
@@ -986,15 +1093,17 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
         )}
       </Section>
 
-      {/* Seller card */}
+      {/* Seller card — clickable, opens storefront */}
       <Section title={t.seller}>
-        <div className="bg-stone-900/60 border border-stone-800 rounded-xl p-4 flex items-center gap-3">
+        <button
+          onClick={() => go("seller", a.seller)}
+          className="w-full bg-stone-900/60 border border-stone-800 rounded-xl p-4 flex items-center gap-3 hover:border-amber-500/40 hover:bg-stone-900 transition-all text-left group">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center font-display text-lg text-stone-50 font-bold">
             {a.seller[0]}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-stone-100 text-sm">{a.seller}</span>
+              <span className="font-bold text-stone-100 text-sm group-hover:text-amber-300 transition-colors">{a.seller}</span>
               {a.verified && <ShieldCheck size={14} className="text-sky-400" />}
             </div>
             <div className="flex items-center gap-1 text-xs text-stone-400 mt-0.5">
@@ -1005,7 +1114,8 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
               <span>{a.region}</span>
             </div>
           </div>
-        </div>
+          <ChevronRight size={18} className="text-stone-600 group-hover:text-amber-400 transition-colors" />
+        </button>
       </Section>
 
       {/* CITES notice if applicable */}
@@ -1688,6 +1798,224 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SELLER PROFILE — storefront with three tabs:
+   - Animals: all current listings from this seller
+   - Reviews: ratings & buyer feedback
+   - About: bio, location, member-since, total sales, expos attended
+   ═════════════════════════════════════════════════════════════════ */
+function SellerProfile({ sellerName, t, lang, go, favorites, toggleFav }) {
+  const [tab, setTab] = useState("animals");
+  if (!sellerName) return null;
+
+  const seller = SELLERS[sellerName];
+  const sellerListings = LISTINGS.filter(l => l.seller === sellerName);
+
+  // Fallback minimal data if seller missing from SELLERS table
+  const data = seller || {
+    name: sellerName,
+    region: sellerListings[0]?.region || "—",
+    city: sellerListings[0]?.city || "—",
+    verified: sellerListings[0]?.verified || false,
+    memberSince: "—", totalSales: 0,
+    rating: sellerListings[0]?.rating || 0,
+    reviewCount: sellerListings[0]?.reviews || 0,
+    specialties: [], expoIds: [], reviews: [],
+    bioIt: "", bioEn: "",
+  };
+
+  const attendedExpos = data.expoIds.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
+  const bio = lang === "it" ? data.bioIt : data.bioEn;
+
+  return (
+    <div className="max-w-5xl mx-auto w-full pb-24 md:pb-10">
+      {/* Header / banner */}
+      <div className="relative">
+        <div className="h-32 md:h-44 bg-gradient-to-br from-amber-900/60 via-stone-900 to-stone-950" />
+        <button onClick={() => go("home")}
+                className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors">
+          <ChevronLeft size={20} />
+        </button>
+      </div>
+
+      {/* Identity block */}
+      <div className="px-5 md:px-8 -mt-12 md:-mt-14 relative">
+        <div className="flex items-end gap-4">
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-800 ring-4 ring-stone-950 flex items-center justify-center font-display text-4xl text-stone-50 font-bold shadow-2xl">
+            {data.name[0]}
+          </div>
+          <div className="flex-1 pb-1 min-w-0">
+            <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight flex items-center gap-2 leading-tight">
+              <span className="truncate">{data.name}</span>
+              {data.verified && <ShieldCheck size={20} className="text-sky-400 shrink-0" />}
+            </h1>
+            <div className="flex items-center gap-1.5 text-stone-400 text-xs md:text-sm mt-1">
+              <MapPin size={12} />{data.city}, {data.region}
+            </div>
+          </div>
+        </div>
+
+        {/* Stat row */}
+        <div className="grid grid-cols-3 gap-2 mt-5">
+          <SellerStat label={t.sellerAnimals}>
+            <span className="font-display text-xl text-stone-50">{sellerListings.length}</span>
+          </SellerStat>
+          <SellerStat label={t.sellerReviews}>
+            <span className="flex items-center gap-1">
+              <Star size={14} fill="currentColor" className="text-amber-400" />
+              <span className="font-display text-xl text-stone-50">{data.rating || "—"}</span>
+              {data.reviewCount > 0 && <span className="text-[10px] text-stone-500 font-bold">({data.reviewCount})</span>}
+            </span>
+          </SellerStat>
+          <SellerStat label={t.sellerTotalSales}>
+            <span className="font-display text-xl text-stone-50">{data.totalSales}</span>
+          </SellerStat>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="sticky top-0 z-20 bg-stone-950/95 backdrop-blur-xl border-b border-stone-800 mt-6">
+        <div className="px-5 md:px-8 flex gap-1">
+          <SellerTab active={tab === "animals"}  onClick={() => setTab("animals")}>{t.sellerAnimals} <span className="text-stone-500">· {sellerListings.length}</span></SellerTab>
+          <SellerTab active={tab === "reviews"} onClick={() => setTab("reviews")}>{t.sellerReviews} <span className="text-stone-500">· {data.reviewCount}</span></SellerTab>
+          <SellerTab active={tab === "about"}    onClick={() => setTab("about")}>{t.sellerAbout}</SellerTab>
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div className="px-5 md:px-8 pt-5">
+        {tab === "animals" && (
+          sellerListings.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3">
+              {sellerListings.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
+            </div>
+          ) : (
+            <p className="text-center text-stone-500 text-sm font-display italic py-10">
+              {lang === "it" ? "Nessun esemplare disponibile al momento." : "No animals currently available."}
+            </p>
+          )
+        )}
+
+        {tab === "reviews" && (
+          data.reviews.length > 0 ? (
+            <div className="space-y-3 max-w-2xl">
+              {data.reviews.map((rev, i) => (
+                <div key={i} className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-stone-300 font-bold text-xs">
+                        {rev.buyer[0]}
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-stone-100">{rev.buyer}</div>
+                        <div className="text-[10px] text-stone-500">{rev.date}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <Star key={n} size={11} fill={n <= rev.rating ? "currentColor" : "none"}
+                              className={n <= rev.rating ? "text-amber-400" : "text-stone-700"} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-stone-300 mt-3 leading-relaxed">{rev.text}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-stone-500 text-sm font-display italic py-10">{t.sellerNoReviews}</p>
+          )
+        )}
+
+        {tab === "about" && (
+          <div className="max-w-2xl space-y-6">
+            {bio && (
+              <div>
+                <h3 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
+                  {lang === "it" ? "Chi siamo" : "About us"}
+                </h3>
+                <p className="text-sm text-stone-300 leading-relaxed">{bio}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <InfoCell label={t.sellerMemberSince} value={data.memberSince} />
+              <InfoCell label={t.sellerTotalSales} value={data.totalSales} />
+              <InfoCell label={lang === "it" ? "Regione" : "Region"} value={data.region} />
+              <InfoCell label={lang === "it" ? "Città" : "City"} value={data.city} />
+            </div>
+
+            {data.specialties.length > 0 && (
+              <div>
+                <h3 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{t.sellerSpecialties}</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {data.specialties.map((sp, i) => (
+                    <span key={i} className="font-display italic text-sm text-amber-300 bg-amber-500/10 ring-1 ring-amber-500/20 px-2.5 py-1 rounded-md">
+                      {sp}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{t.sellerAttendsExpos}</h3>
+              {attendedExpos.length > 0 ? (
+                <div className="space-y-2">
+                  {attendedExpos.map(expo => (
+                    <button key={expo.id} onClick={() => go("expo", expo)}
+                            className="w-full bg-stone-900/60 ring-1 ring-stone-800 hover:ring-amber-500/40 rounded-xl p-3 flex items-center gap-3 transition-all text-left group">
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expo.color} flex items-center justify-center shrink-0`}>
+                        <Calendar size={16} className="text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-stone-100 text-sm group-hover:text-amber-300 transition-colors truncate">{expo.name}</div>
+                        <div className="text-[11px] text-stone-500 truncate">{expo.location} · {expo.date}</div>
+                      </div>
+                      <ChevronRight size={16} className="text-stone-600 group-hover:text-amber-400 transition-colors shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-stone-500 italic font-display">{t.sellerNoExpos}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SellerStat({ label, children }) {
+  return (
+    <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-2.5">
+      <div className="text-[9px] text-stone-500 font-bold uppercase tracking-widest mb-1">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function SellerTab({ active, onClick, children }) {
+  return (
+    <button onClick={onClick}
+            className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors ${
+              active ? "border-amber-500 text-amber-300" : "border-transparent text-stone-500 hover:text-stone-300"
+            }`}>
+      {children}
+    </button>
+  );
+}
+
+function InfoCell({ label, value }) {
+  return (
+    <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-2.5">
+      <div className="text-[9px] text-stone-500 font-bold uppercase tracking-widest">{label}</div>
+      <div className="text-sm font-bold text-stone-100 mt-0.5">{value}</div>
     </div>
   );
 }
