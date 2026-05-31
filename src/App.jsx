@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Home, Search, PlusCircle, MessageCircle, User,
   ChevronRight, ChevronLeft, ShieldCheck, MapPin,
@@ -46,6 +46,12 @@ const I18N = {
     reservationPending: "In attesa di approvazione…", reserved: "Riservato a te",
     // Transaction-flow keys
     txRequest: "Richiedi acquisto", txRequestExpo: "Richiedi prenotazione fiera",
+    deliveryChoose: "Come vuoi ricevere l'animale?",
+    deliveryShip: "Acquista e spedisci", deliveryShipDesc: "Pagamento completo, spedizione con corriere abilitato",
+    deliveryExpo: "Prenota per la fiera", deliveryExpoDesc: "Acconto 10%, ritiro allo stand del venditore",
+    noShipping: "Spedizione non disponibile", noShippingDesc: "Questo venditore non spedisce questo esemplare. Disponibile solo per ritiro alle fiere indicate sotto.",
+    availableAtExpos: "Disponibile a queste fiere", noExpoNoShip: "Nessuna opzione di consegna impostata dal venditore. Contattalo via messaggio.",
+    buyAndShip: "Acquista e spedisci",
     txPending: "Richiesta inviata · in attesa del venditore",
     txDeclined: "Il venditore ha rifiutato la richiesta",
     txApproved: "Approvato dal venditore",
@@ -189,6 +195,12 @@ const I18N = {
     reservationPending: "Awaiting approval…", reserved: "Reserved for you",
     // Transaction-flow keys
     txRequest: "Request to buy", txRequestExpo: "Request expo reservation",
+    deliveryChoose: "How do you want to receive the animal?",
+    deliveryShip: "Buy & ship", deliveryShipDesc: "Full payment, delivery by authorised courier",
+    deliveryExpo: "Reserve for expo", deliveryExpoDesc: "10% deposit, pickup at the seller's stand",
+    noShipping: "Shipping not available", noShippingDesc: "This seller does not ship this animal. Available only for pickup at the expos listed below.",
+    availableAtExpos: "Available at these expos", noExpoNoShip: "No delivery option set by the seller. Contact them by message.",
+    buyAndShip: "Buy & ship",
     txPending: "Request sent · waiting for seller",
     txDeclined: "Seller declined the request",
     txApproved: "Approved by seller",
@@ -595,7 +607,7 @@ const LISTINGS = [
     price: 180, deposit: 18, sex: "F", ageMonths: 14, weight: "38g",
     region: "Piemonte", city: "Torino", distanceKm: 8,
     seller: "Piedmont Geckos", country: "IT", verified: true, rating: 4.9, reviews: 47,
-    image: IMG.crested, category: "geckos", expoId: 1,
+    image: IMG.crested, category: "geckos", expoId: 1, shipping: false, expoIds: [1, 2],
     sire: "Axanthic Lilly White", dam: "Red Harlequin",
     desc: "Esemplare nato in casa, alimentazione a base di Pangea e insetti vivi. Carattere molto docile, abituata alla manipolazione.",
     // Auction: start 120, hidden reserve 200, current high bid 165, ends in ~2 days
@@ -607,7 +619,7 @@ const LISTINGS = [
     price: 320, deposit: 32, sex: "M", ageMonths: 8, weight: "82g",
     region: "Lombardia", city: "Milano", distanceKm: 0,
     seller: "ExoBreed Italia", country: "DE", verified: true, rating: 4.8, reviews: 62,
-    image: IMG.panther, category: "chameleons", expoId: 1,
+    image: IMG.panther, category: "chameleons", expoId: 1, shipping: true, expoIds: [12],
     sire: "Ambilobe Blue Bar", dam: "Ambilobe Red Bar",
     desc: "Maschio dai colori spettacolari, in piena salute. CITES Allegato B completo."
   },
@@ -617,7 +629,7 @@ const LISTINGS = [
     price: 75, deposit: 8, sex: "U", ageMonths: 3, weight: "16g",
     region: "Campania", city: "Napoli", distanceKm: 720,
     seller: "LeoMorphs Campania", country: "IT", verified: true, rating: 4.7, reviews: 38,
-    image: IMG.leopard, category: "geckos", expoId: null,
+    image: IMG.leopard, category: "geckos", expoId: null, shipping: true, expoIds: [],
     sire: "Tremper Albino", dam: "het Tremper het Eclipse",
     desc: "Cucciolo svezzato, mangia camole e tarme regolarmente."
   },
@@ -627,7 +639,7 @@ const LISTINGS = [
     price: 240, deposit: 24, sex: "M", ageMonths: 5, weight: "180g",
     region: "Veneto", city: "Verona", distanceKm: 145,
     seller: "Veneto Royals", country: "AT", verified: true, rating: 4.9, reviews: 91,
-    image: IMG.ball, category: "snakes", expoId: 1,
+    image: IMG.ball, category: "snakes", expoId: 1, shipping: true, expoIds: [1],
     sire: "Banana Pastel", dam: "Clown",
     desc: "Mangia regolarmente topi decongelati. Tre mute completate.",
     // Auction: reserve already met, lively bidding, ends in ~5 hours
@@ -639,7 +651,7 @@ const LISTINGS = [
     price: 160, deposit: 16, sex: "P", ageMonths: 4, weight: "45g",
     region: "Piemonte", city: "Cuneo", distanceKm: 95,
     seller: "DragoMania Piemonte", country: "IT", verified: false, rating: 4.4, reviews: 18,
-    image: IMG.beardie, category: "lizards", expoId: 2,
+    image: IMG.beardie, category: "lizards", expoId: 2, shipping: false, expoIds: [2],
     sire: null, dam: null,
     desc: "Coppia giovane, ottimi mangiatori. Pronti per nuovo terrario."
   },
@@ -649,7 +661,7 @@ const LISTINGS = [
     price: 220, deposit: 22, sex: "F", ageMonths: 18, weight: "180g",
     region: "Toscana", city: "Firenze", distanceKm: 340,
     seller: "Testudo Toscana", country: "IT", verified: true, rating: 5.0, reviews: 24,
-    image: IMG.tortoise, category: "tortoises", expoId: null,
+    image: IMG.tortoise, category: "tortoises", expoId: null, shipping: true, expoIds: [],
     sire: null, dam: null,
     desc: "Esemplare nato in cattività con documenti CITES Allegato A in regola."
   },
@@ -659,7 +671,7 @@ const LISTINGS = [
     price: 85, deposit: 9, sex: "F", ageMonths: 6, weight: "55g",
     region: "Lombardia", city: "Bergamo", distanceKm: 45,
     seller: "Snake Italia BG", country: "IT", verified: true, rating: 4.6, reviews: 33,
-    image: IMG.corn, category: "snakes", expoId: 2,
+    image: IMG.corn, category: "snakes", expoId: 2, shipping: false, expoIds: [2],
     sire: "Anery Motley", dam: "Anery",
     desc: "Femmina giovane, alimentazione regolare con topi decongelati."
   },
@@ -669,7 +681,7 @@ const LISTINGS = [
     price: 280, deposit: 28, sex: "M", ageMonths: 4, weight: "32g",
     region: "Piemonte", city: "Asti", distanceKm: 55,
     seller: "Piedmont Geckos", country: "IT", verified: true, rating: 4.9, reviews: 47,
-    image: IMG.hognose, category: "snakes", expoId: 1,
+    image: IMG.hognose, category: "snakes", expoId: 1, shipping: true, expoIds: [1],
     sire: "Albino Conda", dam: "het Albino Conda",
     desc: "Mangia regolarmente in pinzetta. Carattere tipico hognose."
   },
@@ -923,7 +935,20 @@ export default function HerpMarket() {
 
   const t = I18N[lang];
 
-  const go = (v, data = null) => { setView(v); setViewData(data); window.scrollTo(0, 0); };
+  // Remember scroll position per view so returning to search (or anywhere)
+  // lands the user where they left off instead of jumping to the top.
+  const scrollMemory = useRef({});
+  const go = (v, data = null, fresh = false) => {
+    // Save where we are before leaving the current view
+    scrollMemory.current[view] = window.scrollY;
+    if (fresh) scrollMemory.current[v] = 0; // intentional new view → start at top
+    setView(v);
+    setViewData(data);
+    const saved = scrollMemory.current[v];
+    requestAnimationFrame(() => {
+      window.scrollTo(0, typeof saved === "number" ? saved : 0);
+    });
+  };
   // When the user taps Search from the nav, start with a clean slate.
   // Category tiles, "see all" links and similar entry points should call go("search") directly
   // to preserve the filter they just set.
@@ -935,7 +960,8 @@ export default function HerpMarket() {
       traits: [], traitClass: null, seller: null,
       expoOnly: false, verifiedOnly: false,
     });
-    go("search");
+    scrollMemory.current["search"] = 0; // fresh search starts at the top
+    go("search", null, true);
   };
   const requireAuth = (reason, after) => {
     if (user) { after && after(); return true; }
@@ -1267,13 +1293,16 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
           <Heart size={12} className={favorites.includes(item.id) ? "fill-rose-500 text-rose-500" : "text-stone-300"} />
         </button>
         {/* Expo flag bottom-left */}
-        {item.expoId && (() => {
-          const expo = EXPOS.find(e => e.id === item.expoId);
-          return expo ? (
+        {(() => {
+          const ids = (item.expoIds && item.expoIds.length) ? item.expoIds : (item.expoId ? [item.expoId] : []);
+          if (!ids.length) return null;
+          const expo = EXPOS.find(e => e.id === ids[0]);
+          if (!expo) return null;
+          return (
             <div className="absolute bottom-2 left-2 bg-amber-500/95 text-stone-950 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shadow-lg">
-              ★ {expo.name.split(" ")[0]}
+              ★ {expo.name.split(" ")[0]}{ids.length > 1 ? ` +${ids.length - 1}` : ""}
             </div>
-          ) : null;
+          );
         })()}
         {/* Auction badge bottom-right */}
         {item.auction && (
@@ -1390,7 +1419,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             <button key={c.id}
                     onClick={() => {
                       setFilter({ ...filter, category: c.id });
-                      go("search");
+                      go("search", null, true); // fresh = start at top
                     }}
                     className="anim-up shrink-0 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all min-w-[110px] text-left"
                     style={{ animationDelay: `${i * 30}ms` }}>
@@ -2151,10 +2180,23 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
 
   if (!listing) return null;
   const a = listing;
-  const expo = a.expoId ? EXPOS.find(e => e.id === a.expoId) : null;
-  // Expo-eligible animals can be reserved for pickup (deposit). Others pay full price.
-  const isExpoFlow = !!expo;
+  // Delivery options come from the SELLER's choices on the listing:
+  //  - a.shipping: does the seller ship this animal?
+  //  - a.expoIds:  which expos will the seller hand-deliver at? (array)
+  // Legacy listings may only have a single expoId — fold it in.
+  const expoIdList = a.expoIds && a.expoIds.length ? a.expoIds : (a.expoId ? [a.expoId] : []);
+  const listingExpos = expoIdList.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
+  const canShip = !!a.shipping;
+  const hasExpo = listingExpos.length > 0;
+
+  // Buyer chooses how they want to receive the animal.
+  // Default to whichever is available (ship preferred if offered).
+  const [deliveryMode, setDeliveryMode] = useState(canShip ? "ship" : (hasExpo ? "expo" : "ship"));
+  const [selectedExpoId, setSelectedExpoId] = useState(listingExpos[0]?.id || null);
+
+  const isExpoFlow = deliveryMode === "expo";
   const paymentAmount = isExpoFlow ? a.deposit : a.price;
+  const expo = isExpoFlow ? (listingExpos.find(e => e.id === selectedExpoId) || listingExpos[0]) : null;
   // CITES required for Annex A (tortoises) and many Annex B (chameleons, large pythons etc.)
   const requiresCITES = a.category === "tortoises" || a.category === "chameleons";
 
@@ -2310,19 +2352,101 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
         </Section>
       )}
 
-      {/* Linked expo card */}
-      {expo && (
-        <Section title={isExpoFlow ? (lang === "it" ? "Ritiro alla fiera" : "Pickup at expo") : ""}>
-          <button onClick={() => go("expo", expo)}
-                  className={`w-full bg-gradient-to-br ${expo.color} rounded-xl p-4 flex items-center gap-3 text-left hover:scale-[1.01] transition-transform`}>
-            <Calendar size={20} className="text-white shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
-              <div className="font-display text-base text-white leading-tight truncate">{expo.name}</div>
-              <div className="text-[11px] text-white/80 mt-0.5">{expo.location}</div>
-            </div>
-            <ChevronRight size={16} className="text-white/60 shrink-0" />
-          </button>
+      {/* Delivery options — driven by what the SELLER allows on this listing.
+          Buyer picks ship vs expo. Shipping is greyed out if the seller doesn't
+          ship; the available expos are always listed when present. */}
+      {txState === "idle" && !a.auction && (
+        <Section title={t.deliveryChoose}>
+          <div className="space-y-2.5">
+            {/* Buy & ship */}
+            {canShip ? (
+              <button onClick={() => setDeliveryMode("ship")}
+                      className={`w-full text-left rounded-xl p-4 ring-1 transition-all flex items-start gap-3 ${
+                        deliveryMode === "ship" ? "bg-amber-500/10 ring-amber-500/40" : "bg-stone-900/40 ring-stone-800 hover:ring-stone-700"
+                      }`}>
+                <Truck size={18} className={deliveryMode === "ship" ? "text-amber-400 mt-0.5" : "text-stone-400 mt-0.5"} />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-stone-100 text-sm">{t.deliveryShip}</span>
+                    <span className="font-display font-bold text-stone-50">{formatPrice(a.price)}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-0.5">{t.deliveryShipDesc}</p>
+                </div>
+              </button>
+            ) : (
+              /* Shipping NOT available — greyed out with notice */
+              <div className="w-full rounded-xl p-4 ring-1 ring-stone-800 bg-stone-900/20 flex items-start gap-3 opacity-70">
+                <Truck size={18} className="text-stone-600 mt-0.5" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-stone-400 text-sm line-through">{t.deliveryShip}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-rose-400 bg-rose-500/10 ring-1 ring-rose-500/20 px-1.5 py-0.5 rounded">
+                      {t.noShipping}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{t.noShippingDesc}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Reserve for expo */}
+            {hasExpo && (
+              <button onClick={() => setDeliveryMode("expo")}
+                      className={`w-full text-left rounded-xl p-4 ring-1 transition-all flex items-start gap-3 ${
+                        deliveryMode === "expo" ? "bg-amber-500/10 ring-amber-500/40" : "bg-stone-900/40 ring-stone-800 hover:ring-stone-700"
+                      }`}>
+                <Calendar size={18} className={deliveryMode === "expo" ? "text-amber-400 mt-0.5" : "text-stone-400 mt-0.5"} />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-stone-100 text-sm">{t.deliveryExpo}</span>
+                    <span className="font-display font-bold text-stone-50">{formatPrice(a.deposit)}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-0.5">{t.deliveryExpoDesc}</p>
+                </div>
+              </button>
+            )}
+
+            {/* Visible expo list — always shown when the seller attends expos */}
+            {hasExpo && (
+              <div className="bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{t.availableAtExpos}</div>
+                <div className="space-y-1.5">
+                  {listingExpos.map(ex => {
+                    const selected = deliveryMode === "expo" && selectedExpoId === ex.id;
+                    return (
+                      <button key={ex.id}
+                              onClick={() => { setDeliveryMode("expo"); setSelectedExpoId(ex.id); }}
+                              className={`w-full text-left rounded-lg p-2.5 flex items-center gap-2.5 transition-all ${
+                                selected ? "bg-amber-500/15 ring-1 ring-amber-500/40" : "bg-stone-900/60 ring-1 ring-stone-800 hover:ring-stone-700"
+                              }`}>
+                        <div className={`rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br ${ex.color}`}>
+                          <div className="text-[8px] uppercase tracking-widest text-white/80 font-bold leading-none">{ex.date.split(" ")[0]}</div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12px] font-bold text-stone-100 leading-tight truncate">{ex.name}</div>
+                          <div className="text-[10px] text-stone-500 flex items-center gap-1">
+                            <MapPin size={9} />{ex.location}
+                            {ex.country !== "IT" && <span className="text-[8px] uppercase font-black bg-stone-800 text-stone-400 px-1 rounded">{ex.country}</span>}
+                          </div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); go("expo", ex); }}
+                                className="text-stone-500 hover:text-amber-400 shrink-0 p-1">
+                          <ChevronRight size={15} />
+                        </button>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Neither shipping nor expo: seller set no delivery option */}
+            {!canShip && !hasExpo && (
+              <div className="bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-4 text-[11px] text-stone-400 flex gap-2 items-start">
+                <Info size={14} className="shrink-0 mt-0.5" />{t.noExpoNoShip}
+              </div>
+            )}
+          </div>
         </Section>
       )}
 
@@ -2339,12 +2463,16 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
                     className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
               <ArrowUpDown size={16} />{t.placeBid}
             </button>
-          ) : txState === "idle" && (
+          ) : txState === "idle" && (canShip || hasExpo) ? (
             <button onClick={handleRequest}
                     className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
-              <Send size={16} />{isExpoFlow ? t.txRequestExpo : t.txRequest}
+              {isExpoFlow ? <><Calendar size={16} />{t.txRequestExpo}</> : <><Truck size={16} />{t.buyAndShip}</>}
             </button>
-          )}
+          ) : txState === "idle" ? (
+            <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center bg-stone-800 text-stone-500">
+              <span className="text-xs">{lang === "it" ? "Solo via messaggio" : "Message only"}</span>
+            </div>
+          ) : null}
           {!a.auction && txState !== "idle" && (
             <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-stone-800 text-stone-400">
               <span className="text-xs">{lang === "it" ? "Vedi stato sopra ↑" : "See status above ↑"}</span>
