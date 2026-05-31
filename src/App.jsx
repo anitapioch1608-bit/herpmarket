@@ -961,13 +961,29 @@ export default function HerpMarket() {
   // Remember scroll position per view so returning to search (or anywhere)
   // lands the user where they left off instead of jumping to the top.
   const scrollMemory = useRef({});
+  const navHistory = useRef([]);   // stack of previous {view, data}
   const go = (v, data = null, fresh = false) => {
     // Save where we are before leaving the current view
     scrollMemory.current[view] = window.scrollY;
     if (fresh) scrollMemory.current[v] = 0; // intentional new view → start at top
+    // Push current view onto history so "back" can return to it
+    navHistory.current.push({ view, data: viewData });
     setView(v);
     setViewData(data);
     const saved = scrollMemory.current[v];
+    requestAnimationFrame(() => {
+      window.scrollTo(0, typeof saved === "number" ? saved : 0);
+    });
+  };
+  // Go back to the previous screen in history (restores its scroll position).
+  // Falls back to home if there's nothing to go back to.
+  const goBack = () => {
+    const prev = navHistory.current.pop();
+    const target = prev?.view || "home";
+    scrollMemory.current[view] = window.scrollY;
+    setView(target);
+    setViewData(prev?.data ?? null);
+    const saved = scrollMemory.current[target];
     requestAnimationFrame(() => {
       window.scrollTo(0, typeof saved === "number" ? saved : 0);
     });
@@ -1004,7 +1020,7 @@ export default function HerpMarket() {
   };
   const handleLogout = () => { setUser(null); go("home"); };
 
-  const props = { t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout };
+  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout };
 
   const screen = () => {
     switch (view) {
@@ -2187,7 +2203,7 @@ function CrossBorderNotice({ sellerCountry, t, lang, buyerCountry = "IT" }) {
   );
 }
 
-function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang }) {
+function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAuth, lang }) {
   // Single state machine. Possible values:
   // "idle" | "requested" | "approved" | "declined" | "paid" | "handover" | "completed"
   const [txState, setTxState] = useState("idle");
@@ -2256,7 +2272,7 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
              className="w-full h-full object-cover" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-stone-950/80 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-stone-950 to-transparent" />
-        <button onClick={() => go("home")}
+        <button onClick={goBack}
                 className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors">
           <ChevronLeft size={20} />
         </button>
@@ -3868,7 +3884,7 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav }) {
    - Reviews: ratings & buyer feedback
    - About: bio, location, member-since, total sales, expos attended
    ═════════════════════════════════════════════════════════════════ */
-function SellerProfile({ sellerName, t, lang, go, favorites, toggleFav }) {
+function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav }) {
   const [tab, setTab] = useState("animals");
   if (!sellerName) return null;
 
@@ -3896,7 +3912,7 @@ function SellerProfile({ sellerName, t, lang, go, favorites, toggleFav }) {
       {/* Header / banner */}
       <div className="relative">
         <div className="h-32 md:h-44 bg-gradient-to-br from-amber-900/60 via-stone-900 to-stone-950" />
-        <button onClick={() => go("home")}
+        <button onClick={goBack}
                 className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors">
           <ChevronLeft size={20} />
         </button>
