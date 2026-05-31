@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -27,11 +27,17 @@ const I18N = {
     nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Sfoglia per categoria",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     filters: "Filtri", sort: "Ordina", apply: "Applica", reset: "Reimposta",
-    sortNewest: "Più recenti", sortPriceAsc: "Prezzo: crescente", sortPriceDesc: "Prezzo: decrescente", sortDistance: "Distanza",
+    sortNewest: "Più recenti", sortPriceAsc: "Prezzo: crescente", sortPriceDesc: "Prezzo: decrescente", sortDistance: "Distanza", sortRating: "Miglior valutazione",
+    advFilters: "Filtri avanzati", priceRange: "Fascia di prezzo", anyPrice: "Qualsiasi", min: "Min", max: "Max",
+    traitsLabel: "Geni e tratti", traitClassLabel: "Tipo genetico", subCategoryLabel: "Specie",
+    sellerLabel: "Allevatore", anySeller: "Tutti gli allevatori", anySpecies: "Tutte le specie",
+    expoOnlyLabel: "Solo con ritiro in fiera", verifiedOnlyLabel: "Solo allevatori verificati",
+    clearAll: "Cancella tutto", classRecessive: "Recessivo", classDominant: "Dominante", classIncDom: "Co-dom", classLine: "Linea/Poligenico", classLocality: "Località", classHet: "Het (portatore)",
+    selectCategoryFirst: "Seleziona prima una categoria per vedere i tratti disponibili",
     species: "Specie", traits: "Tratti / Morph", sex: "Sesso", age: "Età", price: "Prezzo", region: "Regione", expoOnly: "Solo ritiro in fiera",
     male: "Maschio", female: "Femmina", unsexed: "Non sessato", pair: "Coppia",
     months: "mesi", year: "anno", years: "anni",
-    seller: "Venditore", verifiedBreeder: "Allevatore verificato", message: "Messaggia",
+    seller: "Venditore", country: "IT", verifiedBreeder: "Allevatore verificato", message: "Messaggia",
     sellerStorefront: "Negozio", sellerAnimals: "Animali", sellerReviews: "Recensioni", sellerAbout: "Info",
     sellerMemberSince: "Membro dal", sellerTotalSales: "Vendite totali", sellerSpecialties: "Specializzazioni",
     sellerAttendsExpos: "Partecipa alle fiere", sellerNoExpos: "Nessuna fiera in programma",
@@ -77,6 +83,45 @@ const I18N = {
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
     aboutContact: "Chi siamo & Contatti", termsLegal: "Termini di servizio", settingsKyc: "Impostazioni & KYC",
     storePolicyLabel: "Regolamento marketplace",
+    privacyLabel: "Privacy Policy",
+    plansLabel: "Piani", plansComingSoon: "I piani Pro saranno disponibili in futuro. Al momento HerpMarket è gratuito per tutti.",
+    plansDescription: "Quando lanceremo piani Pro per allevatori (annunci illimitati, store personalizzato, posizionamento prioritario), riceverai un preavviso di 30 giorni e potrai continuare con il piano gratuito.",
+    sponsorLabel: "Sponsor",
+    // Cookie/privacy banner
+    cookieTitle: "Privacy & Cookie",
+    cookieBody: "HerpMarket usa cookie tecnici essenziali per il funzionamento del sito. Per analisi anonime usiamo Vercel Analytics (privacy-friendly, no tracking individuale). Vedi la nostra Privacy Policy per i dettagli.",
+    cookieAccept: "Accetto",
+    cookieDecline: "Rifiuta analitiche",
+    cookieMore: "Maggiori informazioni",
+    // Signup consent
+    consentTosLabel: "Accetto i Termini di Servizio e il Regolamento Marketplace",
+    consentPrivacyLabel: "Ho letto la Privacy Policy e acconsento al trattamento dei dati come descritto",
+    consentMarketingLabel: "Voglio ricevere aggiornamenti sulle fiere e nuovi annunci (facoltativo, posso disiscrivermi in qualsiasi momento)",
+    consentRequired: "Accetta Termini e Privacy per continuare",
+    consentReadHere: "Leggi qui",
+    // Account deletion
+    deleteAccount: "Elimina account", deleteAccountIntro: "Elimina permanentemente il tuo account e tutti i dati associati.",
+    deleteWarning: "Questa azione è irreversibile. Tutti i tuoi dati personali verranno cancellati entro 30 giorni. Le transazioni completate e i documenti CITES devono essere conservati per obblighi di legge (max 10 anni) ma vengono pseudonimizzati.",
+    deleteConfirmPrompt: "Per confermare, digita ELIMINA qui sotto:",
+    deleteConfirmWord: "ELIMINA",
+    deleteButton: "Elimina definitivamente",
+    deleteCancel: "Annulla",
+    deleteSuccess: "Richiesta inviata. Il tuo account verrà cancellato entro 30 giorni.",
+    // Privacy area in settings
+    privacySection: "Privacy e dati",
+    dataExport: "Scarica i miei dati", dataExportDesc: "Esporta tutti i tuoi dati personali in formato JSON (GDPR Art. 20)",
+    dataExportDone: "Esportazione avviata. Riceverai il file via email entro 30 giorni.",
+    kycTitle: "Verifica allevatore", kycVerified: "Verificato", kycPending: "In revisione", kycUnverified: "Non verificato",
+    kycIntro: "Ottieni la spunta blu caricando i documenti che attestano la tua attività di allevamento.",
+    kycVisura: "Visura camerale o P.IVA", kycAsl: "Numero registrazione ASL", kycDoc: "Documento d'identità",
+    kycUpload: "Carica documento", kycUploaded: "Caricato", kycSubmit: "Invia per la verifica",
+    kycSubmitted: "Documenti inviati. Ti avviseremo entro 48 ore.",
+    kycWhy: "Perché verificarsi?", kycWhyText: "Gli acquirenti si fidano di più degli allevatori verificati. La spunta blu appare su tutti i tuoi annunci e sul tuo profilo.",
+    notifTitle: "Notifiche push", notifIntro: "Ricevi avvisi in tempo reale anche quando l'app è chiusa.",
+    notifEnable: "Attiva notifiche", notifEnabled: "Notifiche attive", notifMessages: "Nuovi messaggi",
+    notifReservations: "Approvazione prenotazioni", notifPriceDrops: "Cali di prezzo nei preferiti", notifExpo: "Promemoria fiere",
+    accountSection: "Account", notifSection: "Notifiche", verificationSection: "Verifica",
+    langSection: "Lingua",
     citesArchive: "Archivio CITES",
     breedingMgmt: "Gestione allevamento", bureaucracyLegal: "Burocrazia & Legale", infoSupport: "Informazioni & Supporto", configuration: "Configurazione",
     login: "Accedi", signup: "Iscriviti", joinCommunity: "Unisciti", loginOrJoin: "Accedi / Iscriviti",
@@ -101,6 +146,18 @@ const I18N = {
     legalIntro: "Il mercato italiano dei rettili è regolato dal D.Lgs. 135/2022 e dal Reg. CE 338/97. Verifica sempre la categoria CITES prima di acquistare.",
     depositNotice: "L'acconto del 10% blocca l'esemplare fino al ritiro in fiera. Non rimborsabile.",
     realPhoto: "Foto dell'esemplare",
+    auction: "Asta", auctionLabel: "ASTA", startPrice: "Prezzo di partenza", currentBid: "Offerta attuale",
+    placeBid: "Fai un'offerta", yourBid: "La tua offerta", bidCount: "offerte", bids: "offerte",
+    reserveMet: "Riserva raggiunta", reserveNotMet: "Riserva non raggiunta",
+    auctionEnds: "Termina tra", auctionEnded: "Asta conclusa", minimumBid: "Offerta minima",
+    bidPlaced: "Offerta inviata!", outbid: "Sei stato superato", winning: "Sei in testa",
+    days: "g", hours: "h", minutes: "min", buyNow: "Compra subito",
+    bidTooLow: "L'offerta deve superare l'offerta attuale",
+    auctionInfo: "In un'asta, fai un'offerta superiore a quella attuale. Se sei il miglior offerente alla scadenza e la riserva è raggiunta, vinci l'esemplare.",
+    crossBorderTitle: "Vendita transfrontaliera",
+    crossBorderEu: "Questo esemplare proviene da un altro Paese UE. Per il trasporto è richiesta la registrazione TRACES e, per le specie CITES Allegato A/B, la documentazione di movimento intra-UE.",
+    crossBorderCh: "Attenzione: la Svizzera non fa parte dell'UE. Il movimento di animali vivi tra Svizzera e UE attraversa una frontiera doganale e richiede controlli veterinari di confine e permessi di importazione/esportazione. Verifica i requisiti prima di procedere.",
+    sellerCountryLabel: "Paese del venditore", countryLabel: "Paese", anyCountry: "Tutti i Paesi",
     resultsCount: (n) => `${n} ${n === 1 ? "annuncio trovato" : "annunci trovati"}`,
     secureCheckout: "Pagamento sicuro",
     payNow: "Paga",
@@ -113,11 +170,17 @@ const I18N = {
     nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "Browse by category",
     allListings: "All listings", seeAll: "See all",
     filters: "Filters", sort: "Sort", apply: "Apply", reset: "Reset",
-    sortNewest: "Newest first", sortPriceAsc: "Price: low to high", sortPriceDesc: "Price: high to low", sortDistance: "Nearest first",
+    sortNewest: "Newest first", sortPriceAsc: "Price: low to high", sortPriceDesc: "Price: high to low", sortDistance: "Nearest first", sortRating: "Top rated",
+    advFilters: "Advanced filters", priceRange: "Price range", anyPrice: "Any", min: "Min", max: "Max",
+    traitsLabel: "Genes & traits", traitClassLabel: "Genetic type", subCategoryLabel: "Species",
+    sellerLabel: "Breeder", anySeller: "All breeders", anySpecies: "All species",
+    expoOnlyLabel: "Expo pickup only", verifiedOnlyLabel: "Verified breeders only",
+    clearAll: "Clear all", classRecessive: "Recessive", classDominant: "Dominant", classIncDom: "Co-dom", classLine: "Line/Polygenic", classLocality: "Locality", classHet: "Het (carrier)",
+    selectCategoryFirst: "Select a category first to see available traits",
     species: "Species", traits: "Traits / Morph", sex: "Sex", age: "Age", price: "Price", region: "Region", expoOnly: "Expo pickup only",
     male: "Male", female: "Female", unsexed: "Unsexed", pair: "Pair",
     months: "months", year: "year", years: "years",
-    seller: "Seller", verifiedBreeder: "Verified breeder", message: "Message",
+    seller: "Seller", country: "IT", verifiedBreeder: "Verified breeder", message: "Message",
     sellerStorefront: "Store", sellerAnimals: "Animals", sellerReviews: "Reviews", sellerAbout: "About",
     sellerMemberSince: "Member since", sellerTotalSales: "Total sales", sellerSpecialties: "Specialties",
     sellerAttendsExpos: "Attending expos", sellerNoExpos: "No upcoming expos",
@@ -163,6 +226,41 @@ const I18N = {
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
     aboutContact: "About us & Contact", termsLegal: "Terms of service", settingsKyc: "Settings & KYC",
     storePolicyLabel: "Marketplace policy",
+    privacyLabel: "Privacy Policy",
+    plansLabel: "Plans", plansComingSoon: "Pro plans will be available in the future. HerpMarket is currently free for everyone.",
+    plansDescription: "When we launch Pro plans for breeders (unlimited listings, custom store, priority placement), you'll get 30 days' notice and can keep using the free tier.",
+    sponsorLabel: "Sponsor",
+    cookieTitle: "Privacy & Cookies",
+    cookieBody: "HerpMarket uses essential technical cookies to run the site. For anonymous analytics we use Vercel Analytics (privacy-friendly, no individual tracking). See our Privacy Policy for details.",
+    cookieAccept: "Accept",
+    cookieDecline: "Decline analytics",
+    cookieMore: "More info",
+    consentTosLabel: "I accept the Terms of Service and Marketplace Policy",
+    consentPrivacyLabel: "I have read the Privacy Policy and consent to the data processing as described",
+    consentMarketingLabel: "I want to receive updates about expos and new listings (optional, I can unsubscribe anytime)",
+    consentRequired: "Accept Terms and Privacy to continue",
+    consentReadHere: "Read here",
+    deleteAccount: "Delete account", deleteAccountIntro: "Permanently delete your account and all associated data.",
+    deleteWarning: "This action is irreversible. All your personal data will be deleted within 30 days. Completed transactions and CITES documents must be kept for legal obligations (up to 10 years) but are pseudonymised.",
+    deleteConfirmPrompt: "To confirm, type DELETE below:",
+    deleteConfirmWord: "DELETE",
+    deleteButton: "Delete permanently",
+    deleteCancel: "Cancel",
+    deleteSuccess: "Request submitted. Your account will be deleted within 30 days.",
+    privacySection: "Privacy & data",
+    dataExport: "Download my data", dataExportDesc: "Export all your personal data as JSON (GDPR Art. 20)",
+    dataExportDone: "Export started. You'll receive the file by email within 30 days.",
+    kycTitle: "Breeder verification", kycVerified: "Verified", kycPending: "Under review", kycUnverified: "Not verified",
+    kycIntro: "Get the blue check by uploading documents proving your breeding activity.",
+    kycVisura: "Business registration or VAT", kycAsl: "ASL registration number", kycDoc: "ID document",
+    kycUpload: "Upload document", kycUploaded: "Uploaded", kycSubmit: "Submit for review",
+    kycSubmitted: "Documents submitted. We'll notify you within 48 hours.",
+    kycWhy: "Why verify?", kycWhyText: "Buyers trust verified breeders more. The blue check appears on all your listings and your profile.",
+    notifTitle: "Push notifications", notifIntro: "Get real-time alerts even when the app is closed.",
+    notifEnable: "Enable notifications", notifEnabled: "Notifications on", notifMessages: "New messages",
+    notifReservations: "Reservation approvals", notifPriceDrops: "Wishlist price drops", notifExpo: "Expo reminders",
+    accountSection: "Account", notifSection: "Notifications", verificationSection: "Verification",
+    langSection: "Language",
     citesArchive: "CITES archive",
     breedingMgmt: "Breeding management", bureaucracyLegal: "Bureaucracy & Legal", infoSupport: "Information & Support", configuration: "Configuration",
     login: "Sign in", signup: "Sign up", joinCommunity: "Join us", loginOrJoin: "Sign in / Join",
@@ -187,6 +285,18 @@ const I18N = {
     legalIntro: "The Italian reptile market is governed by D.Lgs. 135/2022 and EU Reg. 338/97. Always check the CITES annex before buying.",
     depositNotice: "A 10% deposit reserves the animal until expo pickup. Non-refundable.",
     realPhoto: "Animal photo",
+    auction: "Auction", auctionLabel: "AUCTION", startPrice: "Starting price", currentBid: "Current bid",
+    placeBid: "Place a bid", yourBid: "Your bid", bidCount: "bids", bids: "bids",
+    reserveMet: "Reserve met", reserveNotMet: "Reserve not met",
+    auctionEnds: "Ends in", auctionEnded: "Auction ended", minimumBid: "Minimum bid",
+    bidPlaced: "Bid placed!", outbid: "You've been outbid", winning: "You're winning",
+    days: "d", hours: "h", minutes: "min", buyNow: "Buy now",
+    bidTooLow: "Bid must exceed the current bid",
+    auctionInfo: "In an auction, place a bid above the current one. If you're the highest bidder when it ends and the reserve is met, you win the animal.",
+    crossBorderTitle: "Cross-border sale",
+    crossBorderEu: "This animal is located in another EU country. Transport requires TRACES registration and, for CITES Annex A/B species, intra-EU movement documentation.",
+    crossBorderCh: "Note: Switzerland is not part of the EU. Moving live animals between Switzerland and the EU crosses a customs border and requires border veterinary checks and import/export permits. Check the requirements before proceeding.",
+    sellerCountryLabel: "Seller country", countryLabel: "Country", anyCountry: "All countries",
     resultsCount: (n) => `${n} ${n === 1 ? "listing" : "listings"} found`,
     secureCheckout: "Secure checkout",
     payNow: "Pay",
@@ -389,8 +499,51 @@ const SPECIES_TRAITS = {
   ],
 };
 
-/* ───── Categories (counts driven by mock listings; placeholders here) ── */
-const CATEGORIES = [
+/* Map each top-level category to the species (and their subspecies labels)
+   that belong to it. Drives the dynamic trait picker in advanced search. */
+const CATEGORY_SPECIES = {
+  geckos:     ["Correlophus ciliatus", "Eublepharis macularius", "Rhacodactylus auriculatus", "Phelsuma grandis"],
+  snakes:     ["Python regius", "Pantherophis guttatus", "Heterodon nasicus", "Boa constrictor", "Lampropeltis"],
+  lizards:    ["Pogona vitticeps", "Tiliqua scincoides"],
+  chameleons: ["Furcifer pardalis", "Chamaeleo calyptratus"],
+  tortoises:  ["Testudo hermanni", "Testudo graeca"],
+  amphibians: [],
+  inverts:    [],
+};
+
+/* Common-name labels for species, for the sub-category dropdown */
+const SPECIES_LABELS = {
+  "Correlophus ciliatus":   { it: "Geco crestato",        en: "Crested gecko" },
+  "Eublepharis macularius": { it: "Geco leopardino",      en: "Leopard gecko" },
+  "Rhacodactylus auriculatus": { it: "Geco gargoyle",     en: "Gargoyle gecko" },
+  "Phelsuma grandis":       { it: "Geco diurno gigante",  en: "Giant day gecko" },
+  "Python regius":          { it: "Pitone reale",         en: "Ball python" },
+  "Pantherophis guttatus":  { it: "Serpente del grano",   en: "Corn snake" },
+  "Heterodon nasicus":      { it: "Hognose occidentale",  en: "Western hognose" },
+  "Boa constrictor":        { it: "Boa constrictor",      en: "Boa constrictor" },
+  "Lampropeltis":           { it: "Serpente del latte/re", en: "King/milk snake" },
+  "Pogona vitticeps":       { it: "Pogona",               en: "Bearded dragon" },
+  "Tiliqua scincoides":     { it: "Scinco lingua blu",    en: "Blue-tongue skink" },
+  "Furcifer pardalis":      { it: "Camaleonte pantera",   en: "Panther chameleon" },
+  "Chamaeleo calyptratus":  { it: "Camaleonte velato",    en: "Veiled chameleon" },
+  "Testudo hermanni":       { it: "Testuggine di Hermann", en: "Hermann's tortoise" },
+  "Testudo graeca":         { it: "Testuggine greca",     en: "Greek tortoise" },
+};
+
+/* Return deduplicated trait list for a category (optionally narrowed to one species).
+   Each entry { name, cls }. Used by the trait-tag picker. */
+function getTraitsForScope(categoryId, species) {
+  if (species && SPECIES_TRAITS[species]) return SPECIES_TRAITS[species];
+  const speciesList = CATEGORY_SPECIES[categoryId] || [];
+  const seen = new Set();
+  const out = [];
+  speciesList.forEach(sp => {
+    (SPECIES_TRAITS[sp] || []).forEach(tr => {
+      if (!seen.has(tr.name)) { seen.add(tr.name); out.push(tr); }
+    });
+  });
+  return out;
+}
   { id: "geckos",      it: "Gechi",       en: "Geckos",      emoji: "🦎", count: 412 },
   { id: "snakes",      it: "Serpenti",    en: "Snakes",      emoji: "🐍", count: 287 },
   { id: "lizards",     it: "Sauri",       en: "Lizards",     emoji: "🦖", count: 203 },
@@ -406,15 +559,32 @@ const REGIONS = [
   "Puglia","Sardegna","Sicilia","Toscana","Trentino-A.A.","Umbria","Valle d'Aosta","Veneto"
 ];
 
-// Real-looking Unsplash IDs of reptiles — broad search aliases as fallback
+/* Countries sellers can operate from. `eu` flags EU membership — Switzerland
+   is NOT in the EU, so CH↔EU movement crosses a customs border (extra rules).
+   The flag emoji renders on cards, seller pages, and the detail view. */
+const COUNTRIES = [
+  { code: "IT", flag: "🇮🇹", it: "Italia",      en: "Italy",       eu: true  },
+  { code: "DE", flag: "🇩🇪", it: "Germania",    en: "Germany",     eu: true  },
+  { code: "AT", flag: "🇦🇹", it: "Austria",     en: "Austria",     eu: true  },
+  { code: "FR", flag: "🇫🇷", it: "Francia",     en: "France",      eu: true  },
+  { code: "CH", flag: "🇨🇭", it: "Svizzera",    en: "Switzerland", eu: false },
+];
+const countryByCode = (code) => COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
+
+// Placeholder photos for the DEMO only. These are hotlinked stock images and
+// can rotate or break over time — that's expected. The real fix is hosting
+// your OWN photos in Supabase Storage (bucket: listing-photos) and putting the
+// public URL on each listing's image_url. Once you do that, these go away.
+// Until then, each listing falls back to a clean species-tinted placeholder
+// (see `fallback()` / SpeciesPlaceholder) rather than a random field photo.
 const IMG = {
-  crested:  "https://images.unsplash.com/photo-1591389703635-e15a07b842d7?auto=format&fit=crop&w=800&q=80",
-  leopard:  "https://images.unsplash.com/photo-1582538285793-5648ed4c84c0?auto=format&fit=crop&w=800&q=80",
-  ball:     "https://images.unsplash.com/photo-1591382696684-38c427c7547a?auto=format&fit=crop&w=800&q=80",
+  crested:  "https://images.unsplash.com/photo-1597245621459-72e1e7a7d52e?auto=format&fit=crop&w=800&q=80",
+  leopard:  "https://images.unsplash.com/photo-1612160808120-417a3b6e0c66?auto=format&fit=crop&w=800&q=80",
+  ball:     "https://images.unsplash.com/photo-1531386151447-fd76ad50012f?auto=format&fit=crop&w=800&q=80",
   panther:  "https://images.unsplash.com/photo-1580526149844-31f1a5f6ed49?auto=format&fit=crop&w=800&q=80",
-  beardie:  "https://images.unsplash.com/photo-1542228601-51208034b7a1?auto=format&fit=crop&w=800&q=80",
-  tortoise: "https://images.unsplash.com/photo-1623387641168-d9803ddd3f35?auto=format&fit=crop&w=800&q=80",
-  corn:     "https://images.unsplash.com/photo-1597245621459-72e1e7a7d52e?auto=format&fit=crop&w=800&q=80",
+  beardie:  "https://images.unsplash.com/photo-1601275785846-9b78bcae3b1f?auto=format&fit=crop&w=800&q=80",
+  tortoise: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?auto=format&fit=crop&w=800&q=80",
+  corn:     "https://images.unsplash.com/photo-1601275785846-9b78bcae3b1f?auto=format&fit=crop&w=800&q=80",
   hognose:  "https://images.unsplash.com/photo-1531386151447-fd76ad50012f?auto=format&fit=crop&w=800&q=80",
 };
 
@@ -424,17 +594,19 @@ const LISTINGS = [
     traits: [{ name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" }],
     price: 180, deposit: 18, sex: "F", ageMonths: 14, weight: "38g",
     region: "Piemonte", city: "Torino", distanceKm: 8,
-    seller: "Piedmont Geckos", verified: true, rating: 4.9, reviews: 47,
+    seller: "Piedmont Geckos", country: "IT", verified: true, rating: 4.9, reviews: 47,
     image: IMG.crested, category: "geckos", expoId: 1,
     sire: "Axanthic Lilly White", dam: "Red Harlequin",
-    desc: "Esemplare nato in casa, alimentazione a base di Pangea e insetti vivi. Carattere molto docile, abituata alla manipolazione."
+    desc: "Esemplare nato in casa, alimentazione a base di Pangea e insetti vivi. Carattere molto docile, abituata alla manipolazione.",
+    // Auction: start 120, hidden reserve 200, current high bid 165, ends in ~2 days
+    auction: { startPrice: 120, reservePrice: 200, currentBid: 165, bidCount: 7, endsAt: "2026-06-02T20:00:00", highBidder: "marco_r" },
   },
   {
     id: 2, species: "Furcifer pardalis", common: "Camaleonte pantera",
     traits: [{ name: "Ambilobe", cls: "locality" }, { name: "Blue Bar", cls: "line" }],
     price: 320, deposit: 32, sex: "M", ageMonths: 8, weight: "82g",
     region: "Lombardia", city: "Milano", distanceKm: 0,
-    seller: "ExoBreed Italia", verified: true, rating: 4.8, reviews: 62,
+    seller: "ExoBreed Italia", country: "DE", verified: true, rating: 4.8, reviews: 62,
     image: IMG.panther, category: "chameleons", expoId: 1,
     sire: "Ambilobe Blue Bar", dam: "Ambilobe Red Bar",
     desc: "Maschio dai colori spettacolari, in piena salute. CITES Allegato B completo."
@@ -444,7 +616,7 @@ const LISTINGS = [
     traits: [{ name: "Tremper Albino", cls: "recessive" }, { name: "het Eclipse", cls: "het" }],
     price: 75, deposit: 8, sex: "U", ageMonths: 3, weight: "16g",
     region: "Campania", city: "Napoli", distanceKm: 720,
-    seller: "LeoMorphs Campania", verified: true, rating: 4.7, reviews: 38,
+    seller: "LeoMorphs Campania", country: "IT", verified: true, rating: 4.7, reviews: 38,
     image: IMG.leopard, category: "geckos", expoId: null,
     sire: "Tremper Albino", dam: "het Tremper het Eclipse",
     desc: "Cucciolo svezzato, mangia camole e tarme regolarmente."
@@ -454,17 +626,19 @@ const LISTINGS = [
     traits: [{ name: "Banana", cls: "incDom" }, { name: "Pastel", cls: "incDom" }, { name: "Clown", cls: "recessive" }],
     price: 240, deposit: 24, sex: "M", ageMonths: 5, weight: "180g",
     region: "Veneto", city: "Verona", distanceKm: 145,
-    seller: "Veneto Royals", verified: true, rating: 4.9, reviews: 91,
+    seller: "Veneto Royals", country: "AT", verified: true, rating: 4.9, reviews: 91,
     image: IMG.ball, category: "snakes", expoId: 1,
     sire: "Banana Pastel", dam: "Clown",
-    desc: "Mangia regolarmente topi decongelati. Tre mute completate."
+    desc: "Mangia regolarmente topi decongelati. Tre mute completate.",
+    // Auction: reserve already met, lively bidding, ends in ~5 hours
+    auction: { startPrice: 150, reservePrice: 220, currentBid: 255, bidCount: 14, endsAt: "2026-05-31T18:30:00", highBidder: "snake_fan" },
   },
   {
     id: 5, species: "Pogona vitticeps", common: "Pogona",
     traits: [{ name: "Hypo Zero", cls: "recessive" }, { name: "Leatherback", cls: "incDom" }],
     price: 160, deposit: 16, sex: "P", ageMonths: 4, weight: "45g",
     region: "Piemonte", city: "Cuneo", distanceKm: 95,
-    seller: "DragoMania Piemonte", verified: false, rating: 4.4, reviews: 18,
+    seller: "DragoMania Piemonte", country: "IT", verified: false, rating: 4.4, reviews: 18,
     image: IMG.beardie, category: "lizards", expoId: 2,
     sire: null, dam: null,
     desc: "Coppia giovane, ottimi mangiatori. Pronti per nuovo terrario."
@@ -474,7 +648,7 @@ const LISTINGS = [
     traits: [{ name: "hermanni boettgeri", cls: "locality" }, { name: "CB 2024", cls: "wild" }],
     price: 220, deposit: 22, sex: "F", ageMonths: 18, weight: "180g",
     region: "Toscana", city: "Firenze", distanceKm: 340,
-    seller: "Testudo Toscana", verified: true, rating: 5.0, reviews: 24,
+    seller: "Testudo Toscana", country: "IT", verified: true, rating: 5.0, reviews: 24,
     image: IMG.tortoise, category: "tortoises", expoId: null,
     sire: null, dam: null,
     desc: "Esemplare nato in cattività con documenti CITES Allegato A in regola."
@@ -484,7 +658,7 @@ const LISTINGS = [
     traits: [{ name: "Anery", cls: "recessive" }, { name: "Motley", cls: "recessive" }],
     price: 85, deposit: 9, sex: "F", ageMonths: 6, weight: "55g",
     region: "Lombardia", city: "Bergamo", distanceKm: 45,
-    seller: "Snake Italia BG", verified: true, rating: 4.6, reviews: 33,
+    seller: "Snake Italia BG", country: "IT", verified: true, rating: 4.6, reviews: 33,
     image: IMG.corn, category: "snakes", expoId: 2,
     sire: "Anery Motley", dam: "Anery",
     desc: "Femmina giovane, alimentazione regolare con topi decongelati."
@@ -494,7 +668,7 @@ const LISTINGS = [
     traits: [{ name: "Albino", cls: "recessive" }, { name: "Conda", cls: "incDom" }],
     price: 280, deposit: 28, sex: "M", ageMonths: 4, weight: "32g",
     region: "Piemonte", city: "Asti", distanceKm: 55,
-    seller: "Piedmont Geckos", verified: true, rating: 4.9, reviews: 47,
+    seller: "Piedmont Geckos", country: "IT", verified: true, rating: 4.9, reviews: 47,
     image: IMG.hognose, category: "snakes", expoId: 1,
     sire: "Albino Conda", dam: "het Albino Conda",
     desc: "Mangia regolarmente in pinzetta. Carattere tipico hognose."
@@ -625,7 +799,7 @@ function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().
 
 const SELLERS = {
   "Piedmont Geckos": {
-    name: "Piedmont Geckos", region: "Piemonte", city: "Torino", verified: true,
+    name: "Piedmont Geckos", country: "IT", region: "Piemonte", city: "Torino", verified: true,
     memberSince: "2021", totalSales: 287, rating: 4.9, reviewCount: 47,
     specialties: ["Correlophus ciliatus", "Heterodon nasicus", "Eublepharis macularius"],
     expoIds: [1, 2],
@@ -638,7 +812,7 @@ const SELLERS = {
     ],
   },
   "ExoBreed Italia": {
-    name: "ExoBreed Italia", region: "Lombardia", city: "Milano", verified: true,
+    name: "ExoBreed Italia", country: "DE", region: "Bayern", city: "München", verified: true,
     memberSince: "2019", totalSales: 412, rating: 4.8, reviewCount: 62,
     specialties: ["Furcifer pardalis", "Chamaeleo calyptratus"],
     expoIds: [1],
@@ -650,7 +824,7 @@ const SELLERS = {
     ],
   },
   "LeoMorphs Campania": {
-    name: "LeoMorphs Campania", region: "Campania", city: "Napoli", verified: true,
+    name: "LeoMorphs Campania", country: "IT", region: "Campania", city: "Napoli", verified: true,
     memberSince: "2022", totalSales: 156, rating: 4.7, reviewCount: 38,
     specialties: ["Eublepharis macularius"],
     expoIds: [2, 3],
@@ -661,7 +835,7 @@ const SELLERS = {
     ],
   },
   "Veneto Royals": {
-    name: "Veneto Royals", region: "Veneto", city: "Verona", verified: true,
+    name: "Veneto Royals", country: "AT", region: "Tirol", city: "Innsbruck", verified: true,
     memberSince: "2020", totalSales: 523, rating: 4.9, reviewCount: 91,
     specialties: ["Python regius"],
     expoIds: [1, 2],
@@ -673,7 +847,7 @@ const SELLERS = {
     ],
   },
   "DragoMania Piemonte": {
-    name: "DragoMania Piemonte", region: "Piemonte", city: "Cuneo", verified: false,
+    name: "DragoMania Piemonte", country: "IT", region: "Piemonte", city: "Cuneo", verified: false,
     memberSince: "2024", totalSales: 34, rating: 4.4, reviewCount: 18,
     specialties: ["Pogona vitticeps"],
     expoIds: [],
@@ -684,7 +858,7 @@ const SELLERS = {
     ],
   },
   "Testudo Toscana": {
-    name: "Testudo Toscana", region: "Toscana", city: "Firenze", verified: true,
+    name: "Testudo Toscana", country: "IT", region: "Toscana", city: "Firenze", verified: true,
     memberSince: "2018", totalSales: 89, rating: 5.0, reviewCount: 24,
     specialties: ["Testudo hermanni", "Testudo graeca"],
     expoIds: [3],
@@ -695,7 +869,7 @@ const SELLERS = {
     ],
   },
   "Snake Italia BG": {
-    name: "Snake Italia BG", region: "Lombardia", city: "Bergamo", verified: true,
+    name: "Snake Italia BG", country: "IT", region: "Lombardia", city: "Bergamo", verified: true,
     memberSince: "2020", totalSales: 178, rating: 4.6, reviewCount: 33,
     specialties: ["Pantherophis guttatus", "Lampropeltis"],
     expoIds: [2],
@@ -732,7 +906,16 @@ export default function HerpMarket() {
   const [viewData, setViewData] = useState(null);
   const [lang, setLang] = useState("it");
   const [favorites, setFavorites] = useState([1, 4]);
-  const [filter, setFilter] = useState({ category: null, sex: null, region: null, sort: "newest", search: "" });
+  const [filter, setFilter] = useState({
+    category: null, subCategory: null, sex: null, region: null, country: null,
+    sort: "newest", search: "",
+    priceMin: null, priceMax: null,
+    traits: [],            // array of selected trait names
+    traitClass: null,      // recessive | dominant | incDom | line | locality | het | wild
+    seller: null,
+    expoOnly: false,
+    verifiedOnly: false,
+  });
 
   // Auth state — null = logged out
   const [user, setUser] = useState(null);
@@ -745,7 +928,13 @@ export default function HerpMarket() {
   // Category tiles, "see all" links and similar entry points should call go("search") directly
   // to preserve the filter they just set.
   const goToSearchFresh = () => {
-    setFilter({ category: null, sex: null, region: null, sort: "newest", search: "" });
+    setFilter({
+      category: null, subCategory: null, sex: null, region: null, country: null,
+      sort: "newest", search: "",
+      priceMin: null, priceMax: null,
+      traits: [], traitClass: null, seller: null,
+      expoOnly: false, verifiedOnly: false,
+    });
     go("search");
   };
   const requireAuth = (reason, after) => {
@@ -789,7 +978,9 @@ export default function HerpMarket() {
       case "about":     return <AboutContact {...props} />;
       case "terms":     return <TermsLegal {...props} />;
       case "storepolicy": return <StorePolicy {...props} />;
-      case "settings":  return <PlaceholderScreen title={t.settingsKyc} {...props} icon={<SettingsIcon size={28} />} />;
+      case "privacy":   return <PrivacyPolicy {...props} />;
+      case "plans":     return <PlansScreen {...props} />;
+      case "settings":  return <SettingsScreen {...props} />;
       default:          return <Home_ {...props} />;
     }
   };
@@ -850,27 +1041,34 @@ export default function HerpMarket() {
 
       {/* Main */}
       <div className="flex-1 relative flex flex-col overflow-hidden">
-        {/* Mobile top header (visible on home only — other screens have their own headers) */}
-        {view === "home" && (
-          <header className="md:hidden absolute top-0 inset-x-0 z-40 px-5 pt-3 flex justify-end pointer-events-none">
-            <div className="pointer-events-auto">
-              {user ? (
-                <button onClick={() => go("profile")}
-                        className="flex items-center gap-2 bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 rounded-full pl-1 pr-3 py-1">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-xs text-stone-50 font-bold">
-                    {user.name[0]}
-                  </div>
-                  <span className="text-xs font-bold text-stone-100">{user.name.split(" ")[0]}</span>
-                </button>
-              ) : (
-                <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
-                        className="bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-lg">
-                  <LogIn size={12} />{t.loginOrJoin}
-                </button>
-              )}
-            </div>
-          </header>
-        )}
+        {/* Mobile floating top controls — always present so the language
+            toggle (and login) is reachable from every screen, not just home. */}
+        <header className="md:hidden absolute top-0 right-0 z-40 px-4 pt-3 flex items-center gap-2 pointer-events-none">
+          {/* Language toggle — persistent on all mobile screens */}
+          <button onClick={() => setLang(lang === "it" ? "en" : "it")}
+                  className="pointer-events-auto flex items-center gap-1 bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 text-stone-200 hover:text-amber-300 rounded-full px-3 py-2 shadow-lg transition-colors"
+                  aria-label="Toggle language">
+            <Languages size={13} />
+            <span className="text-[11px] font-black uppercase tracking-widest">{lang}</span>
+          </button>
+          {/* Login pill only on home (other screens reach profile via bottom nav) */}
+          {view === "home" && (
+            user ? (
+              <button onClick={() => go("profile")}
+                      className="pointer-events-auto flex items-center gap-2 bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 rounded-full pl-1 pr-3 py-1">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-xs text-stone-50 font-bold">
+                  {user.name[0]}
+                </div>
+                <span className="text-xs font-bold text-stone-100">{user.name.split(" ")[0]}</span>
+              </button>
+            ) : (
+              <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
+                      className="pointer-events-auto bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-lg">
+                <LogIn size={12} />{t.loginOrJoin}
+              </button>
+            )
+          )}
+        </header>
 
         <div className="flex-1 overflow-y-auto hide-scrollbar pb-24 md:pb-0">
           {screen()}
@@ -887,11 +1085,74 @@ export default function HerpMarket() {
 
       {/* Auth modal */}
       {authModal && (
-        <AuthModal modal={authModal} setModal={setAuthModal} onLogin={handleLogin} t={t} lang={lang} />
+        <AuthModal modal={authModal} setModal={setAuthModal} onLogin={handleLogin} t={t} lang={lang} go={go} />
       )}
 
       {/* Demo state toggle — floating, dismissible. Lets you instantly flip auth for demos. */}
       <DemoToggle user={user} onLogin={() => handleLogin("Marco R.")} onLogout={handleLogout} />
+
+      {/* Privacy / cookie banner — shown until the user makes a choice. */}
+      <CookieBanner t={t} lang={lang} go={go} />
+
+      {/* Global mobile language toggle — fixed, always reachable on any screen.
+          Hidden on desktop where the sidebar Brand toggle already exists. */}
+      <button onClick={() => setLang(lang === "it" ? "en" : "it")}
+              aria-label="Toggle language"
+              className="md:hidden fixed top-3 right-3 z-[45] flex items-center gap-1
+                         bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 text-stone-200
+                         hover:text-amber-300 rounded-full pl-2.5 pr-3 py-1.5 shadow-lg transition-colors">
+        <Languages size={13} />
+        <span className="text-[11px] font-black uppercase tracking-widest">{lang}</span>
+      </button>
+    </div>
+  );
+}
+
+/* Cookie / privacy banner shown on first visit. Persists the choice in
+   localStorage so it doesn't re-appear. We use Vercel Analytics in a
+   privacy-friendly mode that doesn't strictly require consent, so this banner
+   is informational + lets users opt out of analytics; technical cookies stay. */
+function CookieBanner({ t, lang, go }) {
+  const KEY = "herpmarket_cookie_choice";
+  const [choice, setChoice] = useState(() => {
+    try { return typeof window !== "undefined" ? window.localStorage.getItem(KEY) : null; }
+    catch { return null; }
+  });
+  if (choice) return null;
+
+  const decide = (value) => {
+    try { window.localStorage.setItem(KEY, value); } catch {}
+    setChoice(value);
+    // If you later add Vercel Analytics: only initialise it when value === "accept".
+  };
+
+  return (
+    <div className="fixed bottom-20 md:bottom-4 inset-x-3 md:right-4 md:left-auto md:max-w-md z-[55]
+                    bg-stone-900/95 backdrop-blur-xl ring-1 ring-stone-700 rounded-2xl
+                    p-4 shadow-2xl anim-up">
+      <div className="flex items-start gap-3">
+        <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
+          <Lock size={16} className="text-amber-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-stone-100 text-sm">{t.cookieTitle}</h3>
+          <p className="text-[11px] text-stone-400 leading-relaxed mt-1">{t.cookieBody}</p>
+          <button onClick={() => go("privacy")}
+                  className="text-[11px] font-bold text-amber-400 hover:text-amber-300 mt-1.5">
+            {t.cookieMore} →
+          </button>
+        </div>
+      </div>
+      <div className="flex gap-2 mt-3">
+        <button onClick={() => decide("decline")}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">
+          {t.cookieDecline}
+        </button>
+        <button onClick={() => decide("accept")}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors">
+          {t.cookieAccept}
+        </button>
+      </div>
     </div>
   );
 }
@@ -994,7 +1255,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
          className="group bg-stone-900/60 border border-stone-800 rounded-xl overflow-hidden cursor-pointer hover:border-amber-500/40 hover:shadow-2xl hover:shadow-amber-500/5 transition-all flex flex-col">
       <div className="relative aspect-square bg-stone-800 overflow-hidden">
         <img src={item.image} alt={item.common}
-             onError={(e) => { e.target.onerror = null; e.target.src = fallback(t.realPhoto); }}
+             onError={(e) => { e.target.onerror = null; e.target.src = fallback(item.common || t.realPhoto); }}
              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         {/* Sex badge top-left */}
         <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50">
@@ -1014,6 +1275,12 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             </div>
           ) : null;
         })()}
+        {/* Auction badge bottom-right */}
+        {item.auction && (
+          <div className="absolute bottom-2 right-2 bg-stone-950/85 backdrop-blur-sm text-amber-300 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ring-1 ring-amber-500/40 shadow-lg inline-flex items-center gap-1">
+            <ArrowUpDown size={9} />{t.auctionLabel}
+          </div>
+        )}
       </div>
 
       <div className="p-2.5 flex-1 flex flex-col gap-1.5">
@@ -1040,11 +1307,21 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
           <span className="truncate underline decoration-stone-700 underline-offset-2 hover:decoration-amber-400">{item.seller}</span>
         </button>
 
-        {/* Footer: price + age */}
+        {/* Footer: price/bid + age */}
         <div className="flex items-end justify-between pt-1.5 mt-auto border-t border-stone-800/60">
           <div>
-            <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
-            <div className="text-[9px] text-stone-500 mt-1 truncate">{formatAge(item.ageMonths, t)} · {item.city}</div>
+            {item.auction ? (
+              <>
+                <div className="text-[8px] text-amber-400/70 font-black uppercase tracking-widest leading-none mb-0.5">{t.currentBid}</div>
+                <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.auction.currentBid)}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.auction.bidCount} {t.bids} · {countryByCode(item.country).flag} {item.city}</div>
+              </>
+            ) : (
+              <>
+                <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{formatAge(item.ageMonths, t)} · {countryByCode(item.country).flag} {item.city}</div>
+              </>
+            )}
           </div>
           {item.verified && <ShieldCheck size={12} className="text-sky-400 mb-1 shrink-0" />}
         </div>
@@ -1056,7 +1333,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
-function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter }) {
+function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal }) {
   const userRegion = "Piemonte";
   const near = LISTINGS.filter(l => l.region === userRegion);
   const all = LISTINGS;
@@ -1066,11 +1343,27 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter }
     <div className="max-w-7xl mx-auto w-full">
       {/* Mobile header */}
       <header className="md:hidden px-5 pt-14 pb-5 bg-gradient-to-b from-stone-900 to-stone-950 border-b border-stone-800/60">
-        <div>
-          <h1 className="font-display text-3xl text-stone-50 leading-none tracking-tight" style={{ fontVariationSettings: "'opsz' 144" }}>
-            Herp<span className="italic text-amber-500">Market</span>
-          </h1>
-          <p className="text-[11px] text-stone-400 mt-2 italic font-display">{t.tagline}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display text-3xl text-stone-50 leading-none tracking-tight" style={{ fontVariationSettings: "'opsz' 144" }}>
+              Herp<span className="italic text-amber-500">Market</span>
+            </h1>
+            <p className="text-[11px] text-stone-400 mt-2 italic font-display">{t.tagline}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Login / account (language toggle now lives in the persistent floating header) */}
+            {user ? (
+              <button onClick={() => go("profile")}
+                      className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-sm text-stone-50 font-bold ring-1 ring-amber-400/30">
+                {user.name[0]}
+              </button>
+            ) : (
+              <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
+                      className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-[11px] rounded-lg px-3 py-2 transition-colors">
+                <LogIn size={13} />{t.login}
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1146,6 +1439,11 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter }
           })}
         </div>
       </section>
+
+      {/* Sponsor slot — renders nothing until a row exists in the sponsors table */}
+      <div className="px-5 md:px-8 pt-6">
+        <SponsorSlot slot="home_banner" t={t} lang={lang} />
+      </div>
 
       {/* Near you */}
       {near.length > 0 && (
@@ -1257,21 +1555,53 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
 
   const filtered = useMemo(() => {
     let r = LISTINGS;
-    if (filter.category) r = r.filter(l => l.category === filter.category);
-    if (filter.sex)      r = r.filter(l => l.sex === filter.sex);
-    if (filter.region)   r = r.filter(l => l.region === filter.region);
+    if (filter.category)    r = r.filter(l => l.category === filter.category);
+    if (filter.subCategory) r = r.filter(l => l.species === filter.subCategory);
+    if (filter.sex)         r = r.filter(l => l.sex === filter.sex);
+    if (filter.region)      r = r.filter(l => l.region === filter.region);
+    if (filter.country)     r = r.filter(l => l.country === filter.country);
+    if (filter.seller)      r = r.filter(l => l.seller === filter.seller);
+    if (filter.expoOnly)    r = r.filter(l => l.expoId != null);
+    if (filter.verifiedOnly) r = r.filter(l => l.verified);
+    if (filter.priceMin != null) r = r.filter(l => l.price >= filter.priceMin);
+    if (filter.priceMax != null) r = r.filter(l => l.price <= filter.priceMax);
+    if (filter.traitClass)  r = r.filter(l => l.traits.some(tr => tr.cls === filter.traitClass));
+    if (filter.traits.length > 0) {
+      // animal must have ALL selected traits (AND logic, like MorphMarket multi-gene)
+      r = r.filter(l => filter.traits.every(want =>
+        l.traits.some(tr => tr.name.toLowerCase() === want.toLowerCase())));
+    }
     if (filter.search) {
       const q = filter.search.toLowerCase();
-      r = r.filter(l => l.species.toLowerCase().includes(q) || l.common.toLowerCase().includes(q) || l.traits.some(tr => tr.name.toLowerCase().includes(q)));
+      r = r.filter(l =>
+        l.species.toLowerCase().includes(q) ||
+        l.common.toLowerCase().includes(q) ||
+        l.seller.toLowerCase().includes(q) ||
+        l.traits.some(tr => tr.name.toLowerCase().includes(q)));
     }
     if (filter.sort === "priceAsc")  r = [...r].sort((a, b) => a.price - b.price);
     if (filter.sort === "priceDesc") r = [...r].sort((a, b) => b.price - a.price);
     if (filter.sort === "distance")  r = [...r].sort((a, b) => a.distanceKm - b.distanceKm);
+    if (filter.sort === "ratingDesc") r = [...r].sort((a, b) => b.rating - a.rating);
     return r;
   }, [filter]);
 
-  const activeFilterCount = [filter.category, filter.sex, filter.region].filter(Boolean).length;
-  const sortLabels = { newest: t.sortNewest, priceAsc: t.sortPriceAsc, priceDesc: t.sortPriceDesc, distance: t.sortDistance };
+  const activeFilterCount = [
+    filter.category, filter.subCategory, filter.sex, filter.region, filter.country, filter.seller,
+    filter.traitClass, filter.priceMin != null || filter.priceMax != null ? "price" : null,
+    filter.expoOnly ? "expo" : null, filter.verifiedOnly ? "verified" : null,
+  ].filter(Boolean).length + filter.traits.length;
+
+  const sortLabels = {
+    newest: t.sortNewest, priceAsc: t.sortPriceAsc, priceDesc: t.sortPriceDesc,
+    distance: t.sortDistance, ratingDesc: t.sortRating,
+  };
+  // All sellers present in current category scope (for the seller filter dropdown)
+  const sellersInScope = [...new Set(
+    LISTINGS.filter(l => !filter.category || l.category === filter.category).map(l => l.seller)
+  )].sort();
+  // Trait tags available for the current category/sub-category scope
+  const scopeTraits = filter.category ? getTraitsForScope(filter.category, filter.subCategory) : [];
 
   return (
     <div className="max-w-7xl mx-auto w-full">
@@ -1305,16 +1635,63 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
             <div className="ml-auto text-[10px] text-stone-500 font-bold uppercase tracking-widest">{t.resultsCount(filtered.length)}</div>
           </div>
 
+          {/* Quick trait chips — appear when a category is selected (MorphMarket-style) */}
+          {filter.category && scopeTraits.length > 0 && (
+            <div className="mt-3 -mx-5 md:mx-0 px-5 md:px-0">
+              <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
+                {scopeTraits.slice(0, 14).map((tr, i) => {
+                  const on = filter.traits.includes(tr.name);
+                  return (
+                    <button key={i}
+                            onClick={() => setFilter({
+                              ...filter,
+                              traits: on ? filter.traits.filter(x => x !== tr.name) : [...filter.traits, tr.name],
+                            })}
+                            className={`shrink-0 transition-all ${on ? "scale-100" : "opacity-70 hover:opacity-100"}`}>
+                      <span className={on ? "ring-2 ring-amber-400 rounded-md inline-block" : "inline-block"}>
+                        <TraitChip trait={tr} size="sm" />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Active filter pills */}
           {activeFilterCount > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {filter.category && (
-                <FilterPill onRemove={() => setFilter({ ...filter, category: null })}>
+                <FilterPill onRemove={() => setFilter({ ...filter, category: null, subCategory: null, traits: [] })}>
                   {CATEGORIES.find(c => c.id === filter.category)?.[lang]}
+                </FilterPill>
+              )}
+              {filter.subCategory && (
+                <FilterPill onRemove={() => setFilter({ ...filter, subCategory: null })}>
+                  {SPECIES_LABELS[filter.subCategory]?.[lang] || filter.subCategory}
+                </FilterPill>
+              )}
+              {filter.traits.map(tn => (
+                <FilterPill key={tn} onRemove={() => setFilter({ ...filter, traits: filter.traits.filter(x => x !== tn) })}>
+                  {tn}
+                </FilterPill>
+              ))}
+              {filter.traitClass && (
+                <FilterPill onRemove={() => setFilter({ ...filter, traitClass: null })}>
+                  {TRAIT_CLASS[filter.traitClass]?.label}
                 </FilterPill>
               )}
               {filter.sex && <FilterPill onRemove={() => setFilter({ ...filter, sex: null })}>{sexLabel(filter.sex, t)}</FilterPill>}
               {filter.region && <FilterPill onRemove={() => setFilter({ ...filter, region: null })}>{filter.region}</FilterPill>}
+              {filter.country && <FilterPill onRemove={() => setFilter({ ...filter, country: null })}>{countryByCode(filter.country).flag} {countryByCode(filter.country)[lang]}</FilterPill>}
+              {filter.seller && <FilterPill onRemove={() => setFilter({ ...filter, seller: null })}>{filter.seller}</FilterPill>}
+              {(filter.priceMin != null || filter.priceMax != null) && (
+                <FilterPill onRemove={() => setFilter({ ...filter, priceMin: null, priceMax: null })}>
+                  €{filter.priceMin ?? 0}–{filter.priceMax ?? "∞"}
+                </FilterPill>
+              )}
+              {filter.expoOnly && <FilterPill onRemove={() => setFilter({ ...filter, expoOnly: false })}>★ {t.expoOnlyLabel}</FilterPill>}
+              {filter.verifiedOnly && <FilterPill onRemove={() => setFilter({ ...filter, verifiedOnly: false })}>✓ {t.verifiedOnlyLabel}</FilterPill>}
             </div>
           )}
         </div>
@@ -1324,8 +1701,8 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
       <div className="px-5 md:px-8 py-5 pb-20">
         {filtered.length === 0 ? (
           <div className="text-center py-20 text-stone-500">
-            <p className="font-display italic text-lg">Nessun risultato trovato</p>
-            <p className="text-xs mt-2">Prova a modificare i filtri</p>
+            <p className="font-display italic text-lg">{lang === "it" ? "Nessun risultato trovato" : "No results found"}</p>
+            <p className="text-xs mt-2">{lang === "it" ? "Prova a modificare i filtri" : "Try adjusting your filters"}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
@@ -1336,18 +1713,100 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
 
       {/* Filters drawer */}
       {showFilters && (
-        <BottomSheet onClose={() => setShowFilters(false)} title={t.filters}>
+        <BottomSheet onClose={() => setShowFilters(false)} title={t.advFilters}>
           <div className="space-y-5">
+            {/* Category */}
             <FilterGroup label={t.species}>
               <div className="flex flex-wrap gap-1.5">
                 {CATEGORIES.map(c => (
                   <ToggleChip key={c.id} active={filter.category === c.id}
-                              onClick={() => setFilter({ ...filter, category: filter.category === c.id ? null : c.id })}>
+                              onClick={() => setFilter({ ...filter, category: filter.category === c.id ? null : c.id, subCategory: null, traits: [] })}>
                     {c.emoji} {c[lang]}
                   </ToggleChip>
                 ))}
               </div>
             </FilterGroup>
+
+            {/* Sub-category (species) — only when a category with species is chosen */}
+            {filter.category && (CATEGORY_SPECIES[filter.category]?.length > 0) && (
+              <FilterGroup label={t.subCategoryLabel}>
+                <select value={filter.subCategory || ""} onChange={e => setFilter({ ...filter, subCategory: e.target.value || null, traits: [] })}
+                        className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
+                  <option value="">{t.anySpecies}</option>
+                  {CATEGORY_SPECIES[filter.category].map(sp => (
+                    <option key={sp} value={sp}>{SPECIES_LABELS[sp]?.[lang] || sp}</option>
+                  ))}
+                </select>
+              </FilterGroup>
+            )}
+
+            {/* Trait tags — dynamic by category/species */}
+            <FilterGroup label={t.traitsLabel}>
+              {filter.category ? (
+                scopeTraits.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto hide-scrollbar">
+                    {scopeTraits.map((tr, i) => {
+                      const on = filter.traits.includes(tr.name);
+                      return (
+                        <button key={i}
+                                onClick={() => setFilter({
+                                  ...filter,
+                                  traits: on ? filter.traits.filter(x => x !== tr.name) : [...filter.traits, tr.name],
+                                })}>
+                          <span className={on ? "ring-2 ring-amber-400 rounded-md inline-block" : "opacity-60 hover:opacity-100 inline-block"}>
+                            <TraitChip trait={tr} size="sm" />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-stone-500 italic">{lang === "it" ? "Nessun tratto catalogato per questa categoria." : "No catalogued traits for this category."}</p>
+                )
+              ) : (
+                <p className="text-xs text-stone-500 italic">{t.selectCategoryFirst}</p>
+              )}
+            </FilterGroup>
+
+            {/* Genetic type (trait class) */}
+            <FilterGroup label={t.traitClassLabel}>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  ["recessive", t.classRecessive], ["dominant", t.classDominant], ["incDom", t.classIncDom],
+                  ["line", t.classLine], ["locality", t.classLocality], ["het", t.classHet],
+                ].map(([key, label]) => (
+                  <ToggleChip key={key} active={filter.traitClass === key}
+                              onClick={() => setFilter({ ...filter, traitClass: filter.traitClass === key ? null : key })}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${TRAIT_CLASS[key]?.dot}`} />{label}
+                    </span>
+                  </ToggleChip>
+                ))}
+              </div>
+            </FilterGroup>
+
+            {/* Price range */}
+            <FilterGroup label={t.priceRange}>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                  <input type="number" inputMode="numeric" placeholder={t.min}
+                         value={filter.priceMin ?? ""}
+                         onChange={e => setFilter({ ...filter, priceMin: e.target.value === "" ? null : Number(e.target.value) })}
+                         className="w-full bg-stone-900 border border-stone-800 rounded-lg pl-7 pr-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
+                </div>
+                <span className="text-stone-600">–</span>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                  <input type="number" inputMode="numeric" placeholder={t.max}
+                         value={filter.priceMax ?? ""}
+                         onChange={e => setFilter({ ...filter, priceMax: e.target.value === "" ? null : Number(e.target.value) })}
+                         className="w-full bg-stone-900 border border-stone-800 rounded-lg pl-7 pr-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
+                </div>
+              </div>
+            </FilterGroup>
+
+            {/* Sex */}
             <FilterGroup label={t.sex}>
               <div className="flex flex-wrap gap-1.5">
                 {["M", "F", "U", "P"].map(s => (
@@ -1358,6 +1817,20 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                 ))}
               </div>
             </FilterGroup>
+
+            {/* Country */}
+            <FilterGroup label={t.countryLabel}>
+              <div className="flex flex-wrap gap-1.5">
+                {COUNTRIES.map(c => (
+                  <ToggleChip key={c.code} active={filter.country === c.code}
+                              onClick={() => setFilter({ ...filter, country: filter.country === c.code ? null : c.code })}>
+                    {c.flag} {c[lang]}
+                  </ToggleChip>
+                ))}
+              </div>
+            </FilterGroup>
+
+            {/* Region */}
             <FilterGroup label={t.region}>
               <select value={filter.region || ""} onChange={e => setFilter({ ...filter, region: e.target.value || null })}
                       className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
@@ -1365,14 +1838,50 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                 {REGIONS.slice(1).map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </FilterGroup>
-            <div className="flex gap-2 pt-2">
-              <button onClick={() => { setFilter({ category: null, sex: null, region: null, sort: filter.sort, search: filter.search }); }}
+
+            {/* Seller */}
+            <FilterGroup label={t.sellerLabel}>
+              <select value={filter.seller || ""} onChange={e => setFilter({ ...filter, seller: e.target.value || null })}
+                      className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
+                <option value="">{t.anySeller}</option>
+                {sellersInScope.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Toggles */}
+            <div className="space-y-2">
+              <label className="flex items-center justify-between bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-3 cursor-pointer">
+                <span className="text-sm text-stone-200 font-medium flex items-center gap-2">
+                  <Calendar size={15} className="text-amber-400" />{t.expoOnlyLabel}
+                </span>
+                <input type="checkbox" checked={filter.expoOnly}
+                       onChange={() => setFilter({ ...filter, expoOnly: !filter.expoOnly })}
+                       className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
+              </label>
+              <label className="flex items-center justify-between bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-3 cursor-pointer">
+                <span className="text-sm text-stone-200 font-medium flex items-center gap-2">
+                  <ShieldCheck size={15} className="text-sky-400" />{t.verifiedOnlyLabel}
+                </span>
+                <input type="checkbox" checked={filter.verifiedOnly}
+                       onChange={() => setFilter({ ...filter, verifiedOnly: !filter.verifiedOnly })}
+                       className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-2 sticky bottom-0 bg-stone-900 pb-1">
+              <button onClick={() => setFilter({
+                        category: null, subCategory: null, sex: null, region: null, country: null,
+                        sort: filter.sort, search: filter.search,
+                        priceMin: null, priceMax: null, traits: [], traitClass: null,
+                        seller: null, expoOnly: false, verifiedOnly: false,
+                      })}
                       className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">
-                {t.reset}
+                {t.clearAll}
               </button>
               <button onClick={() => setShowFilters(false)}
                       className="flex-[2] py-3 rounded-lg text-sm font-bold bg-amber-500 text-stone-950 hover:bg-amber-400 transition-colors">
-                {t.apply}
+                {t.apply} · {t.resultsCount(filtered.length)}
               </button>
             </div>
           </div>
@@ -1446,6 +1955,191 @@ function BottomSheet({ title, onClose, children }) {
          handover_pending (with sellerHandover & buyerHandover flags) →
          completed → document generated
    ═════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   AUCTIONS — MorphMarket-style
+   - startPrice: visible, where bidding opens
+   - reservePrice: HIDDEN seller floor. UI shows only "reserve met / not met",
+     never the number.
+   - currentBid + bidCount: live state
+   - endsAt: ISO timestamp; countdown ticks down to it
+   The min next bid is currentBid + a small increment.
+   ═════════════════════════════════════════════════════════════════ */
+
+// Returns a live-ticking countdown for a target ISO datetime
+function useCountdown(endsAtISO) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000 * 30);
+    return () => clearInterval(id);
+  }, []);
+  const end = new Date(endsAtISO).getTime();
+  const diff = end - now;
+  if (diff <= 0) return { ended: true, d: 0, h: 0, m: 0 };
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return { ended: false, d, h, m };
+}
+
+function bidIncrement(amount) {
+  if (amount < 100) return 5;
+  if (amount < 500) return 10;
+  if (amount < 1000) return 25;
+  return 50;
+}
+
+function AuctionBox({ auction, t, lang, user, requireAuth }) {
+  const [bid, setBid] = useState(auction.currentBid);
+  const [bidCount, setBidCount] = useState(auction.bidCount);
+  const [showBidModal, setShowBidModal] = useState(false);
+  const [myStatus, setMyStatus] = useState(null); // null | "winning" | "outbid"
+  const cd = useCountdown(auction.endsAt);
+
+  const minNext = bid + bidIncrement(bid);
+  const reserveMet = bid >= auction.reservePrice;
+
+  const placeBid = (amount) => {
+    setBid(amount);
+    setBidCount(c => c + 1);
+    setMyStatus("winning");
+    setShowBidModal(false);
+  };
+
+  return (
+    <div id="auction-box" className="mt-5 bg-gradient-to-br from-amber-500/10 to-stone-900/40 ring-1 ring-amber-500/25 rounded-2xl p-5">
+      {/* Auction badge + countdown */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-2 py-1 rounded">
+          <ArrowUpDown size={11} />{t.auctionLabel}
+        </span>
+        {cd.ended ? (
+          <span className="text-xs font-bold text-rose-400">{t.auctionEnded}</span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-300">
+            <Clock size={13} className="text-amber-400" />
+            {t.auctionEnds} {cd.d > 0 && `${cd.d}${t.days} `}{cd.h}{t.hours} {cd.m}{t.minutes}
+          </span>
+        )}
+      </div>
+
+      {/* Current bid */}
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">{t.currentBid}</div>
+          <div className="font-display font-bold text-4xl text-stone-50 leading-none mt-1">{formatPrice(bid)}</div>
+          <div className="text-[11px] text-stone-400 mt-1.5">
+            {bidCount} {t.bids} · {t.startPrice.toLowerCase()} {formatPrice(auction.startPrice)}
+          </div>
+        </div>
+        {/* Reserve status — never shows the actual number */}
+        <div className={`text-right ${reserveMet ? "text-emerald-400" : "text-stone-500"}`}>
+          <div className="inline-flex items-center gap-1 text-[11px] font-bold">
+            {reserveMet ? <CheckCircle size={13} /> : <Info size={13} />}
+            {reserveMet ? t.reserveMet : t.reserveNotMet}
+          </div>
+        </div>
+      </div>
+
+      {/* My status */}
+      {myStatus && !cd.ended && (
+        <div className={`mt-3 text-[11px] font-bold rounded-lg px-3 py-2 ${
+          myStatus === "winning" ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20"
+                                 : "bg-rose-500/10 text-rose-300 ring-1 ring-rose-500/20"
+        }`}>
+          {myStatus === "winning" ? `✓ ${t.winning}` : t.outbid}
+        </div>
+      )}
+
+      {/* Bid button */}
+      {!cd.ended && (
+        <button onClick={() => { if (requireAuth(t.placeBid, () => setShowBidModal(true))) setShowBidModal(true); }}
+                className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
+          {t.placeBid} · {t.minimumBid} {formatPrice(minNext)}
+        </button>
+      )}
+
+      <p className="text-[10px] text-stone-500 leading-relaxed mt-3">{t.auctionInfo}</p>
+
+      {showBidModal && (
+        <AuctionBidModal minNext={minNext} currentBid={bid} onClose={() => setShowBidModal(false)}
+                         onBid={placeBid} t={t} lang={lang} />
+      )}
+    </div>
+  );
+}
+
+function AuctionBidModal({ minNext, currentBid, onClose, onBid, t, lang }) {
+  const [value, setValue] = useState(minNext);
+  const tooLow = value < minNext;
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()}
+           className="w-full md:max-w-sm bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-6 anim-up">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-xl text-stone-50">{t.placeBid}</h2>
+          <button onClick={onClose} className="text-stone-400 hover:text-stone-100"><X size={20} /></button>
+        </div>
+        <div className="text-[11px] text-stone-400 mb-2">{t.currentBid}: <span className="text-stone-200 font-bold">{formatPrice(currentBid)}</span></div>
+        <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.yourBid}</label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-lg">€</span>
+          <input type="number" inputMode="numeric" value={value}
+                 onChange={e => setValue(Number(e.target.value))}
+                 className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg pl-8 pr-3 py-3 text-lg font-bold text-stone-100 outline-none focus:ring-amber-500/60" />
+        </div>
+        {/* Quick-bump buttons */}
+        <div className="flex gap-2 mt-3">
+          {[0, 1, 3].map((mult, i) => {
+            const inc = bidIncrement(minNext) * (mult === 0 ? 1 : mult * 2);
+            const amt = minNext + (mult === 0 ? 0 : inc);
+            return (
+              <button key={i} onClick={() => setValue(amt)}
+                      className="flex-1 py-2 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
+                {formatPrice(amt)}
+              </button>
+            );
+          })}
+        </div>
+        {tooLow && <p className="text-[11px] text-rose-400 font-bold mt-2">{t.bidTooLow}</p>}
+        <button onClick={() => onBid(value)} disabled={tooLow}
+                className="w-full mt-4 bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
+          {t.placeBid}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* Cross-border notice: shown on the detail page when the seller's country
+   differs from the buyer's. For the demo the buyer is assumed to be in Italy.
+   Switzerland gets an extra customs warning since it's outside the EU. */
+function CrossBorderNotice({ sellerCountry, t, lang, buyerCountry = "IT" }) {
+  if (!sellerCountry || sellerCountry === buyerCountry) return null;
+  const sc = countryByCode(sellerCountry);
+  const isSwiss = sellerCountry === "CH" || buyerCountry === "CH";
+  return (
+    <div className="px-5 mt-5">
+      <div className={`rounded-xl p-4 ring-1 ${
+        isSwiss ? "bg-rose-500/5 ring-rose-500/25" : "bg-amber-500/5 ring-amber-500/25"
+      }`}>
+        <div className="flex items-center gap-2 mb-1.5">
+          <Truck size={15} className={isSwiss ? "text-rose-400" : "text-amber-400"} />
+          <h3 className="font-bold text-stone-100 text-sm">
+            {t.crossBorderTitle} · {sc.flag} {sc[lang]} → {countryByCode(buyerCountry).flag} {countryByCode(buyerCountry)[lang]}
+          </h3>
+        </div>
+        <p className="text-[11px] text-stone-300 leading-relaxed">{t.crossBorderEu}</p>
+        {isSwiss && (
+          <p className="text-[11px] text-rose-200/90 leading-relaxed mt-2 pt-2 border-t border-rose-500/15">
+            {t.crossBorderCh}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang }) {
   // Single state machine. Possible values:
   // "idle" | "requested" | "approved" | "declined" | "paid" | "handover" | "completed"
@@ -1519,10 +2213,14 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
         <div className="flex flex-wrap gap-1.5 mt-4">
           {a.traits.map((tr, i) => <TraitChip key={i} trait={tr} size="sm" />)}
         </div>
-        <div className="mt-5 flex items-baseline gap-3">
-          <span className="font-display font-bold text-4xl text-stone-50">{formatPrice(a.price)}</span>
-          {isExpoFlow && <span className="text-xs text-stone-500">· {t.payDeposit.toLowerCase()} {formatPrice(a.deposit)}</span>}
-        </div>
+        {a.auction ? (
+          <AuctionBox auction={a.auction} t={t} lang={lang} user={user} requireAuth={requireAuth} />
+        ) : (
+          <div className="mt-5 flex items-baseline gap-3">
+            <span className="font-display font-bold text-4xl text-stone-50">{formatPrice(a.price)}</span>
+            {isExpoFlow && <span className="text-xs text-stone-500">· {t.payDeposit.toLowerCase()} {formatPrice(a.deposit)}</span>}
+          </div>
+        )}
       </div>
 
       {/* Specs grid */}
@@ -1530,8 +2228,11 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
         <Spec label={t.sex}>{sexLabel(a.sex, t)}</Spec>
         <Spec label={t.age}>{formatAge(a.ageMonths, t)}</Spec>
         <Spec label={t.weight}>{a.weight}</Spec>
-        <Spec label="Località">{a.city}</Spec>
+        <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag} {a.city}</Spec>
       </div>
+
+      {/* Cross-border notice — buyer (assumed IT for demo) and seller differ */}
+      <CrossBorderNotice sellerCountry={a.country} t={t} lang={lang} />
 
       {/* ── Transaction status panel — only visible once buyer has made a move ── */}
       {txState !== "idle" && (
@@ -1633,13 +2334,18 @@ function Detail({ listing, go, t, favorites, toggleFav, user, requireAuth, lang 
                   className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
             <MessageCircle size={16} />{t.message}
           </button>
-          {txState === "idle" && (
+          {a.auction ? (
+            <button onClick={() => { const el = document.getElementById('auction-box'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+                    className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
+              <ArrowUpDown size={16} />{t.placeBid}
+            </button>
+          ) : txState === "idle" && (
             <button onClick={handleRequest}
                     className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
               <Send size={16} />{isExpoFlow ? t.txRequestExpo : t.txRequest}
             </button>
           )}
-          {txState !== "idle" && (
+          {!a.auction && txState !== "idle" && (
             <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-stone-800 text-stone-400">
               <span className="text-xs">{lang === "it" ? "Vedi stato sopra ↑" : "See status above ↑"}</span>
             </div>
@@ -1865,6 +2571,107 @@ function DocumentModal({ listing, requiresCITES, buyerName, onClose, t, lang }) 
   // Pseudo transaction ID derived from listing
   const txId = `HM-${new Date().getFullYear()}-${String(listing.id).padStart(5, "0")}`;
   const a = listing;
+  const [generating, setGenerating] = useState(false);
+
+  // Load jsPDF from CDN on demand, then build a clean A4 document.
+  const downloadPdf = async () => {
+    setGenerating(true);
+    try {
+      if (!window.jspdf) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const M = 20;            // margin
+      const W = 210;           // A4 width
+      let y = M;
+
+      // Header
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(120);
+      doc.text("HERPMARKET", M, y);
+      y += 8;
+      doc.setFontSize(17); doc.setTextColor(20);
+      doc.text(docTitle, M, y);
+      y += 6;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(130);
+      doc.text(t.docSubtitle, M, y);
+      y += 4;
+      doc.setDrawColor(20); doc.setLineWidth(0.5); doc.line(M, y, W - M, y);
+      y += 8;
+
+      // Meta
+      doc.setFontSize(9); doc.setTextColor(90);
+      doc.text(`${t.docDate}: ${today}`, M, y);
+      doc.text(`${t.docId}: ${txId}`, W / 2, y);
+      y += 9;
+
+      const field = (label, value) => {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(130);
+        doc.text(label.toUpperCase(), M, y);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(20);
+        doc.text(String(value), M, y + 5);
+        y += 12;
+      };
+
+      // Parties
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(130);
+      doc.text((t.docSellerLabel).toUpperCase(), M, y);
+      doc.text((t.docBuyer).toUpperCase(), W / 2, y);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(20);
+      doc.text(a.seller, M, y + 6);
+      doc.text(buyerName, W / 2, y + 6);
+      doc.setFontSize(9); doc.setTextColor(110);
+      doc.text(`${a.city}, ${a.region}`, M, y + 11);
+      y += 18;
+      doc.setDrawColor(210); doc.setLineWidth(0.2); doc.line(M, y, W - M, y); y += 8;
+
+      // Specimen
+      field(t.docSpecies, a.species);
+      field(t.docMorph, a.traits.map(tr => tr.name).join(", "));
+      field(t.docSex, sexLabel(a.sex, t));
+      field(t.docBirth, a.birthDate || a.born || `${a.ageMonths} ${lang === "it" ? "mesi" : "months"}`);
+      field(t.origin, t.captiveBred);
+      field(t.weight, a.weight);
+
+      y += 2;
+      doc.setDrawColor(210); doc.line(M, y, W - M, y); y += 8;
+
+      // Declaration
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(130);
+      doc.text((t.docDeclaration).toUpperCase(), M, y); y += 6;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(40);
+      const lines = doc.splitTextToSize(declaration, W - 2 * M);
+      doc.text(lines, M, y); y += lines.length * 5 + 16;
+
+      // Signatures
+      doc.setDrawColor(20); doc.setLineWidth(0.4);
+      doc.line(M, y, M + 65, y);
+      doc.line(W - M - 65, y, W - M, y);
+      y += 5;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(130);
+      doc.text((t.docSignSeller).toUpperCase(), M, y);
+      doc.text((t.docSignBuyer).toUpperCase(), W - M - 65, y);
+
+      // Footer
+      doc.setFontSize(7); doc.setTextColor(160);
+      doc.text(
+        lang === "it" ? "Documento generato digitalmente da HerpMarket — herpmarket.it" : "Document digitally generated by HerpMarket — herpmarket.it",
+        W / 2, 287, { align: "center" }
+      );
+
+      doc.save(`${requiresCITES ? "CITES" : "Origine"}_${a.species.replace(/\s+/g, "_")}_${txId}.pdf`);
+    } catch (e) {
+      console.error("PDF generation failed", e);
+      alert(lang === "it" ? "Generazione PDF non riuscita. Riprova." : "PDF generation failed. Please try again.");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-stone-950/90 backdrop-blur-sm p-3 md:p-8 overflow-y-auto">
@@ -1932,8 +2739,21 @@ function DocumentModal({ listing, requiresCITES, buyerName, onClose, t, lang }) 
           </div>
         </div>
 
-        <div className="px-6 md:px-10 pb-6 text-[10px] text-stone-500 text-center font-bold tracking-widest uppercase">
+        <div className="px-6 md:px-10 pb-4 text-[10px] text-stone-500 text-center font-bold tracking-widest uppercase">
           {lang === "it" ? "Documento generato digitalmente da HerpMarket" : "Document digitally generated by HerpMarket"}
+        </div>
+
+        {/* Download bar */}
+        <div className="px-6 md:px-10 pb-7 flex gap-2">
+          <button onClick={onClose}
+                  className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-200 text-stone-700 hover:bg-stone-300 transition-colors">
+            {lang === "it" ? "Chiudi" : "Close"}
+          </button>
+          <button onClick={downloadPdf} disabled={generating}
+                  className="flex-[2] py-3 rounded-lg text-sm font-bold bg-stone-900 text-stone-50 hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+            <FileText size={16} />
+            {generating ? (lang === "it" ? "Generazione…" : "Generating…") : (lang === "it" ? "Scarica PDF" : "Download PDF")}
+          </button>
         </div>
       </div>
     </div>
@@ -2101,17 +2921,18 @@ function SellScreen({ t, lang, go }) {
           <p className="text-[10px] text-stone-500 mt-2">{t.pickTraits}</p>
         </FormBlock>
 
-        <div className="grid grid-cols-2 gap-3">
-          <FormBlock label={t.price}>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-              <input type="number" className="form-input pl-7" placeholder="150" />
-            </div>
-          </FormBlock>
-          <FormBlock label={t.born}>
-            <input type="text" className="form-input" placeholder="MM/AAAA" />
-          </FormBlock>
-        </div>
+        {/* Sale type: fixed price or auction */}
+        <SellPricing t={t} lang={lang} />
+
+        <FormBlock label={t.born}>
+          <input type="text" className="form-input" placeholder="MM/AAAA" />
+        </FormBlock>
+
+        <FormBlock label={t.countryLabel}>
+          <select className="form-input">
+            {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+          </select>
+        </FormBlock>
 
         <FormBlock label={t.region}>
           <select className="form-input">
@@ -2157,6 +2978,77 @@ function FormBlock({ label, children }) {
       {label && <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{label}</div>}
       {children}
     </div>
+  );
+}
+
+/* SELL PRICING — toggle between a fixed price and an auction.
+   Auction collects: start price (public) + reserve price (hidden floor) +
+   duration. The reserve is never shown to buyers — only "reserve met / not". */
+function SellPricing({ t, lang }) {
+  const [mode, setMode] = useState("fixed"); // "fixed" | "auction"
+
+  return (
+    <FormBlock label={lang === "it" ? "Tipo di vendita" : "Sale type"}>
+      <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-3">
+        <button type="button" onClick={() => setMode("fixed")}
+                className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${
+                  mode === "fixed" ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
+                }`}>
+          {lang === "it" ? "Prezzo fisso" : "Fixed price"}
+        </button>
+        <button type="button" onClick={() => setMode("auction")}
+                className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 ${
+                  mode === "auction" ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
+                }`}>
+          <ArrowUpDown size={12} />{t.auction}
+        </button>
+      </div>
+
+      {mode === "fixed" ? (
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+          <input type="number" className="form-input pl-7" placeholder="150" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.startPrice}</div>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                <input type="number" className="form-input pl-7" placeholder="100" />
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                <Lock size={10} />{lang === "it" ? "Riserva" : "Reserve"}
+              </div>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                <input type="number" className="form-input pl-7" placeholder="200" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{lang === "it" ? "Durata" : "Duration"}</div>
+            <select className="form-input">
+              <option>{lang === "it" ? "3 giorni" : "3 days"}</option>
+              <option>{lang === "it" ? "5 giorni" : "5 days"}</option>
+              <option>{lang === "it" ? "7 giorni" : "7 days"}</option>
+              <option>{lang === "it" ? "10 giorni" : "10 days"}</option>
+            </select>
+          </div>
+          <div className="bg-amber-500/5 ring-1 ring-amber-500/20 rounded-lg p-3 flex gap-2 items-start">
+            <Lock size={13} className="text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-[10px] text-amber-200/80 leading-relaxed">
+              {lang === "it"
+                ? "Il prezzo di riserva è il minimo che accetti e resta nascosto agli acquirenti. Se le offerte non lo raggiungono, non sei obbligato a vendere."
+                : "The reserve price is the minimum you'll accept and stays hidden from buyers. If bids don't reach it, you're not obliged to sell."}
+            </p>
+          </div>
+        </div>
+      )}
+    </FormBlock>
   );
 }
 
@@ -2480,6 +3372,7 @@ function Profile({ t, go, lang, user, handleLogout }) {
           <ProfileRow icon={<Info size={18} />} label={t.aboutContact} onClick={() => go("about")} />
           <ProfileRow icon={<ShieldCheck size={18} />} label={t.termsLegal} onClick={() => go("terms")} />
           <ProfileRow icon={<FileText size={18} />} label={t.storePolicyLabel} onClick={() => go("storepolicy")} />
+          <ProfileRow icon={<Lock size={18} />} label={t.privacyLabel} onClick={() => go("privacy")} />
         </ProfileGroup>
 
         {/* GROUP 4: Configuration */}
@@ -2584,21 +3477,42 @@ function Legal({ t, go, lang }) {
 /* ═══════════════════════════════════════════════════════════════════
    AUTH MODAL — login or signup, with reason context
    ═════════════════════════════════════════════════════════════════ */
-function AuthModal({ modal, setModal, onLogin, t, lang }) {
+function AuthModal({ modal, setModal, onLogin, t, lang, go }) {
   const [mode, setMode] = useState(modal.mode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Required consents (unbundled, unticked by default per GDPR Art. 7)
+  const [consentTos, setConsentTos] = useState(false);
+  const [consentPrivacy, setConsentPrivacy] = useState(false);
+  const [consentMarketing, setConsentMarketing] = useState(false);  // optional
+  const [error, setError] = useState("");
+
+  const canSubmit = mode === "login"
+    ? (email && password)
+    : (name && email && password && consentTos && consentPrivacy);
 
   const submit = () => {
     if (!email || !password) return;
+    if (mode === "signup" && (!consentTos || !consentPrivacy)) {
+      setError(t.consentRequired);
+      return;
+    }
+    setError("");
+    // When you wire Supabase: pass { consentTos, consentPrivacy, consentMarketing }
+    // as columns on the profiles row (and timestamps) so you have proof of consent.
     onLogin(mode === "signup" ? name : null);
+  };
+
+  const openDoc = (route) => {
+    setModal(null);
+    setTimeout(() => go(route), 50);
   };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4" onClick={() => setModal(null)}>
       <div onClick={e => e.stopPropagation()}
-           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up">
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up max-h-[92vh] overflow-y-auto hide-scrollbar">
         {/* Header */}
         <div className="relative p-6 pb-4 bg-gradient-to-br from-stone-900 to-stone-950 border-b border-stone-800">
           <button onClick={() => setModal(null)} className="absolute top-4 right-4 text-stone-400 hover:text-stone-100">
@@ -2637,12 +3551,39 @@ function AuthModal({ modal, setModal, onLogin, t, lang }) {
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
                    className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
           </div>
-          <button onClick={submit}
-                  className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors mt-2">
+
+          {/* GDPR signup consent — required for new accounts only */}
+          {mode === "signup" && (
+            <div className="pt-2 space-y-2.5 border-t border-stone-800">
+              <ConsentCheckbox checked={consentTos} onChange={setConsentTos} required>
+                {t.consentTosLabel} —{" "}
+                <button onClick={() => openDoc("terms")} className="text-amber-400 hover:text-amber-300 underline">
+                  {t.consentReadHere}
+                </button>
+              </ConsentCheckbox>
+              <ConsentCheckbox checked={consentPrivacy} onChange={setConsentPrivacy} required>
+                {t.consentPrivacyLabel} —{" "}
+                <button onClick={() => openDoc("privacy")} className="text-amber-400 hover:text-amber-300 underline">
+                  {t.consentReadHere}
+                </button>
+              </ConsentCheckbox>
+              <ConsentCheckbox checked={consentMarketing} onChange={setConsentMarketing}>
+                {t.consentMarketingLabel}
+              </ConsentCheckbox>
+              {error && (
+                <p className="text-[11px] text-rose-400 font-bold flex items-center gap-1.5">
+                  <Info size={12} />{error}
+                </p>
+              )}
+            </div>
+          )}
+
+          <button onClick={submit} disabled={!canSubmit}
+                  className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors mt-2">
             {mode === "login" ? t.continueWithEmail : t.signUpFree}
           </button>
           <div className="text-center pt-1">
-            <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
                     className="text-xs text-stone-400 hover:text-amber-400 transition-colors">
               {mode === "login" ? <>{t.noAccount} <span className="text-amber-400 font-bold">{t.signup}</span></> : <>{t.alreadyMember} <span className="text-amber-400 font-bold">{t.login}</span></>}
             </button>
@@ -2650,6 +3591,19 @@ function AuthModal({ modal, setModal, onLogin, t, lang }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ConsentCheckbox({ checked, onChange, required, children }) {
+  return (
+    <label className="flex items-start gap-2.5 cursor-pointer text-[11px] leading-relaxed text-stone-300">
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)}
+             className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+      <span>
+        {children}
+        {required && <span className="text-rose-400 ml-1">*</span>}
+      </span>
+    </label>
   );
 }
 
@@ -2814,7 +3768,7 @@ function SellerProfile({ sellerName, t, lang, go, favorites, toggleFav }) {
               {data.verified && <ShieldCheck size={20} className="text-sky-400 shrink-0" />}
             </h1>
             <div className="flex items-center gap-1.5 text-stone-400 text-xs md:text-sm mt-1">
-              <MapPin size={12} />{data.city}, {data.region}
+              <MapPin size={12} />{countryByCode(data.country).flag} {data.city}, {data.region}
             </div>
           </div>
         </div>
@@ -2977,6 +3931,277 @@ function InfoCell({ label, value }) {
       <div className="text-[9px] text-stone-500 font-bold uppercase tracking-widest">{label}</div>
       <div className="text-sm font-bold text-stone-100 mt-0.5">{value}</div>
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SETTINGS & KYC
+   - Language switch (works on every device)
+   - Push notification opt-in (uses real Notification.requestPermission;
+     actual delivery needs a backend with VAPID — noted inline)
+   - Breeder verification: upload Visura/ASL/ID. In this front-end demo
+     the files aren't really sent; in production each upload hits a
+     storage bucket and fires a webhook for manual review.
+   ═════════════════════════════════════════════════════════════════ */
+function SettingsScreen({ t, go, lang, setLang, user }) {
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState({ messages: true, reservations: true, priceDrops: true, expo: false });
+  const [uploads, setUploads] = useState({ visura: false, asl: "", doc: false });
+  const [kycSubmitted, setKycSubmitted] = useState(false);
+  const kycStatus = user?.verified ? "verified" : (kycSubmitted ? "pending" : "unverified");
+
+  const enableNotifications = async () => {
+    // Real permission prompt. Sending actual pushes requires a service worker + backend (VAPID).
+    if (typeof Notification !== "undefined" && Notification.requestPermission) {
+      try {
+        const perm = await Notification.requestPermission();
+        setNotifEnabled(perm === "granted");
+      } catch { setNotifEnabled(true); }
+    } else {
+      setNotifEnabled(true);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-20">
+      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.settingsKyc}</h1>
+      </header>
+
+      <div className="p-5 md:p-8 space-y-8">
+
+        {/* Language */}
+        <section>
+          <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.langSection}</h2>
+          <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1">
+            {["it", "en"].map(lng => (
+              <button key={lng} onClick={() => setLang(lng)}
+                      className={`flex-1 py-2.5 rounded-md text-sm font-bold transition-colors ${
+                        lang === lng ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
+                      }`}>
+                {lng === "it" ? "Italiano" : "English"}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Verification / KYC */}
+        <section>
+          <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.verificationSection}</h2>
+          <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={20} className={kycStatus === "verified" ? "text-sky-400" : "text-stone-500"} />
+                <h3 className="font-bold text-stone-100">{t.kycTitle}</h3>
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+                kycStatus === "verified" ? "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30" :
+                kycStatus === "pending" ? "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30" :
+                "bg-stone-800 text-stone-400"
+              }`}>
+                {kycStatus === "verified" ? t.kycVerified : kycStatus === "pending" ? t.kycPending : t.kycUnverified}
+              </span>
+            </div>
+
+            {kycStatus === "verified" ? (
+              <p className="text-sm text-stone-400 mt-2">{lang === "it" ? "Il tuo account è verificato. La spunta blu appare su tutti i tuoi annunci." : "Your account is verified. The blue check shows on all your listings."}</p>
+            ) : kycStatus === "pending" ? (
+              <p className="text-sm text-amber-300/90 mt-2">{t.kycSubmitted}</p>
+            ) : (
+              <>
+                <p className="text-sm text-stone-400 mt-2 mb-4">{t.kycIntro}</p>
+                <div className="space-y-2.5">
+                  <UploadRow label={t.kycVisura} done={uploads.visura} onUpload={() => setUploads({ ...uploads, visura: true })} t={t} />
+                  <div className="bg-stone-900 ring-1 ring-stone-800 rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.kycAsl}</div>
+                    <input value={uploads.asl} onChange={e => setUploads({ ...uploads, asl: e.target.value })}
+                           placeholder="IT-XX-00000"
+                           className="w-full bg-stone-950 ring-1 ring-stone-800 rounded-md px-3 py-2 text-sm text-stone-100 outline-none focus:ring-amber-500/60" />
+                  </div>
+                  <UploadRow label={t.kycDoc} done={uploads.doc} onUpload={() => setUploads({ ...uploads, doc: true })} t={t} />
+                </div>
+                <button onClick={() => setKycSubmitted(true)}
+                        disabled={!uploads.visura && !uploads.asl && !uploads.doc}
+                        className="w-full mt-4 py-3 rounded-lg text-sm font-bold bg-sky-500 hover:bg-sky-400 text-stone-950 transition-colors disabled:bg-stone-800 disabled:text-stone-500">
+                  {t.kycSubmit}
+                </button>
+                <div className="mt-4 pt-4 border-t border-stone-800">
+                  <div className="text-[11px] font-bold text-stone-300">{t.kycWhy}</div>
+                  <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{t.kycWhyText}</p>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* Notifications */}
+        <section>
+          <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.notifSection}</h2>
+          <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
+            <div className="flex items-start gap-3">
+              <Bell size={20} className={notifEnabled ? "text-amber-400" : "text-stone-500"} />
+              <div className="flex-1">
+                <h3 className="font-bold text-stone-100">{t.notifTitle}</h3>
+                <p className="text-sm text-stone-400 mt-1">{t.notifIntro}</p>
+              </div>
+            </div>
+            {!notifEnabled ? (
+              <button onClick={enableNotifications}
+                      className="w-full mt-4 py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors">
+                {t.notifEnable}
+              </button>
+            ) : (
+              <div className="mt-4 space-y-1">
+                <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold mb-2">
+                  <CheckCircle size={13} />{t.notifEnabled}
+                </div>
+                {[
+                  ["messages", t.notifMessages], ["reservations", t.notifReservations],
+                  ["priceDrops", t.notifPriceDrops], ["expo", t.notifExpo],
+                ].map(([key, label]) => (
+                  <label key={key} className="flex items-center justify-between py-2 cursor-pointer">
+                    <span className="text-sm text-stone-300">{label}</span>
+                    <input type="checkbox" checked={notifPrefs[key]}
+                           onChange={() => setNotifPrefs({ ...notifPrefs, [key]: !notifPrefs[key] })}
+                           className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Privacy & GDPR rights */}
+        <PrivacySection t={t} lang={lang} go={go} />
+
+      </div>
+    </div>
+  );
+}
+
+/* PrivacySection — GDPR data export (Art. 20) + account deletion (Art. 17).
+   In production, both actions hit a backend Edge Function that:
+   - Export: bundles the user's data from all tables into a JSON file and
+     emails a signed download link (don't expose the link publicly).
+   - Delete: kicks off a 30-day grace period, pseudonymises completed
+     transactions and CITES documents (legal retention), cancels Stripe
+     Connect account, removes all other personal data.                          */
+function PrivacySection({ t, lang, go }) {
+  const [exported, setExported] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleted, setDeleted] = useState(false);
+
+  const requestExport = async () => {
+    // TODO wire to Supabase Edge Function: fetch_user_export(userId)
+    setExported(true);
+    setTimeout(() => setExported(false), 6000);
+  };
+
+  const confirmDelete = async () => {
+    // TODO wire to Supabase Edge Function: request_account_deletion(userId)
+    // which pseudonymises retention-required rows and schedules hard delete in 30d.
+    setDeleted(true);
+  };
+
+  return (
+    <section>
+      <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.privacySection}</h2>
+      <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5 space-y-4">
+
+        {/* Privacy policy link */}
+        <button onClick={() => go("privacy")}
+                className="w-full flex items-center justify-between text-left hover:bg-stone-800/40 rounded-lg px-2 py-2 -mx-2 transition-colors">
+          <div className="flex items-center gap-3">
+            <Lock size={18} className="text-amber-400" />
+            <span className="font-bold text-stone-100 text-sm">{t.privacyLabel}</span>
+          </div>
+          <ChevronRight size={16} className="text-stone-600" />
+        </button>
+
+        {/* Data export (GDPR Art. 20) */}
+        <div className="pt-3 border-t border-stone-800">
+          <div className="flex items-start gap-3 mb-2">
+            <FileText size={18} className="text-sky-400 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-bold text-stone-100 text-sm">{t.dataExport}</h3>
+              <p className="text-xs text-stone-400 mt-0.5">{t.dataExportDesc}</p>
+            </div>
+          </div>
+          {exported ? (
+            <p className="text-[11px] text-emerald-300 bg-emerald-500/10 ring-1 ring-emerald-500/20 rounded-lg px-3 py-2 mt-2">
+              ✓ {t.dataExportDone}
+            </p>
+          ) : (
+            <button onClick={requestExport}
+                    className="w-full mt-2 py-2.5 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
+              {t.dataExport}
+            </button>
+          )}
+        </div>
+
+        {/* Account deletion (GDPR Art. 17) */}
+        <div className="pt-3 border-t border-stone-800">
+          <div className="flex items-start gap-3 mb-2">
+            <X size={18} className="text-rose-400 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-bold text-stone-100 text-sm">{t.deleteAccount}</h3>
+              <p className="text-xs text-stone-400 mt-0.5">{t.deleteAccountIntro}</p>
+            </div>
+          </div>
+          {!showDelete ? (
+            <button onClick={() => setShowDelete(true)}
+                    className="w-full mt-2 py-2.5 rounded-lg text-xs font-bold bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+              {t.deleteAccount}
+            </button>
+          ) : deleted ? (
+            <div className="mt-3 bg-emerald-500/10 ring-1 ring-emerald-500/30 rounded-lg p-3">
+              <p className="text-xs text-emerald-300 leading-relaxed">{t.deleteSuccess}</p>
+            </div>
+          ) : (
+            <div className="mt-3 bg-rose-500/5 ring-1 ring-rose-500/30 rounded-lg p-3 space-y-3">
+              <p className="text-[11px] text-rose-200/90 leading-relaxed">{t.deleteWarning}</p>
+              <div>
+                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5 block">
+                  {t.deleteConfirmPrompt}
+                </label>
+                <input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)}
+                       placeholder={t.deleteConfirmWord}
+                       className="w-full bg-stone-950 ring-1 ring-stone-800 rounded-md px-3 py-2 text-sm text-stone-100 outline-none focus:ring-rose-500/60" />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => { setShowDelete(false); setDeleteConfirmText(""); }}
+                        className="flex-1 py-2 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
+                  {t.deleteCancel}
+                </button>
+                <button onClick={confirmDelete}
+                        disabled={deleteConfirmText !== t.deleteConfirmWord}
+                        className="flex-1 py-2 rounded-lg text-xs font-bold bg-rose-500 hover:bg-rose-400 text-stone-50 disabled:bg-stone-800 disabled:text-stone-500 transition-colors">
+                  {t.deleteButton}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function UploadRow({ label, done, onUpload, t }) {
+  return (
+    <button onClick={onUpload}
+            className={`w-full flex items-center justify-between rounded-lg px-3 py-3 ring-1 transition-colors ${
+              done ? "bg-emerald-500/10 ring-emerald-500/30" : "bg-stone-900 ring-stone-800 hover:ring-stone-700"
+            }`}>
+      <span className="text-sm font-medium text-stone-200">{label}</span>
+      {done ? (
+        <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold"><Check size={14} />{t.kycUploaded}</span>
+      ) : (
+        <span className="flex items-center gap-1.5 text-stone-400 text-xs font-bold"><UploadCloud size={14} />{t.kycUpload}</span>
+      )}
+    </button>
   );
 }
 
@@ -3154,15 +4379,19 @@ const TOS_CONTENT = {
       },
     },
     {
-      id: "7", title: { it: "Commissioni", en: "Fees" }, review: false,
+      id: "7", title: { it: "Modello di servizio (nessuna commissione)", en: "Service model (no commission)" }, review: true,
       body: {
         it: [
-          "L'uso base della piattaforma è gratuito per gli Acquirenti. I Venditori possono pubblicare un numero limitato di annunci gratuiti; per volumi superiori sono disponibili piani a pagamento i cui dettagli sono illustrati nella sezione «Piani».",
-          "HerpMarket applica una commissione sulle transazioni completate tramite il sistema escrow integrato. L'importo della commissione è indicato in modo chiaro prima della conclusione del pagamento.",
+          "HerpMarket non applica attualmente alcuna commissione né ai Venditori né agli Acquirenti. La piattaforma è gratuita.",
+          "I pagamenti tra Acquirenti e Venditori sono elaborati direttamente tramite Stripe Connect: i fondi transitano dall'Acquirente al conto Stripe del Venditore senza essere trattenuti su conti di HerpMarket. HerpMarket non è in possesso dei fondi degli Utenti in nessun momento e non opera come prestatore di servizi di pagamento ai sensi della Direttiva PSD2.",
+          "HerpMarket può mostrare contenuti commerciali sponsorizzati (banner di partner del settore: produttori di alimenti, terrari, accessori). Tali contenuti sono direttamente venduti da HerpMarket ai singoli sponsor, sono sempre chiaramente identificati con la dicitura «Sponsor» e non comportano l'uso di pixel di tracciamento, cookie pubblicitari o reti pubblicitarie di terze parti.",
+          "HerpMarket si riserva il diritto di introdurre in futuro piani a pagamento o commissioni, dandone comunicazione agli Utenti almeno 30 giorni prima dell'entrata in vigore. In tal caso gli Utenti potranno recedere senza penali entro tale termine.",
         ],
         en: [
-          "Basic use of the platform is free for Buyers. Sellers may post a limited number of free listings; higher volumes are available through paid plans whose details are set out in the 'Plans' section.",
-          "HerpMarket charges a fee on transactions completed via the integrated escrow system. The fee amount is clearly displayed before payment is finalised.",
+          "HerpMarket does not currently charge any commission to Sellers or Buyers. The platform is free to use.",
+          "Payments between Buyers and Sellers are processed directly via Stripe Connect: funds flow from the Buyer to the Seller's Stripe account without being held in HerpMarket accounts. HerpMarket never holds User funds and does not operate as a payment service provider under PSD2.",
+          "HerpMarket may display sponsored commercial content (banners from industry partners: food, terraria and accessory brands). Such content is sold directly by HerpMarket to individual sponsors, is always clearly identified with a 'Sponsor' label, and does not use tracking pixels, advertising cookies or third-party ad networks.",
+          "HerpMarket reserves the right to introduce paid plans or commissions in the future, with at least 30 days' notice to Users. In that case Users may withdraw without penalty within that period.",
         ],
       },
     },
@@ -3365,6 +4594,231 @@ const STORE_POLICY_CONTENT = {
   ],
 };
 
+const PRIVACY_CONTENT = {
+  effectiveDate: { it: "1 gennaio 2026", en: "1 January 2026" },
+  version: "1.0 (bozza)",
+  sections: [
+    {
+      id: "1", title: { it: "Titolare del trattamento", en: "Data controller" }, review: true,
+      body: {
+        it: [
+          "Titolare del trattamento dei dati personali è [DENOMINAZIONE SOCIETARIA DA INDICARE], P.IVA [DA INDICARE], con sede in [DA INDICARE], Italia, indirizzo email privacy@herpmarket.it.",
+          "Per esercitare i tuoi diritti o per qualunque chiarimento sul trattamento dei tuoi dati, puoi contattarci all'indirizzo email indicato. Risponderemo entro 30 giorni, come previsto dall'art. 12 GDPR.",
+        ],
+        en: [
+          "Data controller is [COMPANY NAME TBD], VAT [TBD], registered in [TBD], Italy, email privacy@herpmarket.it.",
+          "To exercise your rights or for any clarification, contact us at the email above. We respond within 30 days as required by Art. 12 GDPR.",
+        ],
+      },
+    },
+    {
+      id: "2", title: { it: "Dati che raccogliamo", en: "Data we collect" }, review: false,
+      body: {
+        it: [
+          "Raccogliamo i seguenti dati personali:",
+          "(a) Dati di registrazione: nome o nome visualizzato, indirizzo email, password (memorizzata in forma cifrata mediante hash).",
+          "(b) Dati del profilo Venditore (opzionali): regione, città, descrizione dell'attività, specializzazioni, fotografie del profilo.",
+          "(c) Dati delle inserzioni: contenuti che pubblichi (annunci, fotografie, messaggi).",
+          "(d) Dati di transazione: identificativi delle transazioni concluse tramite la piattaforma. I dati di pagamento (numero carta, IBAN) NON transitano dai nostri server: sono gestiti direttamente da Stripe.",
+          "(e) Dati di verifica (solo se richiedi la spunta blu): visura camerale o P.IVA, numero registrazione ASL, documento d'identità.",
+          "(f) Dati tecnici: indirizzo IP, tipo di browser, data e ora di accesso, lingua impostata. Questi dati sono raccolti automaticamente per ragioni tecniche e di sicurezza.",
+          "(g) Dati di comunicazione: contenuti dei messaggi scambiati con altri Utenti tramite la chat della piattaforma.",
+        ],
+        en: [
+          "We collect the following personal data:",
+          "(a) Registration data: name or display name, email address, password (stored hashed).",
+          "(b) Seller profile data (optional): region, city, business description, specialties, profile photos.",
+          "(c) Listing data: content you publish (ads, photos, messages).",
+          "(d) Transaction data: identifiers of transactions completed via the platform. Payment data (card number, IBAN) does NOT pass through our servers: it is handled directly by Stripe.",
+          "(e) Verification data (only if you request the blue check): business registration or VAT, ASL registration number, ID document.",
+          "(f) Technical data: IP address, browser type, access date/time, language. Collected automatically for technical and security reasons.",
+          "(g) Communication data: contents of messages exchanged with other Users via the platform's chat.",
+        ],
+      },
+    },
+    {
+      id: "3", title: { it: "Finalità e basi giuridiche del trattamento", en: "Purposes and legal bases" }, review: true,
+      body: {
+        it: [
+          "Trattiamo i tuoi dati per le seguenti finalità, sulla base giuridica indicata:",
+          "(a) Erogazione del servizio (creazione account, pubblicazione annunci, messaggistica, transazioni): esecuzione del contratto con te (art. 6.1.b GDPR).",
+          "(b) Adempimenti di legge (conservazione documenti CITES, comunicazioni alle autorità competenti, prevenzione frodi): obbligo di legge (art. 6.1.c GDPR).",
+          "(c) Verifica dell'identità per la spunta blu: consenso esplicito da te fornito al momento del caricamento (art. 6.1.a GDPR).",
+          "(d) Sicurezza della piattaforma e prevenzione abusi: nostro legittimo interesse a mantenere il servizio sicuro (art. 6.1.f GDPR).",
+          "(e) Invio di comunicazioni di marketing (newsletter su fiere, nuovi annunci): consenso esplicito e separato che puoi revocare in qualsiasi momento (art. 6.1.a GDPR).",
+          "(f) Statistiche aggregate e anonime sull'uso del servizio: nostro legittimo interesse a migliorare il prodotto (art. 6.1.f GDPR). Non utilizziamo profilazione individuale.",
+        ],
+        en: [
+          "We process your data for the following purposes, on the legal basis indicated:",
+          "(a) Service delivery (account creation, listing publication, messaging, transactions): performance of contract with you (Art. 6.1.b GDPR).",
+          "(b) Legal compliance (CITES document retention, communications to authorities, fraud prevention): legal obligation (Art. 6.1.c GDPR).",
+          "(c) Identity verification for the blue check: explicit consent given when you upload (Art. 6.1.a GDPR).",
+          "(d) Platform security and abuse prevention: our legitimate interest in keeping the service safe (Art. 6.1.f GDPR).",
+          "(e) Marketing communications (newsletter on expos, new listings): separate explicit consent, revocable at any time (Art. 6.1.a GDPR).",
+          "(f) Aggregate and anonymous service-usage statistics: our legitimate interest in improving the product (Art. 6.1.f GDPR). We do not use individual profiling.",
+        ],
+      },
+    },
+    {
+      id: "4", title: { it: "Destinatari dei dati (Responsabili esterni)", en: "Data recipients (Processors)" }, review: true,
+      body: {
+        it: [
+          "Per erogare il servizio ci avvaliamo dei seguenti Responsabili del trattamento, ciascuno legato a noi da specifico accordo ai sensi dell'art. 28 GDPR:",
+          "• Supabase (Supabase Inc., USA / sede UE Francoforte) — database e autenticazione. I dati restano memorizzati nell'Unione Europea (regione eu-central-1).",
+          "• Stripe (Stripe Payments Europe Ltd., Irlanda) — elaborazione pagamenti tra Acquirenti e Venditori. Stripe agisce come titolare autonomo per gli aspetti di propria competenza.",
+          "• Vercel (Vercel Inc., USA) — hosting dell'applicazione web. Vercel è certificata sotto il Data Privacy Framework UE-USA.",
+          "• [Eventuale provider email transazionale, es. Resend / Postmark — DA INDICARE]",
+          "Non vendiamo né condividiamo i tuoi dati personali con terzi per scopi di marketing. I dati possono essere condivisi con le autorità competenti su loro richiesta motivata (es. Polizia Postale, autorità CITES, autorità giudiziaria).",
+        ],
+        en: [
+          "To deliver the service we use the following Processors, each bound by an Art. 28 GDPR data processing agreement:",
+          "• Supabase (Supabase Inc., USA / EU seat Frankfurt) — database and authentication. Data is stored in the European Union (eu-central-1 region).",
+          "• Stripe (Stripe Payments Europe Ltd., Ireland) — payment processing between Buyers and Sellers. Stripe acts as autonomous controller for its own areas.",
+          "• Vercel (Vercel Inc., USA) — web application hosting. Vercel is certified under the EU-US Data Privacy Framework.",
+          "• [Possible transactional email provider, e.g. Resend / Postmark — TBD]",
+          "We do not sell or share your personal data with third parties for marketing. Data may be shared with competent authorities upon reasoned request (e.g. Postal Police, CITES authorities, judicial authority).",
+        ],
+      },
+    },
+    {
+      id: "5", title: { it: "Trasferimenti internazionali", en: "International transfers" }, review: true,
+      body: {
+        it: [
+          "I dati personali sono prevalentemente trattati all'interno dello Spazio Economico Europeo. Alcuni Responsabili (Vercel, Supabase) possono trattare dati negli Stati Uniti.",
+          "Tali trasferimenti avvengono nel rispetto del GDPR: per Vercel sulla base della certificazione Data Privacy Framework UE-USA; per Supabase mediante Clausole Contrattuali Standard approvate dalla Commissione Europea (Decisione (UE) 2021/914) e misure tecniche aggiuntive.",
+        ],
+        en: [
+          "Personal data is primarily processed within the European Economic Area. Some Processors (Vercel, Supabase) may process data in the United States.",
+          "Such transfers comply with GDPR: for Vercel under the EU-US Data Privacy Framework certification; for Supabase via Standard Contractual Clauses approved by the European Commission (Decision (EU) 2021/914) and additional technical measures.",
+        ],
+      },
+    },
+    {
+      id: "6", title: { it: "Periodo di conservazione", en: "Retention period" }, review: true,
+      body: {
+        it: [
+          "Conserviamo i tuoi dati per i seguenti periodi:",
+          "• Dati account attivo: per tutta la durata del rapporto.",
+          "• Dati account cancellato: rimossi entro 30 giorni dalla richiesta di cancellazione.",
+          "• Documenti relativi a transazioni concluse (CITES, certificati di origine): 10 anni dal completamento della transazione, in forma pseudonimizzata, ai sensi dell'art. 2220 c.c. e degli obblighi specifici di tracciabilità CITES.",
+          "• Documenti di verifica (visura, ID): 5 anni dalla cancellazione dell'account, ai sensi della normativa antiriciclaggio dove applicabile.",
+          "• Log tecnici di sicurezza: 12 mesi.",
+          "• Dati di marketing: fino alla revoca del consenso.",
+        ],
+        en: [
+          "We retain your data for the following periods:",
+          "• Active account data: for the entire relationship duration.",
+          "• Cancelled account data: removed within 30 days of deletion request.",
+          "• Documents related to completed transactions (CITES, origin certificates): 10 years from transaction completion, in pseudonymised form, per art. 2220 of the Italian Civil Code and CITES traceability obligations.",
+          "• Verification documents (business registration, ID): 5 years from account deletion, per anti-money-laundering law where applicable.",
+          "• Technical security logs: 12 months.",
+          "• Marketing data: until consent withdrawal.",
+        ],
+      },
+    },
+    {
+      id: "7", title: { it: "I tuoi diritti", en: "Your rights" }, review: false,
+      body: {
+        it: [
+          "Ai sensi degli artt. 15-22 del GDPR hai i seguenti diritti:",
+          "• Accesso (art. 15): ottenere conferma dell'esistenza di dati che ti riguardano e riceverne copia.",
+          "• Rettifica (art. 16): correggere dati inesatti o integrare dati incompleti.",
+          "• Cancellazione (art. 17 — «diritto all'oblio»): ottenere la cancellazione dei tuoi dati, salvo gli obblighi legali di conservazione sopra indicati.",
+          "• Limitazione (art. 18): chiedere la sospensione del trattamento.",
+          "• Portabilità (art. 20): ricevere i tuoi dati in formato strutturato e leggibile da macchina (JSON).",
+          "• Opposizione (art. 21): opporti al trattamento basato su legittimo interesse o per fini di marketing.",
+          "• Revoca del consenso (art. 7): in qualsiasi momento, senza pregiudicare la liceità del trattamento precedente.",
+          "• Reclamo: presentare reclamo all'Autorità Garante per la protezione dei dati personali (www.garanteprivacy.it).",
+          "Puoi esercitare i diritti di accesso, portabilità e cancellazione direttamente dalle impostazioni dell'app. Per gli altri diritti contattaci a privacy@herpmarket.it.",
+        ],
+        en: [
+          "Under Arts. 15-22 GDPR you have the following rights:",
+          "• Access (Art. 15): obtain confirmation of data concerning you and receive a copy.",
+          "• Rectification (Art. 16): correct inaccurate data or complete incomplete data.",
+          "• Erasure (Art. 17 — 'right to be forgotten'): obtain deletion of your data, subject to the legal retention obligations above.",
+          "• Restriction (Art. 18): request processing suspension.",
+          "• Portability (Art. 20): receive your data in structured, machine-readable form (JSON).",
+          "• Objection (Art. 21): object to legitimate-interest processing or marketing.",
+          "• Consent withdrawal (Art. 7): at any time, without affecting prior lawfulness.",
+          "• Complaint: to the Italian Data Protection Authority (www.garanteprivacy.it).",
+          "You can exercise access, portability and erasure rights directly from app settings. For other rights contact privacy@herpmarket.it.",
+        ],
+      },
+    },
+    {
+      id: "8", title: { it: "Cookie e tecnologie simili", en: "Cookies and similar technologies" }, review: false,
+      body: {
+        it: [
+          "HerpMarket usa esclusivamente:",
+          "• Cookie tecnici essenziali (es. sessione di login, preferenza lingua). Non richiedono consenso ai sensi del Provvedimento Garante n. 231/2021.",
+          "• Vercel Analytics in modalità privacy-friendly: misura aggregata del traffico senza tracking individuale, senza cookie di terze parti, senza fingerprinting. Su tua richiesta puoi disattivarlo dalle impostazioni.",
+          "Non utilizziamo cookie pubblicitari, di profilazione o di tracciamento cross-site. Non utilizziamo Google Analytics, pixel di social network o sistemi di retargeting.",
+          "Gli eventuali banner sponsorizzati visibili sulla piattaforma sono semplici immagini collegate a un link, gestite direttamente da HerpMarket. Non sono erogati tramite reti pubblicitarie né contengono codice di tracciamento di terze parti.",
+        ],
+        en: [
+          "HerpMarket uses only:",
+          "• Essential technical cookies (e.g. login session, language preference). No consent required under Garante Decision 231/2021.",
+          "• Vercel Analytics in privacy-friendly mode: aggregate traffic measurement without individual tracking, without third-party cookies, without fingerprinting. You can turn it off in settings on request.",
+          "We do not use advertising, profiling or cross-site tracking cookies. We do not use Google Analytics, social-network pixels or retargeting systems.",
+          "Any sponsored banners on the platform are plain images linked to a URL, managed directly by HerpMarket. They are not served through ad networks and contain no third-party tracking code.",
+        ],
+      },
+    },
+    {
+      id: "9", title: { it: "Sicurezza dei dati", en: "Data security" }, review: false,
+      body: {
+        it: [
+          "Adottiamo misure di sicurezza tecniche e organizzative adeguate, tra cui: cifratura in transito (HTTPS/TLS), cifratura a riposo del database, hash delle password (algoritmo bcrypt o equivalente), accessi al database limitati e tracciati, segmentazione dei dati tramite Row Level Security, backup giornalieri.",
+          "In caso di violazione di dati personali che comporti un rischio per i tuoi diritti, notificheremo l'Autorità Garante entro 72 ore e comunicheremo agli Utenti interessati senza ingiustificato ritardo, come previsto dagli artt. 33-34 GDPR.",
+        ],
+        en: [
+          "We adopt adequate technical and organisational security measures including: encryption in transit (HTTPS/TLS), database encryption at rest, password hashing (bcrypt or equivalent), restricted and audited database access, data segmentation via Row Level Security, daily backups.",
+          "In case of a personal data breach posing a risk to your rights, we will notify the Authority within 72 hours and inform affected Users without undue delay, per Arts. 33-34 GDPR.",
+        ],
+      },
+    },
+    {
+      id: "10", title: { it: "Dati di minori", en: "Minors' data" }, review: false,
+      body: {
+        it: [
+          "Il servizio non è destinato a minori di 18 anni. Non raccogliamo consapevolmente dati di minori.",
+          "Se vieni a conoscenza del fatto che un minore abbia fornito dati personali alla piattaforma, contattaci a privacy@herpmarket.it e procederemo alla cancellazione immediata.",
+        ],
+        en: [
+          "The service is not intended for minors under 18. We do not knowingly collect minors' data.",
+          "If you become aware that a minor has provided personal data to the platform, contact privacy@herpmarket.it and we will delete it immediately.",
+        ],
+      },
+    },
+    {
+      id: "11", title: { it: "Modifiche alla Privacy Policy", en: "Changes to this Privacy Policy" }, review: false,
+      body: {
+        it: [
+          "Possiamo aggiornare questa Privacy Policy in caso di modifiche normative, organizzative o tecniche. La versione vigente è sempre disponibile in questa pagina con la data di entrata in vigore.",
+          "Modifiche sostanziali ai trattamenti saranno notificate agli Utenti registrati via email con almeno 30 giorni di anticipo, e potrai opporti o cancellare l'account prima della loro applicazione.",
+        ],
+        en: [
+          "We may update this Privacy Policy due to regulatory, organisational or technical changes. The current version is always available on this page with the effective date.",
+          "Substantial changes to processing will be notified to registered Users by email at least 30 days in advance, and you may object or delete your account before they take effect.",
+        ],
+      },
+    },
+    {
+      id: "12", title: { it: "Contatti", en: "Contacts" }, review: false,
+      body: {
+        it: [
+          "Per qualunque questione relativa al trattamento dei tuoi dati personali, contattaci a privacy@herpmarket.it.",
+          "Hai inoltre il diritto di rivolgerti al Garante per la protezione dei dati personali (Piazza Venezia 11, 00187 Roma — www.garanteprivacy.it).",
+        ],
+        en: [
+          "For any questions about the processing of your personal data, contact privacy@herpmarket.it.",
+          "You also have the right to contact the Italian Data Protection Authority (Piazza Venezia 11, 00187 Rome — www.garanteprivacy.it).",
+        ],
+      },
+    },
+  ],
+};
+
 function LegalDoc({ doc, title, t, go, lang: outerLang }) {
   // Local override: even when the app language is EN, the binding version stays IT.
   // We surface this clearly with a toggle showing which version is binding.
@@ -3471,4 +4925,125 @@ function TermsLegal({ t, go, lang }) {
 
 function StorePolicy({ t, go, lang }) {
   return <LegalDoc doc={STORE_POLICY_CONTENT} title={lang === "it" ? "Regolamento marketplace" : "Marketplace policy"} t={t} go={go} lang={lang} />;
+}
+
+function PrivacyPolicy({ t, go, lang }) {
+  return <LegalDoc doc={PRIVACY_CONTENT} title="Privacy Policy" t={t} go={go} lang={lang} />;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PLANS SCREEN — placeholder for future paid seller subscriptions.
+   Not yet linked from the main nav; reachable via /plans route.
+   Activate links to it once you actually have plans to sell.
+   ═════════════════════════════════════════════════════════════════ */
+function PlansScreen({ t, go, lang }) {
+  return (
+    <div className="max-w-xl mx-auto w-full pb-16">
+      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.plansLabel}</h1>
+      </header>
+
+      <div className="p-5 md:p-8">
+        {/* Current state: free for all */}
+        <div className="bg-gradient-to-br from-emerald-500/10 to-amber-500/10 ring-1 ring-emerald-500/20 rounded-2xl p-6">
+          <div className="flex items-center gap-2.5 mb-3">
+            <CheckCircle size={20} className="text-emerald-400" />
+            <h2 className="font-display text-xl text-stone-50">
+              {lang === "it" ? "HerpMarket è gratuito" : "HerpMarket is free"}
+            </h2>
+          </div>
+          <p className="text-sm text-stone-300 leading-relaxed">{t.plansComingSoon}</p>
+          <p className="text-xs text-stone-400 leading-relaxed mt-3">{t.plansDescription}</p>
+        </div>
+
+        {/* Preview of future tiers (greyed out — informational only) */}
+        <div className="mt-6 space-y-3 opacity-60">
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">
+            {lang === "it" ? "Anteprima (non ancora attiva)" : "Preview (not yet active)"}
+          </div>
+          <PlanCard
+            name={lang === "it" ? "Allevatore Pro" : "Pro Breeder"}
+            price={lang === "it" ? "Prezzo da definire" : "Price TBD"}
+            features={lang === "it" ? [
+              "Annunci illimitati",
+              "Pagina negozio personalizzata",
+              "Posizionamento prioritario in ricerca",
+              "Statistiche dettagliate",
+            ] : [
+              "Unlimited listings",
+              "Custom store page",
+              "Priority placement in search",
+              "Detailed analytics",
+            ]}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlanCard({ name, price, features }) {
+  return (
+    <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
+      <div className="flex items-baseline justify-between mb-3">
+        <h3 className="font-display text-lg text-stone-50">{name}</h3>
+        <span className="font-display text-sm text-amber-400">{price}</span>
+      </div>
+      <ul className="space-y-1.5">
+        {features.map((f, i) => (
+          <li key={i} className="text-xs text-stone-300 flex items-start gap-2">
+            <Check size={12} className="text-emerald-400 mt-0.5 shrink-0" />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPONSOR SLOT — renders a direct-sold sponsor card if one is active
+   for the requested slot. Renders NOTHING (null) if no sponsor is
+   available — so the UI stays clean until you sell a slot.
+
+   Wire-up notes:
+   - Backed by the `sponsors` table (see 05_monetization.sql).
+   - Replace `useActiveSponsor` body to fetch via Supabase once wired:
+       const { data } = await supabase.from('sponsors').select('*')
+         .eq('slot', slot).eq('active', true)
+         .lte('starts_at', new Date().toISOString())
+         .or('ends_at.is.null,ends_at.gt.' + new Date().toISOString())
+         .limit(1).maybeSingle();
+   - Each sponsor row carries its own image + click_url. No third-party
+     scripts. No tracking pixels. No GDPR overhead beyond what's already
+     disclosed in the Privacy Policy.
+   ═════════════════════════════════════════════════════════════════ */
+function useActiveSponsor(slot) {
+  const [sponsor, setSponsor] = useState(null);
+  useEffect(() => {
+    // TODO: wire to Supabase. For now returns null so nothing renders.
+    setSponsor(null);
+  }, [slot]);
+  return sponsor;
+}
+
+function SponsorSlot({ slot, t, lang }) {
+  const sponsor = useActiveSponsor(slot);
+  if (!sponsor) return null;
+  return (
+    <a href={sponsor.click_url} target="_blank" rel="noopener noreferrer sponsored"
+       className="block group">
+      <div className="relative rounded-xl overflow-hidden ring-1 ring-stone-800 hover:ring-amber-500/40 transition-all">
+        <img src={sponsor.image_url} alt={sponsor.alt_text || sponsor.name}
+             className="w-full h-auto object-cover" />
+        {/* Disclosure label (Italian Codice del Consumo art. 23 and Garante
+            guidelines require clear identification of paid commercial content) */}
+        <span className="absolute top-2 right-2 bg-stone-950/80 backdrop-blur ring-1 ring-stone-700/50
+                         text-[9px] font-black uppercase tracking-widest text-stone-300 px-2 py-0.5 rounded">
+          {t.sponsorLabel}
+        </span>
+      </div>
+    </a>
+  );
 }
