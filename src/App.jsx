@@ -576,6 +576,9 @@ function getTraitsForScope(categoryId, species) {
   });
   return out;
 }
+
+/* ───── Categories (counts driven by mock listings; placeholders here) ── */
+const CATEGORIES = [
   { id: "geckos",      it: "Gechi",       en: "Geckos",      emoji: "🦎", count: 412 },
   { id: "snakes",      it: "Serpenti",    en: "Snakes",      emoji: "🐍", count: 287 },
   { id: "lizards",     it: "Sauri",       en: "Lizards",     emoji: "🦖", count: 203 },
