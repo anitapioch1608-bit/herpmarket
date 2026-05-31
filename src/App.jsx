@@ -87,6 +87,16 @@ const I18N = {
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
+    invIntro: "Gestisci la tua collezione: esemplari riproduttori, in vendita e venduti.",
+    invBreeders: "Riproduttori", invForSale: "In vendita", invSold: "Venduti", invAdd: "Aggiungi esemplare",
+    invStatus: "Stato", invStatusBreeder: "Riproduttore", invStatusSale: "In vendita", invStatusSold: "Venduto", invStatusHeld: "Tenuto",
+    invEmpty: "Nessun esemplare in questa categoria",
+    lineageIntro: "Albero genealogico e tracciamento genetico dei tuoi esemplari.",
+    lineageSire: "Padre", lineageDam: "Madre", lineageOffspring: "Discendenza", lineagePairings: "Accoppiamenti",
+    lineageProjects: "Progetti di riproduzione", lineageExpected: "Atteso", lineageHatched: "Nati",
+    reviewsIntro: "Le recensioni ricevute dai tuoi acquirenti.",
+    reviewsAvg: "Valutazione media", reviewsTotal: "recensioni totali", reviewsEmpty: "Ancora nessuna recensione",
+    reviewsFrom: "da", reviewsReply: "Rispondi", reviewsReplied: "Risposto",
     aboutContact: "Chi siamo & Contatti", termsLegal: "Termini di servizio", settingsKyc: "Impostazioni & KYC",
     storePolicyLabel: "Regolamento marketplace",
     privacyLabel: "Privacy Policy",
@@ -236,6 +246,16 @@ const I18N = {
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
+    invIntro: "Manage your collection: breeders, animals for sale, and sold animals.",
+    invBreeders: "Breeders", invForSale: "For sale", invSold: "Sold", invAdd: "Add animal",
+    invStatus: "Status", invStatusBreeder: "Breeder", invStatusSale: "For sale", invStatusSold: "Sold", invStatusHeld: "Held back",
+    invEmpty: "No animals in this category",
+    lineageIntro: "Family tree and genetic tracking of your animals.",
+    lineageSire: "Sire", lineageDam: "Dam", lineageOffspring: "Offspring", lineagePairings: "Pairings",
+    lineageProjects: "Breeding projects", lineageExpected: "Expected", lineageHatched: "Hatched",
+    reviewsIntro: "Reviews received from your buyers.",
+    reviewsAvg: "Average rating", reviewsTotal: "total reviews", reviewsEmpty: "No reviews yet",
+    reviewsFrom: "from", reviewsReply: "Reply", reviewsReplied: "Replied",
     aboutContact: "About us & Contact", termsLegal: "Terms of service", settingsKyc: "Settings & KYC",
     storePolicyLabel: "Marketplace policy",
     privacyLabel: "Privacy Policy",
@@ -996,10 +1016,10 @@ export default function HerpMarket() {
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
       case "legal":     return <Legal {...props} />;
-      case "inventory": return <PlaceholderScreen title={t.inventory} {...props} icon={<ListOrdered size={28} />} />;
-      case "lineage":   return <PlaceholderScreen title={t.lineage} {...props} icon={<Grid3x3 size={28} />} badge="PRO" />;
+      case "inventory": return <InventoryScreen {...props} />;
+      case "lineage":   return <LineageScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
-      case "reviews":   return <PlaceholderScreen title={t.reviews} {...props} icon={<Star size={28} />} />;
+      case "reviews":   return <ReviewsScreen {...props} />;
       case "documents": return <PlaceholderScreen title={t.citesArchive} {...props} icon={<FileText size={28} />} />;
       case "about":     return <AboutContact {...props} />;
       case "terms":     return <TermsLegal {...props} />;
@@ -1067,16 +1087,9 @@ export default function HerpMarket() {
 
       {/* Main */}
       <div className="flex-1 relative flex flex-col overflow-hidden">
-        {/* Mobile floating top controls — always present so the language
-            toggle (and login) is reachable from every screen, not just home. */}
-        <header className="md:hidden absolute top-0 right-0 z-40 px-4 pt-3 flex items-center gap-2 pointer-events-none">
-          {/* Language toggle — persistent on all mobile screens */}
-          <button onClick={() => setLang(lang === "it" ? "en" : "it")}
-                  className="pointer-events-auto flex items-center gap-1 bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 text-stone-200 hover:text-amber-300 rounded-full px-3 py-2 shadow-lg transition-colors"
-                  aria-label="Toggle language">
-            <Languages size={13} />
-            <span className="text-[11px] font-black uppercase tracking-widest">{lang}</span>
-          </button>
+        {/* Mobile floating top controls — login pill on home.
+            Language toggle is the separate fixed z-[80] button (top-right). */}
+        <header className="md:hidden absolute top-0 left-0 z-40 px-4 pt-3 flex items-center gap-2 pointer-events-none">
           {/* Login pill only on home (other screens reach profile via bottom nav) */}
           {view === "home" && (
             user ? (
@@ -1121,14 +1134,16 @@ export default function HerpMarket() {
       <CookieBanner t={t} lang={lang} go={go} />
 
       {/* Global mobile language toggle — fixed, always reachable on any screen.
-          Hidden on desktop where the sidebar Brand toggle already exists. */}
+          Hidden on desktop where the sidebar Brand toggle already exists.
+          z-[80] keeps it above every sticky header and modal backdrop. */}
       <button onClick={() => setLang(lang === "it" ? "en" : "it")}
               aria-label="Toggle language"
-              className="md:hidden fixed top-3 right-3 z-[45] flex items-center gap-1
-                         bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 text-stone-200
-                         hover:text-amber-300 rounded-full pl-2.5 pr-3 py-1.5 shadow-lg transition-colors">
+              className="md:hidden fixed top-2 right-2 z-[80] flex items-center gap-1
+                         bg-amber-500/90 backdrop-blur text-stone-950 font-black
+                         ring-1 ring-amber-400/50 rounded-full pl-2.5 pr-3 py-1.5 shadow-xl
+                         active:scale-95 transition-transform">
         <Languages size={13} />
-        <span className="text-[11px] font-black uppercase tracking-widest">{lang}</span>
+        <span className="text-[11px] uppercase tracking-widest">{lang}</span>
       </button>
     </div>
   );
@@ -4334,10 +4349,242 @@ function UploadRow({ label, done, onUpload, t }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   PLACEHOLDER for sections like Inventory, Pedigree, Reviews, etc.
-   Real implementations come later — these stub screens keep the nav
-   alive so all profile links actually go somewhere.
+   INVENTORY — a breeder's collection, grouped by status.
+   Demo data; in production these come from the seller's own listings +
+   a `collection` table (breeders/held-back animals that aren't for sale).
    ═════════════════════════════════════════════════════════════════ */
+const INVENTORY_DEMO = [
+  { id: "b1", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Lilly White het Axanthic", sex: "M", status: "breeder", img: IMG.crested },
+  { id: "b2", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Red Harlequin", sex: "F", status: "breeder", img: IMG.crested },
+  { id: "b3", species: "Python regius", common: "Pitone reale", morph: "Banana Pastel", sex: "M", status: "breeder", img: IMG.ball },
+  { id: "s1", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Lilly White Harlequin", sex: "F", status: "sale", img: IMG.crested },
+  { id: "s2", species: "Heterodon nasicus", common: "Hognose", morph: "Albino Conda", sex: "M", status: "sale", img: IMG.hognose },
+  { id: "h1", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Phantom", sex: "U", status: "held", img: IMG.crested },
+  { id: "x1", species: "Python regius", common: "Pitone reale", morph: "Clown", sex: "F", status: "sold", img: IMG.ball },
+  { id: "x2", species: "Eublepharis macularius", common: "Geco leopardino", morph: "Tremper Albino", sex: "M", status: "sold", img: IMG.leopard },
+];
+
+function InventoryScreen({ t, go, lang }) {
+  const [tab, setTab] = useState("breeder");
+  const tabs = [
+    { id: "breeder", label: t.invBreeders },
+    { id: "sale", label: t.invForSale },
+    { id: "held", label: t.invStatusHeld },
+    { id: "sold", label: t.invSold },
+  ];
+  const items = INVENTORY_DEMO.filter(i => i.status === tab);
+  const statusColor = {
+    breeder: "text-sky-300 bg-sky-500/10 ring-sky-500/20",
+    sale: "text-amber-300 bg-amber-500/10 ring-amber-500/20",
+    held: "text-stone-300 bg-stone-500/10 ring-stone-500/20",
+    sold: "text-emerald-300 bg-emerald-500/10 ring-emerald-500/20",
+  };
+  const statusLabel = { breeder: t.invStatusBreeder, sale: t.invStatusSale, held: t.invStatusHeld, sold: t.invStatusSold };
+
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.inventory}</h1>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.invIntro}</p>
+        </div>
+      </header>
+
+      {/* Tabs */}
+      <div className="px-5 md:px-8 pt-4 flex gap-1.5 overflow-x-auto hide-scrollbar">
+        {tabs.map(tb => {
+          const count = INVENTORY_DEMO.filter(i => i.status === tb.id).length;
+          return (
+            <button key={tb.id} onClick={() => setTab(tb.id)}
+                    className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors ${
+                      tab === tb.id ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-400 hover:text-stone-200"
+                    }`}>
+              {tb.label} <span className="opacity-70">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* List */}
+      <div className="px-5 md:px-8 pt-4 space-y-2">
+        {items.length === 0 ? (
+          <p className="text-center text-stone-500 text-sm py-16 italic">{t.invEmpty}</p>
+        ) : items.map(i => (
+          <div key={i.id} className="flex items-center gap-3 bg-stone-900/50 ring-1 ring-stone-800 rounded-xl p-2.5">
+            <div className="w-14 h-14 rounded-lg overflow-hidden bg-stone-800 shrink-0">
+              <img src={i.img} alt={i.common} onError={(e) => { e.target.onerror = null; e.target.src = fallback(i.common); }}
+                   className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-stone-100 text-sm truncate">{i.morph}</div>
+              <div className="text-[11px] text-stone-500 italic truncate">{i.species} · {sexLabel(i.sex, t)}</div>
+            </div>
+            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded ring-1 shrink-0 ${statusColor[i.status]}`}>
+              {statusLabel[i.status]}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Add button */}
+      <div className="px-5 md:px-8 pt-5">
+        <button onClick={() => go("sell")}
+                className="w-full py-3 rounded-lg text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors flex items-center justify-center gap-2">
+          <PlusCircle size={16} />{t.invAdd}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LINEAGE — genetics & pedigree. Shows breeding pairings with the
+   genetic outcome, plus a simple parent→offspring tree. (PRO feature.)
+   ═════════════════════════════════════════════════════════════════ */
+const PAIRINGS_DEMO = [
+  {
+    id: "p1", sire: "Lilly White het Axanthic", dam: "Red Harlequin",
+    species: "Correlophus ciliatus", expected: "Jul 2026", status: "expected", eggs: 4,
+    outcomes: ["Lilly White", "Harlequin", "het Axanthic"],
+  },
+  {
+    id: "p2", sire: "Banana Pastel", dam: "Clown",
+    species: "Python regius", expected: "May 2026", status: "hatched", eggs: 6,
+    outcomes: ["Banana Clown", "Pastel Clown", "Banana Pastel het Clown"],
+  },
+];
+
+function LineageScreen({ t, go, lang }) {
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.lineage}</h1>
+            <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 rounded">PRO</span>
+          </div>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.lineageIntro}</p>
+        </div>
+      </header>
+
+      <div className="px-5 md:px-8 pt-5">
+        <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.lineageProjects}</h2>
+        <div className="space-y-4">
+          {PAIRINGS_DEMO.map(p => (
+            <div key={p.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-2xl p-4">
+              {/* Pairing header */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-display italic text-amber-500 text-sm">{p.species}</span>
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded ring-1 ${
+                  p.status === "hatched" ? "text-emerald-300 bg-emerald-500/10 ring-emerald-500/20" : "text-sky-300 bg-sky-500/10 ring-sky-500/20"
+                }`}>
+                  {p.status === "hatched" ? `${t.lineageHatched} · ${p.eggs}` : `${t.lineageExpected} ${p.expected}`}
+                </span>
+              </div>
+
+              {/* Parent → offspring tree */}
+              <div className="flex items-stretch gap-2">
+                <div className="flex-1 space-y-2">
+                  <div className="bg-stone-800/60 rounded-lg p-2.5">
+                    <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-0.5">♂ {t.lineageSire}</div>
+                    <div className="text-xs font-bold text-stone-100 leading-tight">{p.sire}</div>
+                  </div>
+                  <div className="bg-stone-800/60 rounded-lg p-2.5">
+                    <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-0.5">♀ {t.lineageDam}</div>
+                    <div className="text-xs font-bold text-stone-100 leading-tight">{p.dam}</div>
+                  </div>
+                </div>
+                {/* Connector */}
+                <div className="flex items-center text-stone-600">
+                  <ChevronRight size={18} />
+                </div>
+                {/* Outcomes */}
+                <div className="flex-1 bg-amber-500/5 ring-1 ring-amber-500/15 rounded-lg p-2.5">
+                  <div className="text-[9px] text-amber-400/70 uppercase tracking-widest font-bold mb-1.5">{t.lineageOffspring}</div>
+                  <div className="flex flex-wrap gap-1">
+                    {p.outcomes.map((o, i) => (
+                      <span key={i} className="text-[10px] bg-stone-800 text-stone-200 rounded px-1.5 py-0.5">{o}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REVIEWS — feedback the seller received. Pulls from the demo seller's
+   reviews so the screen is populated for the test.
+   ═════════════════════════════════════════════════════════════════ */
+function ReviewsScreen({ t, go, lang }) {
+  // Aggregate reviews from a representative demo seller
+  const seller = SELLERS["Piedmont Geckos"];
+  const reviews = seller?.reviews || [];
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) : 0;
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.reviews}</h1>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.reviewsIntro}</p>
+        </div>
+      </header>
+
+      {/* Rating summary */}
+      <div className="px-5 md:px-8 pt-5">
+        <div className="bg-gradient-to-br from-amber-500/10 to-stone-900/40 ring-1 ring-amber-500/20 rounded-2xl p-5 flex items-center gap-5">
+          <div className="text-center">
+            <div className="font-display text-4xl text-stone-50 leading-none">{avg.toFixed(1)}</div>
+            <div className="flex gap-0.5 mt-1.5 justify-center">
+              {[1, 2, 3, 4, 5].map(n => (
+                <Star key={n} size={12} className={n <= Math.round(avg) ? "fill-amber-400 text-amber-400" : "text-stone-700"} />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 border-l border-stone-800 pl-5">
+            <div className="text-2xl font-display text-stone-100">{reviews.length}</div>
+            <div className="text-[11px] text-stone-500">{t.reviewsTotal}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Review list */}
+      <div className="px-5 md:px-8 pt-4 space-y-2.5">
+        {reviews.length === 0 ? (
+          <p className="text-center text-stone-500 text-sm py-16 italic">{t.reviewsEmpty}</p>
+        ) : reviews.map((r, i) => (
+          <div key={i} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-stone-600 to-stone-700 flex items-center justify-center text-[11px] font-bold text-stone-100">
+                  {r.buyer[0]}
+                </div>
+                <span className="text-sm font-bold text-stone-100">{r.buyer}</span>
+              </div>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map(n => (
+                  <Star key={n} size={11} className={n <= r.rating ? "fill-amber-400 text-amber-400" : "text-stone-700"} />
+                ))}
+              </div>
+            </div>
+            <p className="text-[13px] text-stone-300 leading-relaxed">{r.text}</p>
+            <div className="text-[10px] text-stone-600 mt-2">{r.date}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* PLACEHOLDER for not-yet-built sections (e.g. Eco-Taxi, CITES Archive). */
 function PlaceholderScreen({ title, icon, badge, t, go, lang }) {
   return (
     <div className="max-w-2xl mx-auto w-full">
