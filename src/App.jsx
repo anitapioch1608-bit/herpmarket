@@ -25,6 +25,7 @@ const I18N = {
     tagline: "Il mercato italiano dei rettili",
     home: "Esplora", search: "Cerca", sell: "Vendi", chat: "Messaggi", profile: "Profilo",
     nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Sfoglia per categoria",
+    detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     filters: "Filtri", sort: "Ordina", apply: "Applica", reset: "Reimposta",
     sortNewest: "Più recenti", sortPriceAsc: "Prezzo: crescente", sortPriceDesc: "Prezzo: decrescente", sortDistance: "Distanza", sortRating: "Miglior valutazione",
@@ -184,6 +185,7 @@ const I18N = {
     tagline: "Italy's reptile marketplace",
     home: "Explore", search: "Search", sell: "Sell", chat: "Messages", profile: "Profile",
     nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "Browse by category",
+    detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
     filters: "Filters", sort: "Sort", apply: "Apply", reset: "Reset",
     sortNewest: "Newest first", sortPriceAsc: "Price: low to high", sortPriceDesc: "Price: high to low", sortDistance: "Nearest first", sortRating: "Top rated",
@@ -950,6 +952,7 @@ export default function HerpMarket() {
     seller: null,
     expoOnly: false,
     verifiedOnly: false,
+    auctionOnly: false,
   });
 
   // Auth state — null = logged out
@@ -997,7 +1000,7 @@ export default function HerpMarket() {
       sort: "newest", search: "",
       priceMin: null, priceMax: null,
       traits: [], traitClass: null, seller: null,
-      expoOnly: false, verifiedOnly: false,
+      expoOnly: false, verifiedOnly: false, auctionOnly: false,
     });
     scrollMemory.current["search"] = 0; // fresh search starts at the top
     go("search", null, true);
@@ -1463,6 +1466,30 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             </button>
           ))}
         </div>
+
+        {/* Quick-access: detailed search + auctions */}
+        <div className="grid grid-cols-2 gap-2.5 mt-3">
+          <button onClick={() => go("search", { openFilters: true }, true)}
+                  className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
+            <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
+              <SlidersHorizontal size={16} className="text-amber-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm text-stone-100 truncate">{t.detailedSearch}</div>
+              <div className="text-[10px] text-stone-500 truncate">{t.detailedSearchSub}</div>
+            </div>
+          </button>
+          <button onClick={() => { setFilter({ ...filter, auctionOnly: true }); go("search", null, true); }}
+                  className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
+            <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
+              <ArrowUpDown size={16} className="text-amber-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm text-stone-100 truncate">{t.viewAuctions}</div>
+              <div className="text-[10px] text-stone-500 truncate">{t.viewAuctionsSub}</div>
+            </div>
+          </button>
+        </div>
       </section>
 
       {/* Expos */}
@@ -1624,8 +1651,9 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
     if (filter.region)      r = r.filter(l => l.region === filter.region);
     if (filter.country)     r = r.filter(l => l.country === filter.country);
     if (filter.seller)      r = r.filter(l => l.seller === filter.seller);
-    if (filter.expoOnly)    r = r.filter(l => l.expoId != null);
+    if (filter.expoOnly)    r = r.filter(l => (l.expoIds && l.expoIds.length) || l.expoId != null);
     if (filter.verifiedOnly) r = r.filter(l => l.verified);
+    if (filter.auctionOnly) r = r.filter(l => !!l.auction);
     if (filter.priceMin != null) r = r.filter(l => l.price >= filter.priceMin);
     if (filter.priceMax != null) r = r.filter(l => l.price <= filter.priceMax);
     if (filter.traitClass)  r = r.filter(l => l.traits.some(tr => tr.cls === filter.traitClass));
@@ -1652,7 +1680,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
   const activeFilterCount = [
     filter.category, filter.subCategory, filter.sex, filter.region, filter.country, filter.seller,
     filter.traitClass, filter.priceMin != null || filter.priceMax != null ? "price" : null,
-    filter.expoOnly ? "expo" : null, filter.verifiedOnly ? "verified" : null,
+    filter.expoOnly ? "expo" : null, filter.verifiedOnly ? "verified" : null, filter.auctionOnly ? "auction" : null,
   ].filter(Boolean).length + filter.traits.length;
 
   const sortLabels = {
@@ -1755,6 +1783,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               )}
               {filter.expoOnly && <FilterPill onRemove={() => setFilter({ ...filter, expoOnly: false })}>★ {t.expoOnlyLabel}</FilterPill>}
               {filter.verifiedOnly && <FilterPill onRemove={() => setFilter({ ...filter, verifiedOnly: false })}>✓ {t.verifiedOnlyLabel}</FilterPill>}
+              {filter.auctionOnly && <FilterPill onRemove={() => setFilter({ ...filter, auctionOnly: false })}>⇅ {t.viewAuctions}</FilterPill>}
             </div>
           )}
         </div>
@@ -1929,6 +1958,14 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                        onChange={() => setFilter({ ...filter, verifiedOnly: !filter.verifiedOnly })}
                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
               </label>
+              <label className="flex items-center justify-between bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-3 cursor-pointer">
+                <span className="text-sm text-stone-200 font-medium flex items-center gap-2">
+                  <ArrowUpDown size={15} className="text-amber-400" />{t.viewAuctions}
+                </span>
+                <input type="checkbox" checked={filter.auctionOnly}
+                       onChange={() => setFilter({ ...filter, auctionOnly: !filter.auctionOnly })}
+                       className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
+              </label>
             </div>
 
             {/* Actions */}
@@ -1937,7 +1974,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                         category: null, subCategory: null, sex: null, region: null, country: null,
                         sort: filter.sort, search: filter.search,
                         priceMin: null, priceMax: null, traits: [], traitClass: null,
-                        seller: null, expoOnly: false, verifiedOnly: false,
+                        seller: null, expoOnly: false, verifiedOnly: false, auctionOnly: false,
                       })}
                       className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">
                 {t.clearAll}
