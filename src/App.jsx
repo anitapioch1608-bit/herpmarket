@@ -5737,4 +5737,23 @@ function SponsorSlot({ slot, t, lang }) {
       </div>
     </a>
   );
-}
+}Corporate entity: replace [DENOMINAZIONE SOCIETARIA], [P.IVA],
+[SEDE], [FORO COMPETENTE] with your real details once registered.
+Stripe Connect audit: confirm the delayed-payout flow meets Italian AML
+rules and that the "not a PSP under PSD2" positioning holds.
+Cross-border live-animal liability: as the platform facilitating DE/AT/
+CH/FR ↔ IT sales, what is your residual liability, and is the seller-
+responsibility clause sufficient to discharge it? (Switzerland = non-EU
+customs border — extra scrutiny.)
+D.Lgs. 70/2003 hosting-provider qualification + documented notice-and-
+takedown procedure.
+D.Lgs. 135/2022 (dangerous/exotic animals): platform exposure if a
+seller lists a banned species; is the filter + ban policy enough?
+CITES: is the auto-generated transfer declaration adequate as an
+administrative aid, given Annex A buyers still need the individual cert?
+GDPR: confirm Supabase SCCs are executed in-dashboard (see below);
+confirm no DPO required at your size (Art. 37).
+Codice del Consumo: confirm live-animal withdrawal exemption (art. 59)
+and conformity-guarantee (arts. 128 ff. / 1490 ff. cc) framing.
+Review every section marked "Revisione/Review" in TOS, Marketplace Policy,
+and Privacy Policy.
