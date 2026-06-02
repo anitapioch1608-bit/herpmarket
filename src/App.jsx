@@ -27,6 +27,9 @@ const I18N = {
     nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Sfoglia per categoria",
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
+    heroTitle: "Scopri i rettili e gli animali esotici premium in Italia.",
+    heroSub: "Connettiti direttamente con allevatori verificati per morph esclusivi e specie rare. Dalla documentazione CITES automatica ai ritiri sicuri e garantiti alle grandi fiere come Verona o Hamm: tutto ciò di cui hai bisogno è qui.",
+    heroBtn: "Esplora il marketplace",
     filters: "Filtri", sort: "Ordina", apply: "Applica", reset: "Reimposta",
     sortNewest: "Più recenti", sortPriceAsc: "Prezzo: crescente", sortPriceDesc: "Prezzo: decrescente", sortDistance: "Distanza", sortRating: "Miglior valutazione",
     advFilters: "Filtri avanzati", priceRange: "Fascia di prezzo", anyPrice: "Qualsiasi", min: "Min", max: "Max",
@@ -187,6 +190,9 @@ const I18N = {
     nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "Browse by category",
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
+    heroTitle: "Discover Italy's Premium Reptiles & Exotic Animals.",
+    heroSub: "Connect directly with verified breeders for high-end morphs and rare species. From automated CITES documentation to secure, guaranteed pickups at major expos like Verona or Hamm—everything you need is right here.",
+    heroBtn: "Browse the Marketplace",
     filters: "Filters", sort: "Sort", apply: "Apply", reset: "Reset",
     sortNewest: "Newest first", sortPriceAsc: "Price: low to high", sortPriceDesc: "Price: high to low", sortDistance: "Nearest first", sortRating: "Top rated",
     advFilters: "Advanced filters", priceRange: "Price range", anyPrice: "Any", min: "Min", max: "Max",
@@ -1433,17 +1439,30 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         </div>
       </header>
 
+      {/* Mobile hero copy */}
+      <div className="md:hidden px-5 pt-5">
+        <h2 className="font-display text-2xl text-stone-50 tracking-tight leading-tight">{t.heroTitle}</h2>
+        <p className="text-stone-400 text-[13px] mt-2.5 leading-relaxed">{t.heroSub}</p>
+        <button onClick={() => go("search", null, true)}
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-5 py-3 rounded-lg transition-colors">
+          <Search size={16} />{t.heroBtn}
+        </button>
+      </div>
+
       {/* Desktop hero */}
-      <header className="hidden md:block px-8 pt-10 pb-6 border-b border-stone-800/60">
-        <h2 className="font-display text-4xl text-stone-50 tracking-tight" style={{ fontVariationSettings: "'opsz' 144" }}>
-          {lang === "it" ? <>Trova il tuo prossimo <span className="italic text-amber-500">esemplare</span>.</> :
-                           <>Find your next <span className="italic text-amber-500">animal</span>.</>}
-        </h2>
-        <p className="text-stone-400 text-sm mt-2 max-w-xl">
-          {lang === "it"
-            ? "Allevatori italiani verificati, documentazione CITES integrata, prenotazioni sicure per le fiere."
-            : "Verified Italian breeders, integrated CITES paperwork, secure expo reservations."}
-        </p>
+      <header className="hidden md:block px-8 pt-12 pb-8 border-b border-stone-800/60">
+        <div className="max-w-3xl">
+          <h2 className="font-display text-4xl lg:text-5xl text-stone-50 tracking-tight leading-[1.1]" style={{ fontVariationSettings: "'opsz' 144" }}>
+            {t.heroTitle}
+          </h2>
+          <p className="text-stone-400 text-base mt-4 max-w-2xl leading-relaxed">
+            {t.heroSub}
+          </p>
+          <button onClick={() => go("search", null, true)}
+                  className="mt-6 inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-6 py-3 rounded-lg transition-colors">
+            <Search size={16} />{t.heroBtn}
+          </button>
+        </div>
       </header>
 
       {/* Category strip */}
@@ -1561,11 +1580,36 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         </div>
       </section>
 
+      {/* Footer — legal links, always reachable (no login required) */}
+      <LegalFooter t={t} go={go} lang={lang} />
+
       {/* All-expos modal */}
       {showAllExpos && (
         <AllExposModal onClose={() => setShowAllExpos(false)} go={go} t={t} lang={lang} />
       )}
     </div>
+  );
+}
+
+/* Footer with legal + about links. Rendered on the home screen and the login
+   gate so Terms, Privacy, Marketplace Policy and About are accessible to
+   everyone, logged in or not (a legal requirement, not just good manners). */
+function LegalFooter({ t, go, lang }) {
+  return (
+    <footer className="border-t border-stone-800 mt-4 px-5 md:px-8 py-8">
+      <div className="font-display text-lg text-stone-300 tracking-tight mb-3">
+        Herp<span className="italic text-amber-500">Market</span>
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-2 text-[12px]">
+        <button onClick={() => go("about")} className="text-stone-400 hover:text-amber-400 transition-colors">{t.aboutContact}</button>
+        <button onClick={() => go("terms")} className="text-stone-400 hover:text-amber-400 transition-colors">{t.termsLegal}</button>
+        <button onClick={() => go("storepolicy")} className="text-stone-400 hover:text-amber-400 transition-colors">{t.storePolicyLabel}</button>
+        <button onClick={() => go("privacy")} className="text-stone-400 hover:text-amber-400 transition-colors">{t.privacyLabel}</button>
+      </div>
+      <p className="text-[10px] text-stone-600 mt-4">
+        © 2026 HerpMarket · {lang === "it" ? "Il marketplace rettili in Europa" : "The reptile marketplace in Europe"}
+      </p>
+    </footer>
   );
 }
 
@@ -3831,6 +3875,12 @@ function AuthGate({ reason, t, go, setAuthModal }) {
               className="mt-4 text-xs text-stone-500 hover:text-stone-300 transition-colors">
         {t.backToBrowse}
       </button>
+      {/* Legal links — accessible without an account */}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-8 text-[11px]">
+        <button onClick={() => go("terms")} className="text-stone-600 hover:text-amber-400 transition-colors">{t.termsLegal}</button>
+        <button onClick={() => go("privacy")} className="text-stone-600 hover:text-amber-400 transition-colors">{t.privacyLabel}</button>
+        <button onClick={() => go("about")} className="text-stone-600 hover:text-amber-400 transition-colors">{t.aboutContact}</button>
+      </div>
     </div>
   );
 }
