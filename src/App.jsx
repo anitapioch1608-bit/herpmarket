@@ -30,6 +30,7 @@ const I18N = {
     heroTitle: "Scopri i rettili e gli animali esotici premium in Italia.",
     heroSub: "Connettiti direttamente con allevatori verificati per morph esclusivi e specie rare. Dalla documentazione CITES automatica ai ritiri sicuri e garantiti alle grandi fiere come Verona o Hamm: tutto ciò di cui hai bisogno è qui.",
     heroBtn: "Esplora il marketplace",
+    browseListings: "Sfoglia annunci", sellCta: "Vendi un animale", orSep: "oppure",
     filters: "Filtri", sort: "Ordina", apply: "Applica", reset: "Reimposta",
     sortNewest: "Più recenti", sortPriceAsc: "Prezzo: crescente", sortPriceDesc: "Prezzo: decrescente", sortDistance: "Distanza", sortRating: "Miglior valutazione",
     advFilters: "Filtri avanzati", priceRange: "Fascia di prezzo", anyPrice: "Qualsiasi", min: "Min", max: "Max",
@@ -193,6 +194,7 @@ const I18N = {
     heroTitle: "Discover Italy's Premium Reptiles & Exotic Animals.",
     heroSub: "Connect directly with verified breeders for high-end morphs and rare species. From automated CITES documentation to secure, guaranteed pickups at major expos like Verona or Hamm—everything you need is right here.",
     heroBtn: "Browse the Marketplace",
+    browseListings: "Browse listings", sellCta: "Sell an animal", orSep: "or",
     filters: "Filters", sort: "Sort", apply: "Apply", reset: "Reset",
     sortNewest: "Newest first", sortPriceAsc: "Price: low to high", sortPriceDesc: "Price: high to low", sortDistance: "Nearest first", sortRating: "Top rated",
     advFilters: "Advanced filters", priceRange: "Price range", anyPrice: "Any", min: "Min", max: "Max",
@@ -1115,36 +1117,16 @@ export default function HerpMarket() {
 
       {/* Main */}
       <div className="flex-1 relative flex flex-col overflow-hidden">
-        {/* Mobile floating top controls — login pill on home.
-            Language toggle is the separate fixed z-[80] button (top-right). */}
-        <header className="md:hidden absolute top-0 left-0 z-40 px-4 pt-3 flex items-center gap-2 pointer-events-none">
-          {/* Login pill only on home (other screens reach profile via bottom nav) */}
-          {view === "home" && (
-            user ? (
-              <button onClick={() => go("profile")}
-                      className="pointer-events-auto flex items-center gap-2 bg-stone-900/80 backdrop-blur ring-1 ring-stone-700 rounded-full pl-1 pr-3 py-1">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-xs text-stone-50 font-bold">
-                  {user.name[0]}
-                </div>
-                <span className="text-xs font-bold text-stone-100">{user.name.split(" ")[0]}</span>
-              </button>
-            ) : (
-              <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
-                      className="pointer-events-auto bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-lg">
-                <LogIn size={12} />{t.loginOrJoin}
-              </button>
-            )
-          )}
-        </header>
-
         <div className="flex-1 overflow-y-auto hide-scrollbar pb-24 md:pb-0">
           {screen()}
         </div>
-        {/* Mobile bottom nav */}
-        <nav className="md:hidden absolute bottom-0 inset-x-0 z-50 bg-stone-950/90 backdrop-blur-xl border-t border-stone-800 px-3 pt-2 pb-6 flex justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        {/* Mobile bottom nav — fixed to viewport, with safe-area padding so the
+            sell (+) button isn't clipped by the phone's home indicator. */}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-stone-950/95 backdrop-blur-xl border-t border-stone-800 px-3 pt-2 flex justify-around items-start shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
+             style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
           <TabBtn icon={<Home size={20} />} label={t.home}    active={view === "home"}    onClick={() => go("home")} />
           <TabBtn icon={<Search size={20} />} label={t.search} active={view === "search"} onClick={goToSearchFresh} />
-          <TabBtn icon={<PlusCircle size={24} />} label={t.sell} active={view === "sell"} onClick={() => go("sell")} accent />
+          <TabBtn icon={<PlusCircle size={22} />} label={t.sell} active={view === "sell"} onClick={() => { if (requireAuth(t.loginToSell, () => go("sell"))) go("sell"); }} accent />
           <TabBtn icon={<MessageCircle size={20} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
           <TabBtn icon={<User size={20} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
         </nav>
@@ -1405,7 +1387,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
-function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal }) {
+function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth }) {
   const userRegion = "Piemonte";
   const near = LISTINGS.filter(l => l.region === userRegion);
   const all = LISTINGS;
@@ -1443,10 +1425,17 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
       <div className="md:hidden px-5 pt-5">
         <h2 className="font-display text-2xl text-stone-50 tracking-tight leading-tight">{t.heroTitle}</h2>
         <p className="text-stone-400 text-[13px] mt-2.5 leading-relaxed">{t.heroSub}</p>
-        <button onClick={() => go("search", null, true)}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-5 py-3 rounded-lg transition-colors">
-          <Search size={16} />{t.heroBtn}
-        </button>
+        <div className="flex items-center gap-2 mt-4">
+          <button onClick={() => { setFilter({ ...filter, sort: "distance" }); go("search", null, true); }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-4 py-3 rounded-lg transition-colors">
+            <Search size={15} />{t.browseListings}
+          </button>
+          <span className="text-[11px] text-stone-500 font-medium shrink-0">{t.orSep}</span>
+          <button onClick={() => { if (requireAuth(t.loginToSell, () => go("sell"))) go("sell"); }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm px-4 py-3 rounded-lg transition-colors ring-1 ring-stone-700">
+            <PlusCircle size={15} />{t.sellCta}
+          </button>
+        </div>
       </div>
 
       {/* Desktop hero */}
@@ -1458,7 +1447,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           <p className="text-stone-400 text-base mt-4 max-w-2xl leading-relaxed">
             {t.heroSub}
           </p>
-          <button onClick={() => go("search", null, true)}
+          <button onClick={() => { setFilter({ ...filter, sort: "distance" }); go("search", null, true); }}
                   className="mt-6 inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-6 py-3 rounded-lg transition-colors">
             <Search size={16} />{t.heroBtn}
           </button>
