@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -25,6 +25,16 @@ const I18N = {
     tagline: "Il mercato italiano dei rettili",
     home: "Esplora", search: "Cerca", sell: "Vendi", chat: "Messaggi", profile: "Profilo",
     nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Sfoglia per categoria",
+    category: "Categoria",
+    breedingProjects: "Progetti di riproduzione",
+    breedingIntro: "Pianifica e visualizza i tuoi accoppiamenti — sostituisci i fogli Excel con un planner visivo.",
+    breedingSoon: "Presto disponibile",
+    breedingSoonText: "Stiamo costruendo uno strumento visivo per pianificare gli accoppiamenti, calcolare le probabilità genetiche della prole e tracciare ogni progetto stagione dopo stagione. Niente più fogli Excel.",
+    breedingFeat1: "Calcolo automatico delle probabilità genetiche (Punnett)",
+    breedingFeat2: "Pianificazione visiva accoppiamenti per stagione",
+    breedingFeat3: "Collegamento agli esemplari nel tuo inventario",
+    breedingFeat4: "Esportazione e condivisione dei progetti",
+    breedingNotify: "Avvisami quando è pronto",
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     heroTitle: "Scopri i rettili e gli animali esotici premium in Italia.",
@@ -189,6 +199,16 @@ const I18N = {
     tagline: "Italy's reptile marketplace",
     home: "Explore", search: "Search", sell: "Sell", chat: "Messages", profile: "Profile",
     nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "Browse by category",
+    category: "Category",
+    breedingProjects: "Breeding projects",
+    breedingIntro: "Plan and visualise your pairings — replace Excel sheets with a visual planner.",
+    breedingSoon: "Coming soon",
+    breedingSoonText: "We're building a visual tool to plan pairings, calculate the genetic odds of the offspring, and track each project season after season. No more Excel sheets.",
+    breedingFeat1: "Automatic genetic odds calculation (Punnett)",
+    breedingFeat2: "Visual pairing planner by season",
+    breedingFeat3: "Linked to the animals in your inventory",
+    breedingFeat4: "Export and share your projects",
+    breedingNotify: "Notify me when it's ready",
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
     heroTitle: "Discover Italy's Premium Reptiles & Exotic Animals.",
@@ -553,6 +573,54 @@ const CATEGORY_SPECIES = {
   inverts:    [],
 };
 
+/* Category → subcategory → species. Subcategories group species so the list
+   stays navigable as it grows to hundreds. Both the sell form and the search
+   filter read from this. When you move to Supabase, this becomes three tables
+   (categories, subcategories, species) but the shape stays the same.
+   `null` species list on a subcategory = "coming soon / many species". */
+const CATEGORY_SUBCATS = {
+  geckos: [
+    { id: "geckos_arboreal", it: "Gechi arboricoli", en: "Arboreal geckos", species: ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Phelsuma grandis"] },
+    { id: "geckos_ground",   it: "Gechi terricoli",  en: "Ground geckos",   species: ["Eublepharis macularius"] },
+  ],
+  snakes: [
+    { id: "snakes_pythons",   it: "Pitoni",     en: "Pythons",     species: ["Python regius"] },
+    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis"] },
+    { id: "snakes_boas",      it: "Boa",        en: "Boas",        species: ["Boa constrictor"] },
+  ],
+  lizards: [
+    { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps"] },
+    { id: "lizards_skinks",  it: "Scinchi",  en: "Skinks",   species: ["Tiliqua scincoides"] },
+    { id: "lizards_monitors",it: "Varani",   en: "Monitors", species: [] },
+  ],
+  chameleons: [
+    { id: "cham_old",  it: "Camaleonti del Vecchio Mondo", en: "Old World chameleons", species: ["Furcifer pardalis", "Chamaeleo calyptratus"] },
+  ],
+  tortoises: [
+    { id: "tort_mediterranean", it: "Testuggini mediterranee", en: "Mediterranean tortoises", species: ["Testudo hermanni", "Testudo graeca"] },
+    { id: "tort_tropical",      it: "Testuggini tropicali",    en: "Tropical tortoises",      species: [] },
+    { id: "tort_aquatic",       it: "Tartarughe acquatiche",   en: "Aquatic turtles",         species: [] },
+  ],
+  amphibians: [
+    { id: "amph_frogs",       it: "Rane e rospi",  en: "Frogs & toads",  species: [] },
+    { id: "amph_salamanders", it: "Salamandre",    en: "Salamanders",    species: [] },
+  ],
+  inverts: [
+    { id: "inv_tarantulas", it: "Tarantole",            en: "Tarantulas",        species: [] },
+    { id: "inv_scorpions",  it: "Scorpioni",            en: "Scorpions",         species: [] },
+    { id: "inv_mantids",    it: "Mantidi",              en: "Mantids",           species: [] },
+    { id: "inv_myriapods",  it: "Millepiedi/Centopiedi",en: "Milli/Centipedes",  species: [] },
+  ],
+};
+
+/* Helper: all subcategories for a category (or empty array) */
+const subcatsFor = (catId) => CATEGORY_SUBCATS[catId] || [];
+/* Helper: species belonging to a subcategory id */
+function speciesForSubcat(catId, subcatId) {
+  const sc = subcatsFor(catId).find(s => s.id === subcatId);
+  return sc ? sc.species : [];
+}
+
 /* Common-name labels for species, for the sub-category dropdown */
 const SPECIES_LABELS = {
   "Correlophus ciliatus":   { it: "Geco crestato",        en: "Crested gecko" },
@@ -615,6 +683,17 @@ const COUNTRIES = [
   { code: "CH", flag: "🇨🇭", it: "Svizzera",    en: "Switzerland", eu: false },
 ];
 const countryByCode = (code) => COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
+
+/* Regions/states per country, so the region selector adapts to the chosen
+   country (you can't pick an Italian region when selling from Germany). */
+const REGIONS_BY_COUNTRY = {
+  IT: ["Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna","Friuli-V.G.","Lazio","Liguria","Lombardia","Marche","Molise","Piemonte","Puglia","Sardegna","Sicilia","Toscana","Trentino-A.A.","Umbria","Valle d'Aosta","Veneto"],
+  DE: ["Baden-Württemberg","Bayern","Berlin","Brandenburg","Bremen","Hamburg","Hessen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen","Rheinland-Pfalz","Saarland","Sachsen","Sachsen-Anhalt","Schleswig-Holstein","Thüringen"],
+  AT: ["Burgenland","Kärnten","Niederösterreich","Oberösterreich","Salzburg","Steiermark","Tirol","Vorarlberg","Wien"],
+  FR: ["Auvergne-Rhône-Alpes","Bourgogne-Franche-Comté","Bretagne","Centre-Val de Loire","Corse","Grand Est","Hauts-de-France","Île-de-France","Normandie","Nouvelle-Aquitaine","Occitanie","Pays de la Loire","Provence-Alpes-Côte d'Azur"],
+  CH: ["Zürich","Bern","Luzern","Genève","Vaud","Ticino","Basel-Stadt","St. Gallen","Aargau","Wallis","Graubünden","Altri Cantoni"],
+};
+const regionsForCountry = (code) => REGIONS_BY_COUNTRY[code] || REGIONS_BY_COUNTRY.IT;
 
 // Placeholder photos for the DEMO only. These are hotlinked stock images and
 // can rotate or break over time — that's expected. The real fix is hosting
@@ -1048,6 +1127,7 @@ export default function HerpMarket() {
       case "legal":     return <Legal {...props} />;
       case "inventory": return <InventoryScreen {...props} />;
       case "lineage":   return <LineageScreen {...props} />;
+      case "breeding":  return <BreedingProjectsScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
       case "reviews":   return <ReviewsScreen {...props} />;
       case "documents": return <PlaceholderScreen title={t.citesArchive} {...props} icon={<FileText size={28} />} />;
@@ -1675,6 +1755,16 @@ function AllExposModal({ onClose, go, t, lang }) {
 function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState }) {
   const [showFilters, setShowFilters] = useState(initialState?.openFilters || false);
   const [showSort, setShowSort] = useState(false);
+  // Snapshot of the filter when the sheet opens. If the user closes with X
+  // (cancel) we restore it; if they tap Apply we keep the changes.
+  const filterSnapshot = useRef(null);
+  const openFilters = () => { filterSnapshot.current = { ...filter }; setShowFilters(true); };
+  const applyFilters = () => { filterSnapshot.current = null; setShowFilters(false); };
+  const cancelFilters = () => {
+    if (filterSnapshot.current) setFilter(filterSnapshot.current);
+    filterSnapshot.current = null;
+    setShowFilters(false);
+  };
 
   const filtered = useMemo(() => {
     let r = LISTINGS;
@@ -1745,7 +1835,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
 
           {/* Filter / sort bar */}
           <div className="flex items-center gap-2 mt-3">
-            <button onClick={() => setShowFilters(true)}
+            <button onClick={openFilters}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       activeFilterCount > 0 ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-300 ring-1 ring-stone-800 hover:ring-stone-700"
                     }`}>
@@ -1838,7 +1928,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
 
       {/* Filters drawer */}
       {showFilters && (
-        <BottomSheet onClose={() => setShowFilters(false)} title={t.advFilters}>
+        <BottomSheet onClose={cancelFilters} title={t.advFilters}>
           <div className="space-y-5">
             {/* Category */}
             <FilterGroup label={t.species}>
@@ -2012,7 +2102,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                       className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">
                 {t.clearAll}
               </button>
-              <button onClick={() => setShowFilters(false)}
+              <button onClick={applyFilters}
                       className="flex-[2] py-3 rounded-lg text-sm font-bold bg-amber-500 text-stone-950 hover:bg-amber-400 transition-colors">
                 {t.apply} · {t.resultsCount(filtered.length)}
               </button>
@@ -3078,6 +3168,16 @@ function Checkout({ amount, onClose, t }) {
 function SellScreen({ t, lang, go }) {
   const [success, setSuccess] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
+  // Cascading category → subcategory → species
+  const [catId, setCatId] = useState("");
+  const [subcatId, setSubcatId] = useState("");
+  const [speciesVal, setSpeciesVal] = useState("");
+  // Country → region
+  const [country, setCountry] = useState("IT");
+  const [region, setRegion] = useState(regionsForCountry("IT")[0]);
+
+  const subcats = catId ? subcatsFor(catId) : [];
+  const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
   const exampleTraits = [
     { name: "Pastel", cls: "incDom" }, { name: "Banana", cls: "incDom" },
     { name: "Albino", cls: "recessive" }, { name: "Pied", cls: "recessive" },
@@ -3091,8 +3191,8 @@ function SellScreen({ t, lang, go }) {
         <div className="w-16 h-16 bg-emerald-500/15 ring-1 ring-emerald-500/30 rounded-full flex items-center justify-center text-emerald-400 mb-5">
           <CheckCircle size={32} />
         </div>
-        <h2 className="font-display text-2xl text-stone-50">Annuncio pubblicato</h2>
-        <p className="text-stone-400 text-sm mt-1.5">Sarà visibile agli acquirenti entro pochi minuti.</p>
+        <h2 className="font-display text-2xl text-stone-50">{lang === "it" ? "Annuncio pubblicato" : "Listing published"}</h2>
+        <p className="text-stone-400 text-sm mt-1.5">{lang === "it" ? "Sarà visibile agli acquirenti entro pochi minuti." : "It'll be visible to buyers within a few minutes."}</p>
         <button onClick={() => { setSuccess(false); go("home"); }}
                 className="mt-6 px-6 py-3 bg-amber-500 text-stone-950 font-bold text-sm rounded-lg hover:bg-amber-400 transition-colors">
           {t.backToBrowse}
@@ -3123,13 +3223,46 @@ function SellScreen({ t, lang, go }) {
           <input className="form-input" placeholder={lang === "it" ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
         </FormBlock>
 
-        <div className="grid grid-cols-2 gap-3">
-          <FormBlock label={t.species}>
-            <select className="form-input">
-              <option value="">{t.pickSpecies}</option>
-              {CATEGORIES.map(c => <option key={c.id}>{c[lang]}</option>)}
+        {/* Category → Subcategory → Species cascade */}
+        <div className="grid grid-cols-1 gap-3">
+          <FormBlock label={t.category}>
+            <select className="form-input" value={catId}
+                    onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
+              <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
+              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
             </select>
           </FormBlock>
+
+          {catId && (
+            <FormBlock label={lang === "it" ? "Sottocategoria" : "Subcategory"}>
+              <select className="form-input" value={subcatId}
+                      onChange={e => { setSubcatId(e.target.value); setSpeciesVal(""); }}>
+                <option value="">{lang === "it" ? "Scegli sottocategoria" : "Choose subcategory"}</option>
+                {subcats.map(sc => <option key={sc.id} value={sc.id}>{sc[lang]}</option>)}
+              </select>
+            </FormBlock>
+          )}
+
+          {subcatId && (
+            <FormBlock label={t.species}>
+              {speciesOptions.length > 0 ? (
+                <select className="form-input" value={speciesVal} onChange={e => setSpeciesVal(e.target.value)}>
+                  <option value="">{t.pickSpecies}</option>
+                  {speciesOptions.map(sp => (
+                    <option key={sp} value={sp}>{SPECIES_LABELS[sp]?.[lang] || sp} — {sp}</option>
+                  ))}
+                  <option value="__other">{lang === "it" ? "Altro / non in elenco…" : "Other / not listed…"}</option>
+                </select>
+              ) : (
+                <input className="form-input" placeholder={lang === "it" ? "Nome scientifico della specie" : "Species scientific name"}
+                       value={speciesVal === "__other" ? "" : speciesVal} onChange={e => setSpeciesVal(e.target.value)} />
+              )}
+              <p className="text-[10px] text-stone-500 mt-1.5">
+                {lang === "it" ? "Non trovi la specie? Scrivila a mano — la aggiungeremo al catalogo." : "Species not listed? Type it in — we'll add it to the catalogue."}
+              </p>
+            </FormBlock>
+          )}
+
           <FormBlock label={t.sex}>
             <select className="form-input">
               <option>{t.male}</option><option>{t.female}</option><option>{t.pair}</option><option>{t.unsexed}</option>
@@ -3160,17 +3293,20 @@ function SellScreen({ t, lang, go }) {
           <input type="text" className="form-input" placeholder="MM/AAAA" />
         </FormBlock>
 
-        <FormBlock label={t.countryLabel}>
-          <select className="form-input">
-            {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
-          </select>
-        </FormBlock>
-
-        <FormBlock label={t.region}>
-          <select className="form-input">
-            {REGIONS.slice(1).map(r => <option key={r}>{r}</option>)}
-          </select>
-        </FormBlock>
+        {/* Country → region cascade */}
+        <div className="grid grid-cols-2 gap-3">
+          <FormBlock label={t.countryLabel}>
+            <select className="form-input" value={country}
+                    onChange={e => { setCountry(e.target.value); setRegion(regionsForCountry(e.target.value)[0]); }}>
+              {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+            </select>
+          </FormBlock>
+          <FormBlock label={t.region}>
+            <select className="form-input" value={region} onChange={e => setRegion(e.target.value)}>
+              {regionsForCountry(country).map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </FormBlock>
+        </div>
 
         <FormBlock label={t.description}>
           <textarea rows="4" placeholder={t.describePlaceholder} className="form-input resize-none" />
@@ -3589,6 +3725,7 @@ function Profile({ t, go, lang, user, handleLogout }) {
           <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub="2" onClick={() => go("wishlist")} />
           <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
           <ProfileRow icon={<Grid3x3 size={18} />} label={t.lineage} badge="PRO" onClick={() => go("lineage")} />
+          <ProfileRow icon={<GitBranch size={18} />} label={t.breedingProjects} badge="SOON" onClick={() => go("breeding")} />
           <ProfileRow icon={<Star size={18} />} label={t.reviews} sub="4.9 · 47" onClick={() => go("reviews")} />
         </ProfileGroup>
 
@@ -4608,6 +4745,90 @@ function LineageScreen({ t, go, lang }) {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BREEDING PROJECTS — coming-soon page with a real preview of the
+   planned visual planner (replaces the Excel sheets breeders use).
+   ═════════════════════════════════════════════════════════════════ */
+function BreedingProjectsScreen({ t, go, lang }) {
+  const [notified, setNotified] = useState(false);
+  const features = [t.breedingFeat1, t.breedingFeat2, t.breedingFeat3, t.breedingFeat4];
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.breedingProjects}</h1>
+            <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 rounded">{t.breedingSoon}</span>
+          </div>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.breedingIntro}</p>
+        </div>
+      </header>
+
+      <div className="p-5 md:p-8">
+        {/* Hero coming-soon card */}
+        <div className="bg-gradient-to-br from-amber-500/10 to-stone-900/40 ring-1 ring-amber-500/20 rounded-2xl p-6 text-center">
+          <div className="w-14 h-14 mx-auto bg-amber-500/15 ring-1 ring-amber-500/30 rounded-2xl flex items-center justify-center text-amber-400 mb-4">
+            <GitBranch size={26} />
+          </div>
+          <h2 className="font-display text-xl text-stone-50">{t.breedingSoon}</h2>
+          <p className="text-sm text-stone-300 mt-2 leading-relaxed max-w-md mx-auto">{t.breedingSoonText}</p>
+        </div>
+
+        {/* Planned features */}
+        <div className="mt-5 space-y-2">
+          {features.map((f, i) => (
+            <div key={i} className="flex items-center gap-3 bg-stone-900/50 ring-1 ring-stone-800 rounded-xl p-3.5">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                <Check size={14} />
+              </div>
+              <span className="text-sm text-stone-200">{f}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Visual preview mockup — a teaser of the planner */}
+        <div className="mt-5 bg-stone-900/40 ring-1 ring-stone-800 rounded-2xl p-4">
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{lang === "it" ? "Anteprima" : "Preview"}</div>
+          <div className="flex items-stretch gap-2 opacity-60">
+            <div className="flex-1 space-y-2">
+              <div className="bg-sky-500/10 ring-1 ring-sky-500/20 rounded-lg p-2.5">
+                <div className="text-[9px] text-sky-300/70 uppercase tracking-widest font-bold">♂ {t.lineageSire}</div>
+                <div className="text-xs font-bold text-stone-100 mt-0.5">Lilly White</div>
+              </div>
+              <div className="bg-rose-500/10 ring-1 ring-rose-500/20 rounded-lg p-2.5">
+                <div className="text-[9px] text-rose-300/70 uppercase tracking-widest font-bold">♀ {t.lineageDam}</div>
+                <div className="text-xs font-bold text-stone-100 mt-0.5">het Axanthic</div>
+              </div>
+            </div>
+            <div className="flex items-center text-stone-600"><ChevronRight size={18} /></div>
+            <div className="flex-1 bg-amber-500/5 ring-1 ring-amber-500/15 rounded-lg p-2.5">
+              <div className="text-[9px] text-amber-400/70 uppercase tracking-widest font-bold mb-1">{lang === "it" ? "Prole attesa" : "Expected offspring"}</div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px]"><span className="text-stone-300">Lilly White</span><span className="text-stone-500">25%</span></div>
+                <div className="flex justify-between text-[10px]"><span className="text-stone-300">LW het Ax</span><span className="text-stone-500">50%</span></div>
+                <div className="flex justify-between text-[10px]"><span className="text-stone-300">Normal het Ax</span><span className="text-stone-500">25%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Notify button */}
+        {notified ? (
+          <p className="text-center text-emerald-300 text-sm mt-5 bg-emerald-500/10 ring-1 ring-emerald-500/20 rounded-lg py-3">
+            ✓ {lang === "it" ? "Ti avviseremo appena sarà pronto." : "We'll let you know as soon as it's ready."}
+          </p>
+        ) : (
+          <button onClick={() => setNotified(true)}
+                  className="w-full mt-5 py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors">
+            {t.breedingNotify}
+          </button>
+        )}
       </div>
     </div>
   );
