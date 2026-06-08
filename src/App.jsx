@@ -95,6 +95,7 @@ const I18N = {
     demoSimSeller: "Demo: simula venditore",
     demoApprove: "Approva", demoDecline: "Rifiuta", demoConfirmHandover: "Conferma consegna",
     description: "Descrizione", parentage: "Genealogia", sire: "Padre", dam: "Madre", unknown: "Sconosciuto",
+    listedOn: "Pubblicato il", lastUpdated: "Ultimo aggiornamento",
     born: "Nato", weight: "Peso", origin: "Origine", captiveBred: "Nato in cattività",
     cites: "Documenti CITES", citesNotice: "Documento di cessione richiesto per Allegato A/B",
     listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 3)", publishListing: "Pubblica annuncio",
@@ -269,6 +270,7 @@ const I18N = {
     demoSimSeller: "Demo: simulate seller",
     demoApprove: "Approve", demoDecline: "Decline", demoConfirmHandover: "Confirm handover",
     description: "Description", parentage: "Parentage", sire: "Sire", dam: "Dam", unknown: "Unknown",
+    listedOn: "Listed on", lastUpdated: "Last updated",
     born: "Born", weight: "Weight", origin: "Origin", captiveBred: "Captive-bred",
     cites: "CITES paperwork", citesNotice: "Transfer document required for Annex A/B",
     listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 3)", publishListing: "Publish listing",
@@ -614,6 +616,7 @@ const CATEGORY_SUBCATS = {
 };
 
 /* Helper: all subcategories for a category (or empty array) */
+const initialsOf = (n) => (n || "").trim().split(/\s+/).map(w => w[0] || "").slice(0, 2).join("").toUpperCase() || "?";
 const subcatsFor = (catId) => CATEGORY_SUBCATS[catId] || [];
 /* Helper: species belonging to a subcategory id */
 function speciesForSubcat(catId, subcatId) {
@@ -1018,6 +1021,12 @@ const formatAge = (months, t) => {
   return `${years} ${years === 1 ? t.year : t.years}`;
 };
 const formatPrice = (n) => `€${n.toLocaleString("it-IT")}`;
+const formatDate = (iso, lang) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return d.toLocaleDateString(lang === "it" ? "it-IT" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
 const sexLabel = (s, t) => ({ M: t.male, F: t.female, U: t.unsexed, P: t.pair }[s] || s);
 const fallback = (label) =>
   `data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23292524'/><stop offset='1' stop-color='%231c1917'/></linearGradient></defs><rect width='400' height='400' fill='url(%23g)'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='serif' font-style='italic' font-size='20' fill='%23a8a29e'>${label}</text></svg>`;
@@ -1117,7 +1126,7 @@ export default function HerpMarket() {
     setFavorites(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
   const handleLogin = (name) => {
-    setUser({ name: name || "Marco R.", region: "Piemonte", verified: true });
+    setUser({ name: name || "Anita Pioch", region: "Piemonte", verified: true });
     const after = authModal?.after;
     setAuthModal(null);
     after && setTimeout(after, 100);
@@ -1186,7 +1195,7 @@ export default function HerpMarket() {
             <button onClick={() => go("profile")}
                     className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-stone-800/60 transition-colors text-left">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-sm text-stone-50 font-bold">
-                {user.name[0]}
+                {initialsOf(user.name)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-stone-100 truncate">{user.name}</div>
@@ -1232,7 +1241,7 @@ export default function HerpMarket() {
       )}
 
       {/* Demo state toggle — floating, dismissible. Lets you instantly flip auth for demos. */}
-      <DemoToggle user={user} onLogin={() => handleLogin("Marco R.")} onLogout={handleLogout} />
+      <DemoToggle user={user} onLogin={() => handleLogin("Anita Pioch")} onLogout={handleLogout} />
 
       {/* Privacy / cookie banner — shown until the user makes a choice. */}
       <CookieBanner t={t} lang={lang} go={go} />
@@ -1504,7 +1513,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             {user ? (
               <button onClick={() => go("profile")}
                       className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-sm text-stone-50 font-bold ring-1 ring-amber-400/30">
-                {user.name[0]}
+                {initialsOf(user.name)}
               </button>
             ) : (
               <button onClick={() => setAuthModal({ mode: "login", reason: null, after: null })}
@@ -2525,6 +2534,19 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           <p className="text-sm text-stone-500 italic font-display">{t.unknown}</p>
         )}
       </Section>
+
+      {/* Listing timestamps — trust signals */}
+      {(a.createdAt || a.updatedAt) && (
+        <div className="px-1 -mt-1 mb-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-stone-500">
+          {a.createdAt && formatDate(a.createdAt, lang) && (
+            <span>{t.listedOn} {formatDate(a.createdAt, lang)}</span>
+          )}
+          {a.updatedAt && formatDate(a.updatedAt, lang) &&
+            a.updatedAt !== a.createdAt && (
+            <span>· {t.lastUpdated} {formatDate(a.updatedAt, lang)}</span>
+          )}
+        </div>
+      )}
 
       {/* Seller card — clickable, opens storefront */}
       <Section title={t.seller}>
@@ -3723,11 +3745,11 @@ function Profile({ t, go, lang, user, handleLogout }) {
       <header className="px-5 md:px-8 pt-8 pb-6 border-b border-stone-800">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-display text-2xl text-stone-50 font-bold">
-            {user?.name?.[0] || "M"}
+            {user?.name ? initialsOf(user.name) : "AP"}
           </div>
           <div>
             <h1 className="font-display text-2xl text-stone-50 tracking-tight flex items-center gap-2">
-              {user?.name || "Marco R."} {user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
+              {user?.name || "Anita Pioch"} {user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
             </h1>
             <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder} · {user?.region || "Piemonte"}</p>
           </div>
