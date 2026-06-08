@@ -1110,7 +1110,7 @@ export default function HerpMarket() {
   };
   const handleLogout = () => { setUser(null); go("home"); };
 
-  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout };
+  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout, listingsData: LISTINGS_DATA };
 
   const screen = () => {
     switch (view) {
@@ -1467,10 +1467,11 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
-function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth }) {
+function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth, listingsData }) {
   const userRegion = "Piemonte";
-  const near = LISTINGS.filter(l => l.region === userRegion);
-  const all = LISTINGS;
+  const LIST = listingsData || LISTINGS;
+  const near = LIST.filter(l => l.region === userRegion);
+  const all = LIST;
   const [showAllExpos, setShowAllExpos] = useState(false);
 
   return (
@@ -1593,7 +1594,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {getUpcomingExpos().slice(0, 3).map((expo, i) => {
-            const expoAnimalsCount = LISTINGS.filter(l => l.expoId === expo.id).length;
+            const expoAnimalsCount = (listingsData || LISTINGS).filter(l => (l.expoIds && l.expoIds.includes(expo.id)) || l.expoId === expo.id).length;
             return (
               <button key={expo.id}
                       onClick={() => go("expo", expo)}
@@ -1752,7 +1753,7 @@ function AllExposModal({ onClose, go, t, lang }) {
 /* ═══════════════════════════════════════════════════════════════════
    SEARCH — filters drawer + grid (the real MorphMarket workhorse)
    ═════════════════════════════════════════════════════════════════ */
-function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState }) {
+function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState, listingsData }) {
   const [showFilters, setShowFilters] = useState(initialState?.openFilters || false);
   const [showSort, setShowSort] = useState(false);
   // Snapshot of the filter when the sheet opens. If the user closes with X
@@ -1767,7 +1768,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
   };
 
   const filtered = useMemo(() => {
-    let r = LISTINGS;
+    let r = listingsData || LISTINGS;
     if (filter.category)    r = r.filter(l => l.category === filter.category);
     if (filter.subCategory) r = r.filter(l => l.species === filter.subCategory);
     if (filter.sex)         r = r.filter(l => l.sex === filter.sex);
@@ -1798,7 +1799,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
     if (filter.sort === "distance")  r = [...r].sort((a, b) => a.distanceKm - b.distanceKm);
     if (filter.sort === "ratingDesc") r = [...r].sort((a, b) => b.rating - a.rating);
     return r;
-  }, [filter]);
+  }, [filter, listingsData]);
 
   const activeFilterCount = [
     filter.category, filter.subCategory, filter.sex, filter.region, filter.country, filter.seller,
@@ -1812,7 +1813,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
   };
   // All sellers present in current category scope (for the seller filter dropdown)
   const sellersInScope = [...new Set(
-    LISTINGS.filter(l => !filter.category || l.category === filter.category).map(l => l.seller)
+    (listingsData || LISTINGS).filter(l => !filter.category || l.category === filter.category).map(l => l.seller)
   )].sort();
   // Trait tags available for the current category/sub-category scope
   const scopeTraits = filter.category ? getTraitsForScope(filter.category, filter.subCategory) : [];
@@ -3422,7 +3423,7 @@ function SellPricing({ t, lang }) {
 
 /* DELIVERY SECTION — three independent toggles.
    Expo pickup is positioned as HerpMarket's signature feature: amber accent,
-   highlighted card, escrow-deposit explanation; all upcoming expos available
+   highlighted card, deposit explanation; all upcoming expos available
    as multi-select chips with date right on the chip.                       */
 function DeliverySection({ lang, t }) {
   const [localPickup, setLocalPickup] = useState(true);
@@ -3470,8 +3471,8 @@ function DeliverySection({ lang, t }) {
               </div>
               <p className="text-[11px] text-stone-400 leading-relaxed">
                 {lang === "it"
-                  ? "Acconto 10% in escrow, animale bloccato fino al ritiro al tuo stand. Maggiore protezione per acquirente e venditore."
-                  : "10% deposit in escrow, animal reserved until pickup at your stand. Better protection for both parties."}
+                  ? "Acconto 10% al momento della prenotazione, animale bloccato fino al ritiro al tuo stand. Maggiore protezione per acquirente e venditore."
+                  : "10% deposit at booking, animal reserved until pickup at your stand. Better protection for both parties."}
               </p>
             </div>
           </label>
@@ -3790,8 +3791,8 @@ function ProfileRow({ icon, label, sub, onClick, badge }) {
   );
 }
 
-function Wishlist({ t, go, favorites, toggleFav }) {
-  const items = LISTINGS.filter(l => favorites.includes(l.id));
+function Wishlist({ t, go, favorites, toggleFav, listingsData }) {
+  const items = (listingsData || LISTINGS).filter(l => favorites.includes(l.id));
   return (
     <div className="max-w-7xl mx-auto w-full">
       <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
@@ -4014,11 +4015,11 @@ function AuthGate({ reason, t, go, setAuthModal }) {
 /* ═══════════════════════════════════════════════════════════════════
    EXPO DETAIL — animals available at this expo + search + social links
    ═════════════════════════════════════════════════════════════════ */
-function ExpoDetail({ expo, t, lang, go, favorites, toggleFav }) {
+function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
   const [expoSearch, setExpoSearch] = useState("");
   if (!expo) return null;
 
-  const expoAnimals = LISTINGS.filter(l => l.expoId === expo.id);
+  const expoAnimals = (listingsData || LISTINGS).filter(l => (l.expoIds && l.expoIds.includes(expo.id)) || l.expoId === expo.id);
   const filteredAnimals = expoAnimals.filter(l => {
     if (!expoSearch.trim()) return true;
     const q = expoSearch.toLowerCase();
@@ -4097,12 +4098,12 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav }) {
    - Reviews: ratings & buyer feedback
    - About: bio, location, member-since, total sales, expos attended
    ═════════════════════════════════════════════════════════════════ */
-function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav }) {
+function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, listingsData }) {
   const [tab, setTab] = useState("animals");
   if (!sellerName) return null;
 
   const seller = SELLERS[sellerName];
-  const sellerListings = LISTINGS.filter(l => l.seller === sellerName);
+  const sellerListings = (listingsData || LISTINGS).filter(l => l.seller === sellerName);
 
   // Fallback minimal data if seller missing from SELLERS table
   const data = seller || {
@@ -5043,15 +5044,15 @@ const TOS_CONTENT = {
       id: "5", title: { it: "Conclusione del contratto e pagamenti", en: "Contract formation and payments" }, review: true,
       body: {
         it: [
-          "Il contratto di compravendita si conclude direttamente tra Acquirente e Venditore. HerpMarket fornisce strumenti per facilitare la transazione (richiesta di acquisto, approvazione del venditore, pagamento sicuro tramite escrow, generazione documentale) ma resta estraneo al rapporto contrattuale.",
+          "Il contratto di compravendita si conclude direttamente tra Acquirente e Venditore. HerpMarket fornisce strumenti per facilitare la transazione (richiesta di acquisto, approvazione del venditore, pagamento sicuro tramite il provider di pagamento, generazione documentale) ma resta estraneo al rapporto contrattuale.",
           "L'Acquirente effettua una richiesta di acquisto tramite la piattaforma. Il Venditore può approvare o rifiutare la richiesta. Nessun pagamento è dovuto fino all'approvazione del Venditore.",
-          "Una volta approvata la richiesta, l'Acquirente versa l'acconto (per ritiro in fiera) o il pagamento integrale (per spedizione o ritiro presso il Venditore) tramite il provider di pagamento integrato. I fondi sono trattenuti in escrow fino alla conferma reciproca della consegna.",
+          "Una volta approvata la richiesta, l'Acquirente versa l'acconto (per ritiro in fiera) o il pagamento integrale (per spedizione o ritiro presso il Venditore) tramite il provider di pagamento integrato. Il versamento al Venditore è gestito come pagamento differito direttamente dal provider di pagamento (Stripe) e rilasciato alla conferma reciproca della consegna. HerpMarket non detiene in alcun momento i fondi.",
           "Gli acconti versati per il ritiro in fiera non sono rimborsabili in caso di mancato ritiro da parte dell'Acquirente per causa a lui imputabile.",
         ],
         en: [
-          "The sale contract is concluded directly between Buyer and Seller. HerpMarket provides tools to facilitate the transaction (purchase request, seller approval, secure escrow payment, document generation) but is not a party to the contractual relationship.",
+          "The sale contract is concluded directly between Buyer and Seller. HerpMarket provides tools to facilitate the transaction (purchase request, seller approval, secure payment via the payment provider, document generation) but is not a party to the contractual relationship.",
           "The Buyer submits a purchase request via the platform. The Seller may approve or decline the request. No payment is due until Seller approval.",
-          "Once approved, the Buyer pays the deposit (for expo pickup) or the full amount (for shipping or seller pickup) via the integrated payment provider. Funds are held in escrow until handover is mutually confirmed.",
+          "Once approved, the Buyer pays the deposit (for expo pickup) or the full amount (for shipping or seller pickup) via the integrated payment provider. The payout to the Seller is handled as a delayed payout directly by the payment processor (Stripe) and released upon mutual handover confirmation. HerpMarket never holds the funds at any point.",
           "Deposits paid for expo pickup are non-refundable where the Buyer fails to collect the Specimen for reasons attributable to them.",
         ],
       },
@@ -5092,13 +5093,17 @@ const TOS_CONTENT = {
         it: [
           "Sono ammesse tre modalità di consegna: (a) ritiro a mano presso la sede del Venditore; (b) ritiro presso una fiera autorizzata indicata nell'annuncio; (c) spedizione tramite corriere abilitato al trasporto di animali vivi, all'interno del territorio italiano e dell'Unione Europea.",
           "Le spedizioni internazionali all'interno dell'UE sono consentite a condizione che entrambi le parti rispettino le disposizioni TRACES e, ove applicabile, i requisiti CITES per il movimento intra-UE.",
+          "Il Venditore è l'unico responsabile di verificare e garantire che il vettore prescelto possieda tutte le licenze e le autorizzazioni veterinarie richieste dalla legge per il trasporto di animali vivi (ivi inclusa, ove necessaria, l'Autorizzazione di Tipo 2 per i viaggi di lunga durata). L'utilizzo di corrieri non autorizzati è vietato e ogni conseguenza ricade esclusivamente sul Venditore. HerpMarket non è in alcun modo responsabile per spedizioni effettuate in violazione della normativa.",
           "Le spedizioni al di fuori dell'UE non sono attualmente supportate dalla piattaforma.",
+          "La consegna tramite corriere deve avvenire presso un Hub del corriere e non presso un indirizzo residenziale, per evitare che l'animale resti incustodito in condizioni di temperatura non idonee.",
           "Il Venditore è responsabile dell'imballaggio adeguato dell'Esemplare secondo le linee guida IATA per il trasporto di animali vivi. HerpMarket può sospendere il servizio in condizioni climatiche estreme.",
         ],
         en: [
           "Three delivery modes are allowed: (a) pickup at the Seller's premises; (b) pickup at an authorised expo listed in the ad; (c) shipping by a courier qualified to transport live animals, within Italy and the European Union.",
           "International shipping within the EU is allowed provided both parties comply with TRACES requirements and, where applicable, with CITES rules for intra-EU movement.",
+          "The Seller is solely responsible for verifying and ensuring that the selected carrier possesses all licences and veterinary authorisations required by law for the transport of live animals (including, where necessary, the Type 2 Authorisation for long journeys). Use of unauthorised couriers is prohibited and any consequence falls solely on the Seller. HerpMarket is in no way liable for shipments made in breach of the regulations.",
           "Shipping outside the EU is not currently supported by the platform.",
+          "Courier delivery must be made to a courier Hub and not to a residential address, to prevent the animal being left unattended in unsuitable temperature conditions.",
           "The Seller is responsible for proper packaging of the Specimen according to IATA Live Animal Regulations. HerpMarket may suspend the service in extreme weather.",
         ],
       },
@@ -5183,12 +5188,12 @@ const STORE_POLICY_CONTENT = {
       id: "2", title: { it: "Modalità di pagamento", en: "Payment methods" }, review: false,
       body: {
         it: [
-          "I pagamenti devono essere effettuati esclusivamente tramite il sistema di pagamento integrato della piattaforma (Stripe o provider equivalente), che garantisce la conservazione dei fondi in escrow fino alla conferma di consegna.",
+          "I pagamenti devono essere effettuati esclusivamente tramite il sistema di pagamento integrato della piattaforma (Stripe o provider equivalente), che gestisce il versamento al Venditore come pagamento differito rilasciato alla conferma di consegna.",
           "È espressamente vietato richiedere o effettuare pagamenti al di fuori della piattaforma. Le richieste di pagamento mediante bonifico diretto, PayPal Amici e Familiari, criptovalute o contanti senza fattura sono motivo di sospensione dell'account.",
           "L'Acquirente può versare un acconto del 10% per bloccare l'Esemplare in vista del ritiro in fiera; il saldo è dovuto al momento del ritiro presso lo stand del Venditore. L'acconto non è rimborsabile in caso di mancato ritiro per causa imputabile all'Acquirente.",
         ],
         en: [
-          "Payments must be made exclusively via the platform's integrated payment system (Stripe or equivalent provider), which holds funds in escrow until handover confirmation.",
+          "Payments must be made exclusively via the platform's integrated payment system (Stripe or equivalent provider), which handles the payout to the Seller as a delayed payout released upon handover confirmation.",
           "Requesting or making payments outside the platform is strictly prohibited. Requests for direct bank transfer, PayPal Friends & Family, cryptocurrency or undocumented cash payments are grounds for account suspension.",
           "The Buyer may pay a 10% deposit to reserve the Specimen for expo pickup; the balance is due at the time of pickup at the Seller's stand. The deposit is non-refundable where the Buyer fails to collect for reasons attributable to them.",
         ],
@@ -5202,7 +5207,7 @@ const STORE_POLICY_CONTENT = {
           "(a) la spedizione avviene tramite corriere abilitato e nei giorni concordati (di norma lunedì–mercoledì, escluse festività);",
           "(b) l'imballaggio rispetta le linee guida IATA per animali vivi, con materiali isolanti adeguati e ove necessario heat pack o cold pack a norma;",
           "(c) la consegna avviene presso il punto di ritiro (Hub) del corriere e non all'indirizzo residenziale, salvo diverso accordo scritto.",
-          "In caso di Esemplare morto all'arrivo (DOA), l'Acquirente deve: (i) notificare il Venditore e HerpMarket entro 2 ore dalla disponibilità del pacco al ritiro; (ii) fornire fotografie e video dell'Esemplare nella sua confezione originale entro 6 ore; (iii) conservare l'Esemplare a temperatura adeguata fino a istruzioni del Venditore.",
+          "In caso di Esemplare morto all'arrivo (DOA), l'Acquirente deve: (i) notificare il Venditore e HerpMarket entro 2 ore dall'orario di effettiva disponibilità al ritiro risultante dal tracking ufficiale del corriere presso l'Hub; (ii) fornire fotografie e video dell'Esemplare nella sua confezione originale entro 6 ore; (iii) conservare l'Esemplare a temperatura adeguata fino a istruzioni del Venditore.",
           "La garanzia DOA non si applica a: (a) Esemplari ritirati personalmente dall'Acquirente (in fiera o presso il Venditore); (b) consegne ritardate per cause attribuibili al corriere ma il pacco arriva in vita; (c) decessi sopravvenuti dopo l'apertura del pacco.",
         ],
         en: [
@@ -5210,7 +5215,7 @@ const STORE_POLICY_CONTENT = {
           "(a) shipping is made by a qualified courier on agreed days (typically Monday–Wednesday, holidays excluded);",
           "(b) packaging complies with IATA Live Animal Regulations, with proper insulation and, where needed, compliant heat or cold packs;",
           "(c) delivery is made to the courier's pickup point (Hub) and not to a residential address, unless otherwise agreed in writing.",
-          "If the Specimen arrives dead (DOA), the Buyer must: (i) notify the Seller and HerpMarket within 2 hours of the package being available for pickup; (ii) provide photos and video of the Specimen in its original packaging within 6 hours; (iii) keep the Specimen at proper temperature until instructed by the Seller.",
+          "If the Specimen arrives dead (DOA), the Buyer must: (i) notify the Seller and HerpMarket within 2 hours of the actual pickup-availability time shown by the courier's official tracking at the Hub; (ii) provide photos and video of the Specimen in its original packaging within 6 hours; (iii) keep the Specimen at proper temperature until instructed by the Seller.",
           "The DOA guarantee does NOT apply to: (a) Specimens picked up in person by the Buyer (at expo or at Seller's premises); (b) delayed deliveries where the package nonetheless arrives alive; (c) deaths occurring after the package has been opened.",
         ],
       },
@@ -5220,12 +5225,12 @@ const STORE_POLICY_CONTENT = {
       body: {
         it: [
           "I Venditori possono indicare un Esemplare come «Non pronto» quando questi è troppo giovane per essere spedito in sicurezza o non ha ancora completato lo svezzamento alimentare.",
-          "Per gli Esemplari «Non pronti» il pagamento integrale non può essere richiesto. È ammesso un acconto pari al massimo al 30% del prezzo, da versare in escrow.",
+          "Per gli Esemplari «Non pronti» il pagamento integrale non può essere richiesto. È ammesso un acconto pari al massimo al 30% del prezzo. L'acconto è elaborato dal provider di pagamento e, qualora il Venditore non consegni l'Esemplare nei termini concordati, è integralmente rimborsabile all'Acquirente secondo il protocollo della piattaforma.",
           "Il saldo è dovuto solo dopo conferma di idoneità alla spedizione/ritiro da parte del Venditore.",
         ],
         en: [
           "Sellers may flag a Specimen as 'Not Ready' when it is too young to ship safely or has not yet completed feeding establishment.",
-          "Full payment may not be requested for 'Not Ready' Specimens. A deposit of up to 30% of the price may be held in escrow.",
+          "Full payment may not be requested for 'Not Ready' Specimens. A deposit of up to 30% of the price is allowed. The deposit is processed by the payment provider and, should the Seller fail to deliver the Specimen within the agreed terms, is fully refundable to the Buyer under the platform's protocol.",
           "The balance is due only after the Seller confirms readiness for shipping/pickup.",
         ],
       },
@@ -5234,12 +5239,12 @@ const STORE_POLICY_CONTENT = {
       id: "5", title: { it: "Conferma di consegna e documenti", en: "Handover confirmation and documents" }, review: false,
       body: {
         it: [
-          "La transazione si considera completata quando entrambe le parti confermano l'avvenuta consegna tramite la piattaforma. Fino a tale conferma, i fondi restano vincolati in escrow.",
+          "La transazione si considera completata quando entrambe le parti confermano l'avvenuta consegna tramite la piattaforma. Fino a tale conferma, il versamento al Venditore resta sospeso presso il provider di pagamento.",
           "Una volta confermata la consegna da entrambe le parti, HerpMarket genera automaticamente il documento di cessione (CITES per Allegato A/B; certificato di origine per le altre specie). Il documento è disponibile nell'archivio digitale di entrambe le parti.",
           "Il documento generato dalla piattaforma è un ausilio amministrativo. Per le specie CITES, la cessione formale richiede comunque la conservazione dei documenti originali secondo la normativa vigente.",
         ],
         en: [
-          "The transaction is deemed completed when both parties confirm handover via the platform. Until such confirmation, funds remain held in escrow.",
+          "The transaction is deemed completed when both parties confirm handover via the platform. Until such confirmation, the payout to the Seller remains pending with the payment provider.",
           "Once both parties confirm handover, HerpMarket automatically generates the transfer document (CITES for Annex A/B; certificate of origin for other species). The document is available in both parties' digital archive.",
           "The platform-generated document is an administrative aid. For CITES species, formal transfer still requires retention of original documents per applicable law.",
         ],
@@ -5395,6 +5400,7 @@ const PRIVACY_CONTENT = {
           "• Documenti di verifica (visura, ID): 5 anni dalla cancellazione dell'account, ai sensi della normativa antiriciclaggio dove applicabile.",
           "• Log tecnici di sicurezza: 12 mesi.",
           "• Dati di marketing: fino alla revoca del consenso.",
+          "Resta inteso che HerpMarket conserva esclusivamente i log delle transazioni per finalità fiscali e di legge; la conservazione fisica dei documenti CITES validi e di ogni altra documentazione di origine resta obbligo esclusivo del Venditore e dell'Acquirente.",
         ],
         en: [
           "We retain your data for the following periods:",
@@ -5404,6 +5410,7 @@ const PRIVACY_CONTENT = {
           "• Verification documents (business registration, ID): 5 years from account deletion, per anti-money-laundering law where applicable.",
           "• Technical security logs: 12 months.",
           "• Marketing data: until consent withdrawal.",
+          "For clarity, HerpMarket retains only transaction logs for tax and legal purposes; the physical preservation of valid CITES documents and any other origin paperwork remains the sole obligation of the Seller and the Buyer.",
         ],
       },
     },
@@ -5737,23 +5744,4 @@ function SponsorSlot({ slot, t, lang }) {
       </div>
     </a>
   );
-}Corporate entity: replace [DENOMINAZIONE SOCIETARIA], [P.IVA],
-[SEDE], [FORO COMPETENTE] with your real details once registered.
-Stripe Connect audit: confirm the delayed-payout flow meets Italian AML
-rules and that the "not a PSP under PSD2" positioning holds.
-Cross-border live-animal liability: as the platform facilitating DE/AT/
-CH/FR ↔ IT sales, what is your residual liability, and is the seller-
-responsibility clause sufficient to discharge it? (Switzerland = non-EU
-customs border — extra scrutiny.)
-D.Lgs. 70/2003 hosting-provider qualification + documented notice-and-
-takedown procedure.
-D.Lgs. 135/2022 (dangerous/exotic animals): platform exposure if a
-seller lists a banned species; is the filter + ban policy enough?
-CITES: is the auto-generated transfer declaration adequate as an
-administrative aid, given Annex A buyers still need the individual cert?
-GDPR: confirm Supabase SCCs are executed in-dashboard (see below);
-confirm no DPO required at your size (Art. 37).
-Codice del Consumo: confirm live-animal withdrawal exemption (art. 59)
-and conformity-guarantee (arts. 128 ff. / 1490 ff. cc) framing.
-Review every section marked "Revisione/Review" in TOS, Marketplace Policy,
-and Privacy Policy.
+}
