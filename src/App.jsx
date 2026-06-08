@@ -98,7 +98,8 @@ const I18N = {
     listedOn: "Pubblicato il", lastUpdated: "Ultimo aggiornamento",
     born: "Nato", weight: "Peso", origin: "Origine", captiveBred: "Nato in cattività",
     cites: "Documenti CITES", citesNotice: "Documento di cessione richiesto per Allegato A/B",
-    listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 3)", publishListing: "Pubblica annuncio",
+    listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 3)", publishListing: "Pubblica annuncio",
+    photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
@@ -273,7 +274,8 @@ const I18N = {
     listedOn: "Listed on", lastUpdated: "Last updated",
     born: "Born", weight: "Weight", origin: "Origin", captiveBred: "Captive-bred",
     cites: "CITES paperwork", citesNotice: "Transfer document required for Annex A/B",
-    listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 3)", publishListing: "Publish listing",
+    listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 3)", publishListing: "Publish listing",
+    photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
@@ -566,13 +568,13 @@ const SPECIES_TRAITS = {
 /* Map each top-level category to the species (and their subspecies labels)
    that belong to it. Drives the dynamic trait picker in advanced search. */
 const CATEGORY_SPECIES = {
-  geckos:     ["Correlophus ciliatus", "Eublepharis macularius", "Rhacodactylus auriculatus", "Phelsuma grandis"],
-  snakes:     ["Python regius", "Pantherophis guttatus", "Heterodon nasicus", "Boa constrictor", "Lampropeltis"],
-  lizards:    ["Pogona vitticeps", "Tiliqua scincoides"],
-  chameleons: ["Furcifer pardalis", "Chamaeleo calyptratus"],
-  tortoises:  ["Testudo hermanni", "Testudo graeca"],
-  amphibians: [],
-  inverts:    [],
+  geckos:     ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Rhacodactylus leachianus", "Mniarogekko chahoua", "Correlophus sarasinorum", "Phelsuma grandis", "Phelsuma laticauda", "Gekko gecko", "Eublepharis macularius", "Hemitheconyx caudicinctus", "Paroedura picta", "Coleonyx variegatus"],
+  snakes:     ["Python regius", "Python brongersmai", "Morelia viridis", "Morelia spilota", "Antaresia childreni", "Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Pituophis catenifer", "Thamnophis sirtalis", "Boa constrictor", "Eryx colubrinus", "Epicrates cenchria"],
+  lizards:    ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii", "Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis", "Varanus acanthurus", "Varanus exanthematicus", "Salvator merianae"],
+  chameleons: ["Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii", "Furcifer lateralis", "Brookesia"],
+  tortoises:  ["Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii", "Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius", "Stigmochelys pardalis", "Trachemys scripta", "Graptemys", "Sternotherus odoratus"],
+  amphibians: ["Dendrobates tinctorius", "Dendrobates auratus", "Phyllobates terribilis", "Agalychnis callidryas", "Ceratophrys ornata", "Ranoidea caerulea", "Ambystoma mexicanum", "Pleurodeles waltl"],
+  inverts:    ["Grammostola pulchra", "Brachypelma hamorii", "Caribena versicolor", "Tliltocatl albopilosus", "Poecilotheria", "Pandinus imperator", "Heterometrus", "Hierodula", "Sphodromantis", "Idolomantis diabolica", "Archispirostreptus gigas", "Scolopendra", "Porcellio scaber", "Armadillidium"],
 };
 
 /* Category → subcategory → species. Subcategories group species so the list
@@ -582,36 +584,38 @@ const CATEGORY_SPECIES = {
    `null` species list on a subcategory = "coming soon / many species". */
 const CATEGORY_SUBCATS = {
   geckos: [
-    { id: "geckos_arboreal", it: "Gechi arboricoli", en: "Arboreal geckos", species: ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Phelsuma grandis"] },
-    { id: "geckos_ground",   it: "Gechi terricoli",  en: "Ground geckos",   species: ["Eublepharis macularius"] },
+    { id: "geckos_arboreal", it: "Gechi arboricoli", en: "Arboreal geckos", species: ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Rhacodactylus leachianus", "Mniarogekko chahoua", "Correlophus sarasinorum", "Phelsuma grandis", "Phelsuma laticauda", "Gekko gecko"] },
+    { id: "geckos_ground",   it: "Gechi terricoli",  en: "Ground geckos",   species: ["Eublepharis macularius", "Hemitheconyx caudicinctus", "Paroedura picta", "Coleonyx variegatus"] },
   ],
   snakes: [
-    { id: "snakes_pythons",   it: "Pitoni",     en: "Pythons",     species: ["Python regius"] },
-    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis"] },
-    { id: "snakes_boas",      it: "Boa",        en: "Boas",        species: ["Boa constrictor"] },
+    { id: "snakes_pythons",   it: "Pitoni",     en: "Pythons",     species: ["Python regius", "Python brongersmai", "Morelia viridis", "Morelia spilota", "Antaresia childreni"] },
+    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Pituophis catenifer", "Thamnophis sirtalis"] },
+    { id: "snakes_boas",      it: "Boa",        en: "Boas",        species: ["Boa constrictor", "Eryx colubrinus", "Epicrates cenchria"] },
   ],
   lizards: [
-    { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps"] },
-    { id: "lizards_skinks",  it: "Scinchi",  en: "Skinks",   species: ["Tiliqua scincoides"] },
-    { id: "lizards_monitors",it: "Varani",   en: "Monitors", species: [] },
+    { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii"] },
+    { id: "lizards_skinks",  it: "Scinchi",  en: "Skinks",   species: ["Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis"] },
+    { id: "lizards_monitors",it: "Varani",   en: "Monitors", species: ["Varanus acanthurus", "Varanus exanthematicus"] },
+    { id: "lizards_tegus",   it: "Tegu e altri", en: "Tegus & others", species: ["Salvator merianae"] },
   ],
   chameleons: [
-    { id: "cham_old",  it: "Camaleonti del Vecchio Mondo", en: "Old World chameleons", species: ["Furcifer pardalis", "Chamaeleo calyptratus"] },
+    { id: "cham_old",  it: "Camaleonti del Vecchio Mondo", en: "Old World chameleons", species: ["Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii", "Furcifer lateralis", "Brookesia"] },
   ],
   tortoises: [
-    { id: "tort_mediterranean", it: "Testuggini mediterranee", en: "Mediterranean tortoises", species: ["Testudo hermanni", "Testudo graeca"] },
-    { id: "tort_tropical",      it: "Testuggini tropicali",    en: "Tropical tortoises",      species: [] },
-    { id: "tort_aquatic",       it: "Tartarughe acquatiche",   en: "Aquatic turtles",         species: [] },
+    { id: "tort_mediterranean", it: "Testuggini mediterranee", en: "Mediterranean tortoises", species: ["Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii"] },
+    { id: "tort_tropical",      it: "Testuggini tropicali",    en: "Tropical tortoises",      species: ["Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius", "Stigmochelys pardalis"] },
+    { id: "tort_aquatic",       it: "Tartarughe acquatiche",   en: "Aquatic turtles",         species: ["Trachemys scripta", "Graptemys", "Sternotherus odoratus"] },
   ],
   amphibians: [
-    { id: "amph_frogs",       it: "Rane e rospi",  en: "Frogs & toads",  species: [] },
-    { id: "amph_salamanders", it: "Salamandre",    en: "Salamanders",    species: [] },
+    { id: "amph_frogs",       it: "Rane e rospi",  en: "Frogs & toads",  species: ["Dendrobates tinctorius", "Dendrobates auratus", "Phyllobates terribilis", "Agalychnis callidryas", "Ceratophrys ornata", "Ranoidea caerulea"] },
+    { id: "amph_salamanders", it: "Salamandre e tritoni", en: "Salamanders & newts", species: ["Ambystoma mexicanum", "Pleurodeles waltl"] },
   ],
   inverts: [
-    { id: "inv_tarantulas", it: "Tarantole",            en: "Tarantulas",        species: [] },
-    { id: "inv_scorpions",  it: "Scorpioni",            en: "Scorpions",         species: [] },
-    { id: "inv_mantids",    it: "Mantidi",              en: "Mantids",           species: [] },
-    { id: "inv_myriapods",  it: "Millepiedi/Centopiedi",en: "Milli/Centipedes",  species: [] },
+    { id: "inv_tarantulas", it: "Tarantole",            en: "Tarantulas",        species: ["Grammostola pulchra", "Brachypelma hamorii", "Caribena versicolor", "Tliltocatl albopilosus", "Poecilotheria"] },
+    { id: "inv_scorpions",  it: "Scorpioni",            en: "Scorpions",         species: ["Pandinus imperator", "Heterometrus"] },
+    { id: "inv_mantids",    it: "Mantidi",              en: "Mantids",           species: ["Hierodula", "Sphodromantis", "Idolomantis diabolica"] },
+    { id: "inv_myriapods",  it: "Millepiedi/Centopiedi",en: "Milli/Centipedes",  species: ["Archispirostreptus gigas", "Scolopendra"] },
+    { id: "inv_isopods",    it: "Isopodi",              en: "Isopods",           species: ["Porcellio scaber", "Armadillidium"] },
   ],
 };
 
@@ -626,21 +630,88 @@ function speciesForSubcat(catId, subcatId) {
 
 /* Common-name labels for species, for the sub-category dropdown */
 const SPECIES_LABELS = {
-  "Correlophus ciliatus":   { it: "Geco crestato",        en: "Crested gecko" },
-  "Eublepharis macularius": { it: "Geco leopardino",      en: "Leopard gecko" },
-  "Rhacodactylus auriculatus": { it: "Geco gargoyle",     en: "Gargoyle gecko" },
-  "Phelsuma grandis":       { it: "Geco diurno gigante",  en: "Giant day gecko" },
-  "Python regius":          { it: "Pitone reale",         en: "Ball python" },
-  "Pantherophis guttatus":  { it: "Serpente del grano",   en: "Corn snake" },
-  "Heterodon nasicus":      { it: "Hognose occidentale",  en: "Western hognose" },
-  "Boa constrictor":        { it: "Boa constrictor",      en: "Boa constrictor" },
-  "Lampropeltis":           { it: "Serpente del latte/re", en: "King/milk snake" },
-  "Pogona vitticeps":       { it: "Pogona",               en: "Bearded dragon" },
-  "Tiliqua scincoides":     { it: "Scinco lingua blu",    en: "Blue-tongue skink" },
-  "Furcifer pardalis":      { it: "Camaleonte pantera",   en: "Panther chameleon" },
-  "Chamaeleo calyptratus":  { it: "Camaleonte velato",    en: "Veiled chameleon" },
-  "Testudo hermanni":       { it: "Testuggine di Hermann", en: "Hermann's tortoise" },
-  "Testudo graeca":         { it: "Testuggine greca",     en: "Greek tortoise" },
+  // ── Geckos ──
+  "Correlophus ciliatus":      { it: "Geco crestato",        en: "Crested gecko" },
+  "Rhacodactylus auriculatus": { it: "Geco gargoyle",        en: "Gargoyle gecko" },
+  "Rhacodactylus leachianus":  { it: "Geco di Leach",        en: "Leachianus gecko" },
+  "Mniarogekko chahoua":       { it: "Geco chahoua",         en: "Chahoua gecko" },
+  "Correlophus sarasinorum":   { it: "Geco di Sarasin",      en: "Sarasin's gecko" },
+  "Phelsuma grandis":          { it: "Geco diurno gigante",  en: "Giant day gecko" },
+  "Phelsuma laticauda":        { it: "Geco diurno polvere d'oro", en: "Gold dust day gecko" },
+  "Gekko gecko":               { it: "Geco tokay",           en: "Tokay gecko" },
+  "Eublepharis macularius":    { it: "Geco leopardino",      en: "Leopard gecko" },
+  "Hemitheconyx caudicinctus": { it: "Geco dalla coda grassa", en: "African fat-tailed gecko" },
+  "Paroedura picta":           { it: "Geco ocellato del Madagascar", en: "Madagascar ground gecko" },
+  "Coleonyx variegatus":       { it: "Geco fasciato",        en: "Western banded gecko" },
+  // ── Snakes ──
+  "Python regius":             { it: "Pitone reale",         en: "Ball python" },
+  "Python brongersmai":        { it: "Pitone sanguigno",     en: "Blood python" },
+  "Morelia viridis":           { it: "Pitone verde arboricolo", en: "Green tree python" },
+  "Morelia spilota":           { it: "Pitone tappeto",       en: "Carpet python" },
+  "Antaresia childreni":       { it: "Pitone di Children",   en: "Children's python" },
+  "Pantherophis guttatus":     { it: "Serpente del grano",   en: "Corn snake" },
+  "Heterodon nasicus":         { it: "Hognose occidentale",  en: "Western hognose" },
+  "Lampropeltis triangulum":   { it: "Serpente del latte",   en: "Milk snake" },
+  "Lampropeltis getula":       { it: "Serpente reale",       en: "Common kingsnake" },
+  "Pituophis catenifer":       { it: "Serpente gopher",      en: "Gopher snake" },
+  "Thamnophis sirtalis":       { it: "Serpente giarrettiera", en: "Garter snake" },
+  "Boa constrictor":           { it: "Boa constrictor",      en: "Boa constrictor" },
+  "Eryx colubrinus":           { it: "Boa delle sabbie del Kenya", en: "Kenyan sand boa" },
+  "Epicrates cenchria":        { it: "Boa arcobaleno brasiliano", en: "Brazilian rainbow boa" },
+  // ── Lizards ──
+  "Pogona vitticeps":          { it: "Pogona",               en: "Bearded dragon" },
+  "Pogona henrylawsoni":       { it: "Pogona di Rankin",     en: "Rankin's dragon" },
+  "Uromastyx":                 { it: "Uromastice",           en: "Uromastyx" },
+  "Intellagama lesueurii":     { it: "Drago d'acqua australiano", en: "Australian water dragon" },
+  "Tiliqua scincoides":        { it: "Scinco lingua blu",    en: "Blue-tongue skink" },
+  "Tiliqua gigas":             { it: "Scinco lingua blu indonesiano", en: "Indonesian blue-tongue skink" },
+  "Corucia zebrata":           { it: "Scinco dalla coda prensile", en: "Monkey-tailed skink" },
+  "Tribolonotus gracilis":     { it: "Scinco coccodrillo occhi rossi", en: "Red-eyed crocodile skink" },
+  "Varanus acanthurus":        { it: "Varano di Ackie",      en: "Ackie monitor" },
+  "Varanus exanthematicus":    { it: "Varano della savana",  en: "Savannah monitor" },
+  "Salvator merianae":         { it: "Tegu argentino bianco e nero", en: "Argentine B&W tegu" },
+  // ── Chameleons ──
+  "Furcifer pardalis":         { it: "Camaleonte pantera",   en: "Panther chameleon" },
+  "Chamaeleo calyptratus":     { it: "Camaleonte velato",    en: "Veiled chameleon" },
+  "Trioceros jacksonii":       { it: "Camaleonte di Jackson", en: "Jackson's chameleon" },
+  "Furcifer lateralis":        { it: "Camaleonte tappeto",   en: "Carpet chameleon" },
+  "Brookesia":                 { it: "Camaleonte pigmeo",    en: "Pygmy chameleon" },
+  // ── Tortoises & turtles ──
+  "Testudo hermanni":          { it: "Testuggine di Hermann", en: "Hermann's tortoise" },
+  "Testudo graeca":            { it: "Testuggine greca",     en: "Greek tortoise" },
+  "Testudo marginata":         { it: "Testuggine marginata", en: "Marginated tortoise" },
+  "Testudo horsfieldii":       { it: "Testuggine di Horsfield", en: "Russian tortoise" },
+  "Centrochelys sulcata":      { it: "Testuggine speronata africana", en: "Sulcata tortoise" },
+  "Geochelone elegans":        { it: "Testuggine stellata indiana", en: "Indian star tortoise" },
+  "Chelonoidis carbonarius":   { it: "Testuggine zampe rosse", en: "Red-footed tortoise" },
+  "Stigmochelys pardalis":     { it: "Testuggine leopardo",  en: "Leopard tortoise" },
+  "Trachemys scripta":         { it: "Tartaruga dalle orecchie rosse", en: "Pond slider" },
+  "Graptemys":                 { it: "Tartaruga geografica", en: "Map turtle" },
+  "Sternotherus odoratus":     { it: "Tartaruga muschiata",  en: "Common musk turtle" },
+  // ── Amphibians ──
+  "Dendrobates tinctorius":    { it: "Rana freccia tinctorius", en: "Dyeing poison frog" },
+  "Dendrobates auratus":       { it: "Rana freccia verde e nera", en: "Green & black poison frog" },
+  "Phyllobates terribilis":    { it: "Rana freccia dorata",  en: "Golden poison frog" },
+  "Agalychnis callidryas":     { it: "Raganella occhi rossi", en: "Red-eyed tree frog" },
+  "Ceratophrys ornata":        { it: "Rana Pacman",          en: "Pacman frog" },
+  "Ranoidea caerulea":         { it: "Raganella di White",   en: "White's tree frog" },
+  "Ambystoma mexicanum":       { it: "Axolotl",              en: "Axolotl" },
+  "Pleurodeles waltl":         { it: "Tritone costoluto iberico", en: "Iberian ribbed newt" },
+  // ── Invertebrates ──
+  "Grammostola pulchra":       { it: "Tarantola nera brasiliana", en: "Brazilian black tarantula" },
+  "Brachypelma hamorii":       { it: "Tarantola ginocchia rosse", en: "Mexican red-knee tarantula" },
+  "Caribena versicolor":       { it: "Tarantola versicolor", en: "Antilles pinktoe tarantula" },
+  "Tliltocatl albopilosus":    { it: "Tarantola riccioluta", en: "Curly hair tarantula" },
+  "Poecilotheria":             { it: "Tarantola ornamentale", en: "Ornamental tarantula" },
+  "Pandinus imperator":        { it: "Scorpione imperatore", en: "Emperor scorpion" },
+  "Heterometrus":              { it: "Scorpione asiatico delle foreste", en: "Asian forest scorpion" },
+  "Hierodula":                 { it: "Mantide gigante asiatica", en: "Giant Asian mantis" },
+  "Sphodromantis":             { it: "Mantide africana",     en: "African mantis" },
+  "Idolomantis diabolica":     { it: "Mantide fiore del diavolo", en: "Devil's flower mantis" },
+  "Archispirostreptus gigas":  { it: "Millepiedi gigante africano", en: "Giant African millipede" },
+  "Scolopendra":               { it: "Scolopendra",          en: "Centipede" },
+  "Porcellio scaber":          { it: "Isopode (Porcellio scaber)", en: "Rough woodlouse (isopod)" },
+  "Armadillidium":             { it: "Isopode (Armadillidium)", en: "Pill woodlouse (isopod)" },
 };
 
 /* Return deduplicated trait list for a category (optionally narrowed to one species).
@@ -3205,6 +3276,34 @@ function Checkout({ amount, onClose, t }) {
 function SellScreen({ t, lang, go }) {
   const [success, setSuccess] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
+  // Photos (min 1, max 3). Preview only for now; actual upload to Supapase
+  // Storage happens when the sell form is wired to save (auth session).
+  const MAX_PHOTOS = 3;
+  const [photos, setPhotos] = useState([]); // [{ file, url }]
+  const [dragOver, setDragOver] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
+  const fileInputRef = useRef(null);
+  const addFiles = (fileList) => {
+    const imgs = Array.from(fileList || []).filter(f => f.type.startsWith("image/"));
+    if (!imgs.length) return;
+    setPhotos(prev => {
+      const room = MAX_PHOTOS - prev.length;
+      const toAdd = imgs.slice(0, room).map(f => ({ file: f, url: URL.createObjectURL(f) }));
+      return [...prev, ...toAdd];
+    });
+    setPhotoError(false);
+  };
+  const removePhoto = (idx) => {
+    setPhotos(prev => {
+      const p = prev[idx];
+      if (p) URL.revokeObjectURL(p.url);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+  const handlePublish = () => {
+    if (photos.length < 1) { setPhotoError(true); return; }
+    setSuccess(true);
+  };
   // Cascading category → subcategory → species
   const [catId, setCatId] = useState("");
   const [subcatId, setSubcatId] = useState("");
@@ -3248,12 +3347,34 @@ function SellScreen({ t, lang, go }) {
       </header>
 
       <div className="p-5 md:p-8 space-y-6">
-        {/* Photos */}
+        {/* Photos — drag & drop or pick from device, min 1 / max 3 */}
         <FormBlock>
-          <button className="w-full border-2 border-dashed border-stone-700 hover:border-amber-500/60 rounded-xl py-10 transition-colors flex flex-col items-center gap-2 text-stone-400 hover:text-amber-400">
-            <Camera size={28} />
-            <span className="text-xs font-bold uppercase tracking-widest">{t.uploadPhotos}</span>
-          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
+                 onChange={e => { addFiles(e.target.files); e.target.value = ""; }} />
+          <div className="flex flex-wrap gap-3">
+            {photos.map((p, i) => (
+              <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden ring-1 ring-stone-700 group">
+                <img src={p.url} alt="" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => removePhoto(i)}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-stone-950/80 text-stone-200 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors">
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={e => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+                      className={`w-24 h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1 transition-colors ${dragOver ? "border-amber-500 text-amber-400 bg-amber-500/5" : "border-stone-700 hover:border-amber-500/60 text-stone-400 hover:text-amber-400"}`}>
+                <Camera size={22} />
+                <span className="text-[10px] font-bold">{photos.length}/{MAX_PHOTOS}</span>
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-stone-500 mt-2">{t.uploadPhotos} · {t.photoHint}</p>
+          {photoError && <p className="text-xs text-red-400 mt-1">{t.photoNeed}</p>}
         </FormBlock>
 
         <FormBlock label={t.listingTitle}>
@@ -3352,7 +3473,7 @@ function SellScreen({ t, lang, go }) {
         {/* ─── Delivery options ─── */}
         <DeliverySection lang={lang} t={t} />
 
-        <button onClick={() => setSuccess(true)}
+        <button onClick={handlePublish}
                 className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4">
           {t.publishListing}
         </button>
