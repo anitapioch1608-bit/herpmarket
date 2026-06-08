@@ -1048,6 +1048,20 @@ export default function HerpMarket() {
 
   const t = I18N[lang];
 
+  // ── Live data from Supabase (Option B bridge) ──
+  // Fetches listings once on load. Falls back to demo LISTINGS until they arrive
+  // or if the fetch fails, so the app never looks empty.
+  const [liveListings, setLiveListings] = useState(null);
+  useEffect(() => {
+    import('./lib/api').then(({ fetchListings }) => {
+      fetchListings({})
+        .then(rows => { if (rows && rows.length) setLiveListings(rows); })
+        .catch(err => console.warn('[HerpMarket] Supabase fetch failed, using demo data:', err));
+    });
+  }, []);
+  // Use live data when available, otherwise the built-in demo data.
+  const LISTINGS_DATA = liveListings || LISTINGS;
+
   // Remember scroll position per view so returning to search (or anywhere)
   // lands the user where they left off instead of jumping to the top.
   const scrollMemory = useRef({});
