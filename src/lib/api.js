@@ -31,6 +31,8 @@ export function mapListing(row) {
     localPickup: row.local_pickup,
     expoIds: row.expo_ids || [],
     auction: row.auction || null,
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
     seller: row.sellers?.name || row.seller_name,
     verified: row.sellers?.verified ?? false,
     rating: row.sellers?.rating ?? 0,
