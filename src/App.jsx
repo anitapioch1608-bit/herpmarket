@@ -166,6 +166,17 @@ const I18N = {
     emailPlaceholder: "Email", passwordPlaceholder: "Password", continueWithEmail: "Continua con email",
     noAccount: "Non hai un account?", alreadyMember: "Hai già un account?",
     welcomeBack: "Bentornato", createAccount: "Crea il tuo account",
+    forgotPassword: "Password dimenticata?", resetTitle: "Reimposta la password",
+    resetIntro: "Inserisci la tua email: ti invieremo un link per reimpostare la password.",
+    sendResetLink: "Invia link di reset", resetEmailSent: "Email inviata! Controlla la tua casella di posta.",
+    backToLogin: "Torna al login", processing: "Attendere…",
+    newPasswordTitle: "Imposta una nuova password", newPasswordLabel: "Nuova password",
+    savePassword: "Salva password", passwordUpdated: "Password aggiornata. Ora puoi accedere.",
+    checkEmailConfirm: "Account creato! Controlla la tua email per confermare l'indirizzo.",
+    deleteAccount: "Elimina account", deleteAccountDesc: "Eliminazione dell'account e dei dati associati.",
+    deleteAccountWarn: "Questa azione è permanente. I tuoi annunci e dati verranno rimossi. Procedere?",
+    deleteAccountDone: "Account contrassegnato per l'eliminazione. Sei stato disconnesso.",
+    confirmDelete: "Sì, elimina", keepAccount: "Annulla",
     nameLabel: "Nome", signUpFree: "Iscriviti gratis",
     expoAnimals: "Animali disponibili in fiera",
     searchAtExpo: "Cerca in fiera...",
@@ -338,6 +349,17 @@ const I18N = {
     emailPlaceholder: "Email", passwordPlaceholder: "Password", continueWithEmail: "Continue with email",
     noAccount: "Don't have an account?", alreadyMember: "Already a member?",
     welcomeBack: "Welcome back", createAccount: "Create your account",
+    forgotPassword: "Forgot password?", resetTitle: "Reset your password",
+    resetIntro: "Enter your email and we'll send you a link to reset your password.",
+    sendResetLink: "Send reset link", resetEmailSent: "Email sent! Check your inbox.",
+    backToLogin: "Back to login", processing: "Please wait…",
+    newPasswordTitle: "Set a new password", newPasswordLabel: "New password",
+    savePassword: "Save password", passwordUpdated: "Password updated. You can log in now.",
+    checkEmailConfirm: "Account created! Check your email to confirm your address.",
+    deleteAccount: "Delete account", deleteAccountDesc: "Delete your account and associated data.",
+    deleteAccountWarn: "This is permanent. Your listings and data will be removed. Continue?",
+    deleteAccountDone: "Account marked for deletion. You've been signed out.",
+    confirmDelete: "Yes, delete", keepAccount: "Cancel",
     nameLabel: "Name", signUpFree: "Sign up free",
     expoAnimals: "Animals available at this expo",
     searchAtExpo: "Search at this expo...",
@@ -1105,6 +1127,43 @@ const fallback = (label) =>
 /* ═══════════════════════════════════════════════════════════════════
    MAIN APP
    ═════════════════════════════════════════════════════════════════ */
+// Site-wide access password for the private pre-launch phase.
+// Set VITE_SITE_PASSWORD in .env.local and in Vercel. If left empty, the gate
+// is disabled (so local dev isn't blocked when no password is configured).
+const SITE_PW = import.meta.env.VITE_SITE_PASSWORD || "";
+
+function SiteGate({ onUnlock }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState(false);
+  const submit = () => {
+    if (pw === SITE_PW) {
+      try { localStorage.setItem("hm_site_unlock", "yes"); } catch (e) {}
+      onUnlock();
+    } else { setErr(true); }
+  };
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-stone-950 text-stone-100 p-6"
+         style={{ fontFamily: "'Manrope', ui-sans-serif, system-ui, sans-serif" }}>
+      <div className="w-full max-w-sm text-center">
+        <div className="text-3xl tracking-tight mb-2" style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}>
+          Herp<span className="italic text-amber-500">Market</span>
+        </div>
+        <p className="text-sm text-stone-400 mb-6">Accesso privato · Private preview</p>
+        <input type="password" value={pw} autoFocus
+               onChange={e => { setPw(e.target.value); setErr(false); }}
+               onKeyDown={e => { if (e.key === "Enter") submit(); }}
+               placeholder="Password"
+               className="w-full bg-stone-900 ring-1 ring-stone-700 rounded-lg px-4 py-3 text-sm text-center text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+        {err && <p className="text-rose-400 text-xs mt-2 font-bold">Password errata · Wrong password</p>}
+        <button onClick={submit}
+                className="w-full mt-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
+          Entra · Enter
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function HerpMarket() {
   const [view, setView] = useState("home");
   const [viewData, setViewData] = useState(null);
@@ -1125,6 +1184,12 @@ export default function HerpMarket() {
   // Auth state — null = logged out
   const [user, setUser] = useState(null);
   const [authModal, setAuthModal] = useState(null); // null | { mode: "login"|"signup", reason: string|null, after: fn|null }
+  const [recovery, setRecovery] = useState(false);   // true while in a password-recovery session
+  // Site-wide access gate (private pre-launch). Unlocked state persists locally.
+  const [siteUnlocked, setSiteUnlocked] = useState(() => {
+    if (!SITE_PW) return true;
+    try { return localStorage.getItem("hm_site_unlock") === "yes"; } catch (e) { return false; }
+  });
 
   const t = I18N[lang];
 
@@ -1141,6 +1206,32 @@ export default function HerpMarket() {
   }, []);
   // Use live data when available, otherwise the built-in demo data.
   const LISTINGS_DATA = liveListings || LISTINGS;
+
+  // ── Real auth session (Supabase) ──
+  // Loads any existing session on startup and keeps `user` in sync with login/
+  // logout. Builds the app's user object from the auth session + profile row so
+  // existing references (user.name, user.verified, user.region) keep working.
+  const applySession = (api, session) => {
+    const u = session?.user;
+    if (!u) { setUser(null); return; }
+    const meta = u.user_metadata || {};
+    setUser({ id: u.id, email: u.email, name: meta.display_name || (u.email || "").split("@")[0], region: "Piemonte", verified: false });
+    // enrich from profile (region, verified) without blocking the UI
+    api.fetchProfile(u.id).then(p => {
+      if (p) setUser(prev => prev ? { ...prev, name: p.display_name || prev.name, region: p.region || prev.region, verified: !!p.verified } : prev);
+    }).catch(() => {});
+  };
+  useEffect(() => {
+    let unsub;
+    import('./lib/api').then(api => {
+      api.getSession().then(s => applySession(api, s)).catch(() => {});
+      unsub = api.onAuthChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY") setRecovery(true);
+        applySession(api, session);
+      });
+    });
+    return () => { unsub && unsub(); };
+  }, []);
 
   // Remember scroll position per view so returning to search (or anywhere)
   // lands the user where they left off instead of jumping to the top.
@@ -1196,13 +1287,25 @@ export default function HerpMarket() {
     if (!user) { setAuthModal({ mode: "login", reason: t.loginToFavorite, after: null }); return; }
     setFavorites(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
+  // Demo shortcut (DemoToggle) — fake local login for quick UI testing only.
   const handleLogin = (name) => {
     setUser({ name: name || "Anita Pioch", region: "Piemonte", verified: true });
     const after = authModal?.after;
     setAuthModal(null);
     after && setTimeout(after, 100);
   };
-  const handleLogout = () => { setUser(null); go("home"); };
+  // Real auth succeeded inside the modal — the session listener sets `user`;
+  // here we just close the modal and run any pending "after login" action.
+  const handleAuthSuccess = () => {
+    const after = authModal?.after;
+    setAuthModal(null);
+    after && setTimeout(after, 150);
+  };
+  const handleLogout = () => {
+    import('./lib/api').then(api => api.signOut()).catch(() => {});
+    setUser(null);
+    go("home");
+  };
 
   const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout, listingsData: LISTINGS_DATA };
 
@@ -1236,6 +1339,9 @@ export default function HerpMarket() {
   };
 
   const profileViews = ["profile", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
+
+  // Private pre-launch gate: block the whole site until the access password is entered.
+  if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
 
   return (
     <div className="flex h-screen w-full bg-stone-950 text-stone-100 antialiased overflow-hidden"
@@ -1308,7 +1414,10 @@ export default function HerpMarket() {
 
       {/* Auth modal */}
       {authModal && (
-        <AuthModal modal={authModal} setModal={setAuthModal} onLogin={handleLogin} t={t} lang={lang} go={go} />
+        <AuthModal modal={authModal} setModal={setAuthModal} onAuthSuccess={handleAuthSuccess} t={t} lang={lang} go={go} />
+      )}
+      {recovery && (
+        <SetNewPasswordModal t={t} onDone={() => setRecovery(false)} />
       )}
 
       {/* Demo state toggle — floating, dismissible. Lets you instantly flip auth for demos. */}
@@ -3913,6 +4022,45 @@ function Profile({ t, go, lang, user, handleLogout }) {
                 className="w-full py-3 rounded-lg text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-rose-400 transition-colors flex items-center justify-center gap-2">
           <LogOut size={14} />{t.logout}
         </button>
+        {user?.id && <DeleteAccountButton t={t} user={user} go={go} />}
+      </div>
+    </div>
+  );
+}
+
+function DeleteAccountButton({ t, user, go }) {
+  const [confirm, setConfirm] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const del = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const api = await import("./lib/api");
+      await api.requestAccountDeletion(user.id);
+    } catch (e) { /* listener will still sign out */ }
+    setBusy(false);
+    go("home");
+  };
+  if (!confirm) {
+    return (
+      <button onClick={() => setConfirm(true)}
+              className="w-full mt-1 py-2 text-[11px] text-stone-600 hover:text-rose-400 transition-colors">
+        {t.deleteAccount}
+      </button>
+    );
+  }
+  return (
+    <div className="mt-2 rounded-lg ring-1 ring-rose-500/30 bg-rose-500/5 p-3 text-center">
+      <p className="text-[11px] text-stone-300 mb-2">{t.deleteAccountWarn}</p>
+      <div className="flex gap-2">
+        <button onClick={del} disabled={busy}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-rose-500 hover:bg-rose-400 disabled:bg-stone-700 text-white transition-colors">
+          {busy ? t.processing : t.confirmDelete}
+        </button>
+        <button onClick={() => setConfirm(false)}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+          {t.keepAccount}
+        </button>
       </div>
     </div>
   );
@@ -3922,8 +4070,7 @@ function ProfileGroup({ label, children }) {
   return (
     <div>
       <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2 px-1">{label}</div>
-      <div className="space-y-1">{children}</div>
-    </div>
+      <div className="space-y-1">{children}</div>    </div>
   );
 }
 
@@ -4004,8 +4151,8 @@ function Legal({ t, go, lang }) {
 /* ═══════════════════════════════════════════════════════════════════
    AUTH MODAL — login or signup, with reason context
    ═════════════════════════════════════════════════════════════════ */
-function AuthModal({ modal, setModal, onLogin, t, lang, go }) {
-  const [mode, setMode] = useState(modal.mode);
+function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
+  const [mode, setMode] = useState(modal.mode); // "login" | "signup" | "forgot"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -4014,21 +4161,38 @@ function AuthModal({ modal, setModal, onLogin, t, lang, go }) {
   const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [consentMarketing, setConsentMarketing] = useState(false);  // optional
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const canSubmit = mode === "login"
     ? (email && password)
+    : mode === "forgot"
+    ? !!email
     : (name && email && password && consentTos && consentPrivacy);
 
-  const submit = () => {
-    if (!email || !password) return;
-    if (mode === "signup" && (!consentTos || !consentPrivacy)) {
-      setError(t.consentRequired);
-      return;
+  const submit = async () => {
+    if (!canSubmit || loading) return;
+    if (mode === "signup" && (!consentTos || !consentPrivacy)) { setError(t.consentRequired); return; }
+    setError(""); setInfo(""); setLoading(true);
+    try {
+      const api = await import("./lib/api");
+      if (mode === "forgot") {
+        await api.resetPasswordForEmail(email);
+        setInfo(t.resetEmailSent);
+      } else if (mode === "signup") {
+        const data = await api.signUp(email, password, name, { marketing: consentMarketing });
+        // With email confirmation ON, no session is returned yet → tell them to check email.
+        if (!data?.session) { setInfo(t.checkEmailConfirm); }
+        else { onAuthSuccess(); }
+      } else {
+        await api.signIn(email, password);
+        onAuthSuccess();
+      }
+    } catch (err) {
+      setError(err?.message || "Error");
+    } finally {
+      setLoading(false);
     }
-    setError("");
-    // When you wire Supabase: pass { consentTos, consentPrivacy, consentMarketing }
-    // as columns on the profiles row (and timestamps) so you have proof of consent.
-    onLogin(mode === "signup" ? name : null);
   };
 
   const openDoc = (route) => {
@@ -4049,7 +4213,7 @@ function AuthModal({ modal, setModal, onLogin, t, lang, go }) {
             Herp<span className="italic text-amber-500">Market</span>
           </div>
           <h2 className="font-display text-xl text-stone-100 mt-3">
-            {mode === "login" ? t.welcomeBack : t.createAccount}
+            {mode === "login" ? t.welcomeBack : mode === "forgot" ? t.resetTitle : t.createAccount}
           </h2>
           {modal.reason && (
             <p className="text-xs text-amber-300/90 mt-2 bg-amber-500/10 ring-1 ring-amber-500/20 rounded-lg px-3 py-2 flex items-start gap-2">
@@ -4068,16 +4232,29 @@ function AuthModal({ modal, setModal, onLogin, t, lang, go }) {
                      className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
             </div>
           )}
+          {mode === "forgot" && (
+            <p className="text-xs text-stone-400 leading-relaxed -mt-1">{t.resetIntro}</p>
+          )}
           <div>
             <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.emailPlaceholder}</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
                    className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
           </div>
+          {mode !== "forgot" && (
           <div>
             <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.passwordPlaceholder}</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
                    className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
           </div>
+          )}
+          {mode === "login" && (
+            <div className="text-right -mt-1">
+              <button onClick={() => { setMode("forgot"); setError(""); setInfo(""); }}
+                      className="text-[11px] text-stone-400 hover:text-amber-400 transition-colors">
+                {t.forgotPassword}
+              </button>
+            </div>
+          )}
 
           {/* GDPR signup consent — required for new accounts only */}
           {mode === "signup" && (
@@ -4097,23 +4274,31 @@ function AuthModal({ modal, setModal, onLogin, t, lang, go }) {
               <ConsentCheckbox checked={consentMarketing} onChange={setConsentMarketing}>
                 {t.consentMarketingLabel}
               </ConsentCheckbox>
-              {error && (
-                <p className="text-[11px] text-rose-400 font-bold flex items-center gap-1.5">
-                  <Info size={12} />{error}
-                </p>
-              )}
             </div>
           )}
 
-          <button onClick={submit} disabled={!canSubmit}
+          {(error || info) && (
+            <p className={`text-[11px] font-bold flex items-center gap-1.5 ${error ? "text-rose-400" : "text-emerald-400"}`}>
+              <Info size={12} />{error || info}
+            </p>
+          )}
+
+          <button onClick={submit} disabled={!canSubmit || loading}
                   className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors mt-2">
-            {mode === "login" ? t.continueWithEmail : t.signUpFree}
+            {loading ? t.processing : mode === "login" ? t.continueWithEmail : mode === "forgot" ? t.sendResetLink : t.signUpFree}
           </button>
           <div className="text-center pt-1">
-            <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
-                    className="text-xs text-stone-400 hover:text-amber-400 transition-colors">
-              {mode === "login" ? <>{t.noAccount} <span className="text-amber-400 font-bold">{t.signup}</span></> : <>{t.alreadyMember} <span className="text-amber-400 font-bold">{t.login}</span></>}
-            </button>
+            {mode === "forgot" ? (
+              <button onClick={() => { setMode("login"); setError(""); setInfo(""); }}
+                      className="text-xs text-stone-400 hover:text-amber-400 transition-colors">
+                {t.backToLogin}
+              </button>
+            ) : (
+              <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setInfo(""); }}
+                      className="text-xs text-stone-400 hover:text-amber-400 transition-colors">
+                {mode === "login" ? <>{t.noAccount} <span className="text-amber-400 font-bold">{t.signup}</span></> : <>{t.alreadyMember} <span className="text-amber-400 font-bold">{t.login}</span></>}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -4131,6 +4316,54 @@ function ConsentCheckbox({ checked, onChange, required, children }) {
         {required && <span className="text-rose-400 ml-1">*</span>}
       </span>
     </label>
+  );
+}
+
+/* Shown when the user returns from a password-reset email (recovery session). */
+function SetNewPasswordModal({ t, onDone }) {
+  const [pw, setPw] = useState("");
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const save = async () => {
+    if (!pw || loading) return;
+    setError(""); setLoading(true);
+    try {
+      const api = await import("./lib/api");
+      await api.updatePassword(pw);
+      setInfo(t.passwordUpdated);
+      await api.signOut();
+      setTimeout(onDone, 1400);
+    } catch (err) { setError(err?.message || "Error"); }
+    finally { setLoading(false); }
+  };
+  return (
+    <div className="fixed inset-0 z-[75] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4">
+      <div className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up">
+        <div className="p-6 pb-4 bg-gradient-to-br from-stone-900 to-stone-950 border-b border-stone-800">
+          <div className="font-display text-2xl text-stone-50 tracking-tight">
+            Herp<span className="italic text-amber-500">Market</span>
+          </div>
+          <h2 className="font-display text-xl text-stone-100 mt-3">{t.newPasswordTitle}</h2>
+        </div>
+        <div className="p-6 space-y-3">
+          <div>
+            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.newPasswordLabel}</label>
+            <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="••••••••"
+                   className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+          </div>
+          {(error || info) && (
+            <p className={`text-[11px] font-bold flex items-center gap-1.5 ${error ? "text-rose-400" : "text-emerald-400"}`}>
+              <Info size={12} />{error || info}
+            </p>
+          )}
+          <button onClick={save} disabled={!pw || loading}
+                  className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors mt-2">
+            {loading ? t.processing : t.savePassword}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
