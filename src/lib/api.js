@@ -239,3 +239,42 @@ export async function getCurrentUser() {
   const { data } = await supabase.auth.getUser();
   return data?.user || null;
 }
+export async function getSession() {
+  const { data } = await supabase.auth.getSession();
+  return data?.session || null;
+}
+// Subscribe to login/logout changes. Returns an unsubscribe function.
+export function onAuthChange(cb) {
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => cb(session));
+  return () => data?.subscription?.unsubscribe();
+}
+// Send a password-reset email. The link returns the user to the app, where the
+// PASSWORD_RECOVERY auth event triggers the "set new password" screen.
+export async function resetPasswordForEmail(email) {
+  const redirectTo = window.location.origin;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) throw error;
+  return true;
+}
+// Set a new password (used on the reset page, while in the recovery session).
+export async function updatePassword(newPassword) {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+  return true;
+}
+// Load the profile row for the logged-in user (display name, consents, role, etc.)
+export async function fetchProfile(userId) {
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  if (error) return null;
+  return data;
+}
+// Account deletion. Full erasure of the auth login + data purge happens in a
+// server-side Edge Function (added with the GDPR functions). For now this marks
+// the account for deletion and signs the user out.
+export async function requestAccountDeletion(userId) {
+  await supabase.from('profiles')
+    .update({ deletion_requested_at: new Date().toISOString() })
+    .eq('id', userId);
+  await supabase.auth.signOut();
+  return true;
+}
