@@ -1,11 +1,10 @@
 {
   "name": "HerpMarket",
   "short_name": "HerpMarket",
-  "description": "Il marketplace dei rettili e animali esotici — allevatori verificati, ritiri in fiera, CITES.",
+  "description": "Il mercato italiano dei rettili",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#1c1917",
   "theme_color": "#f59e0b",
   "icons": [
