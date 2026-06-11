@@ -17,6 +17,8 @@ export function mapListing(row) {
     deposit: row.deposit ? Number(row.deposit) : Math.round(Number(row.price) * 0.1),
     sex: row.sex,
     ageMonths: row.age_months,
+    birthDate: row.birth_date || null,
+    citesListed: !!row.cites_listed,
     weight: row.weight,
     country: row.country || 'IT',
     region: row.region,
@@ -114,6 +116,7 @@ export async function createListing(listing, sellerId) {
     species: listing.species, common: listing.common, category: listing.category,
     traits: listing.traits || [], price: listing.price, deposit: listing.deposit,
     sex: listing.sex, age_months: listing.ageMonths, weight: listing.weight,
+    birth_date: listing.birthDate || null, cites_listed: !!listing.citesListed,
     country: listing.country, region: listing.region, city: listing.city,
     sire: listing.sire, dam: listing.dam, description: listing.desc,
     image_url: listing.image, shipping: !!listing.shipping,
@@ -280,7 +283,7 @@ export async function getSession() {
 }
 // Subscribe to login/logout changes. Returns an unsubscribe function.
 export function onAuthChange(cb) {
-const { data } = supabase.auth.onAuthStateChange((event, session) => cb(event, session));
+  const { data } = supabase.auth.onAuthStateChange((event, session) => cb(event, session));
   return () => data?.subscription?.unsubscribe();
 }
 // Send a password-reset email. The link returns the user to the app, where the

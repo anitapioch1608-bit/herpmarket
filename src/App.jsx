@@ -101,6 +101,9 @@ const I18N = {
     listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 3)", publishListing: "Pubblica annuncio",
     photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
     needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…",
+    citesCheckLabel: "Specie CITES (Allegato A/B/C/D Reg. CE 338/97)",
+    citesCheckHint: "Sei responsabile dello stato CITES del tuo esemplare. Per le specie CITES è richiesta la data di nascita esatta.",
+    needFullBirth: "Per le specie CITES inserisci la data di nascita esatta (giorno, mese e anno)",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
@@ -201,7 +204,7 @@ const I18N = {
     auctionInfo: "In un'asta, fai un'offerta superiore a quella attuale. Se sei il miglior offerente alla scadenza e la riserva è raggiunta, vinci l'esemplare.",
     crossBorderTitle: "Vendita transfrontaliera",
     crossBorderEu: "Questo esemplare proviene da un altro Paese UE. Per il trasporto è richiesta la registrazione TRACES e, per le specie CITES Allegato A/B, la documentazione di movimento intra-UE.",
-    crossBorderCh: "Attenzione: la Svizzera non fa parte dell'UE. Il movimento di animali vivi tra Svizzera e UE attraversa una frontiera doganale e richiede controlli veterinari di confine e permessi di importazione/esportazione. Verifica i requisiti prima di procedere.",
+    crossBorderCh: "Attenzione: questo Paese non fa parte dell'UE. Il movimento di animali vivi da/verso l'UE attraversa una frontiera doganale e richiede controlli veterinari di confine e permessi di importazione/esportazione. Verifica i requisiti prima di procedere.",
     sellerCountryLabel: "Paese del venditore", countryLabel: "Paese", anyCountry: "Tutti i Paesi",
     resultsCount: (n) => `${n} ${n === 1 ? "annuncio trovato" : "annunci trovati"}`,
     secureCheckout: "Pagamento sicuro",
@@ -289,6 +292,9 @@ const I18N = {
     listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 3)", publishListing: "Publish listing",
     photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
     needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…",
+    citesCheckLabel: "CITES species (Annex A/B/C/D, EU Reg. 338/97)",
+    citesCheckHint: "You are responsible for your animal's CITES status. CITES species require an exact date of birth.",
+    needFullBirth: "CITES species require an exact date of birth (day, month and year)",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
@@ -385,7 +391,7 @@ const I18N = {
     auctionInfo: "In an auction, place a bid above the current one. If you're the highest bidder when it ends and the reserve is met, you win the animal.",
     crossBorderTitle: "Cross-border sale",
     crossBorderEu: "This animal is located in another EU country. Transport requires TRACES registration and, for CITES Annex A/B species, intra-EU movement documentation.",
-    crossBorderCh: "Note: Switzerland is not part of the EU. Moving live animals between Switzerland and the EU crosses a customs border and requires border veterinary checks and import/export permits. Check the requirements before proceeding.",
+    crossBorderCh: "Note: this country is not part of the EU. Moving live animals to/from the EU crosses a customs border and requires border veterinary checks and import/export permits. Check the requirements before proceeding.",
     sellerCountryLabel: "Seller country", countryLabel: "Country", anyCountry: "All countries",
     resultsCount: (n) => `${n} ${n === 1 ? "listing" : "listings"} found`,
     secureCheckout: "Secure checkout",
@@ -774,11 +780,37 @@ const REGIONS = [
    is NOT in the EU, so CH↔EU movement crosses a customs border (extra rules).
    The flag emoji renders on cards, seller pages, and the detail view. */
 const COUNTRIES = [
-  { code: "IT", flag: "🇮🇹", it: "Italia",      en: "Italy",       eu: true  },
-  { code: "DE", flag: "🇩🇪", it: "Germania",    en: "Germany",     eu: true  },
-  { code: "AT", flag: "🇦🇹", it: "Austria",     en: "Austria",     eu: true  },
-  { code: "FR", flag: "🇫🇷", it: "Francia",     en: "France",      eu: true  },
-  { code: "CH", flag: "🇨🇭", it: "Svizzera",    en: "Switzerland", eu: false },
+  { code: "IT", flag: "🇮🇹", it: "Italia",          en: "Italy",          eu: true  },
+  { code: "DE", flag: "🇩🇪", it: "Germania",        en: "Germany",        eu: true  },
+  { code: "AT", flag: "🇦🇹", it: "Austria",         en: "Austria",        eu: true  },
+  { code: "FR", flag: "🇫🇷", it: "Francia",         en: "France",         eu: true  },
+  { code: "ES", flag: "🇪🇸", it: "Spagna",          en: "Spain",          eu: true  },
+  { code: "PT", flag: "🇵🇹", it: "Portogallo",      en: "Portugal",       eu: true  },
+  { code: "NL", flag: "🇳🇱", it: "Paesi Bassi",     en: "Netherlands",    eu: true  },
+  { code: "BE", flag: "🇧🇪", it: "Belgio",          en: "Belgium",        eu: true  },
+  { code: "LU", flag: "🇱🇺", it: "Lussemburgo",     en: "Luxembourg",     eu: true  },
+  { code: "CZ", flag: "🇨🇿", it: "Rep. Ceca",       en: "Czech Republic", eu: true  },
+  { code: "SK", flag: "🇸🇰", it: "Slovacchia",      en: "Slovakia",       eu: true  },
+  { code: "PL", flag: "🇵🇱", it: "Polonia",         en: "Poland",         eu: true  },
+  { code: "HU", flag: "🇭🇺", it: "Ungheria",        en: "Hungary",        eu: true  },
+  { code: "SI", flag: "🇸🇮", it: "Slovenia",        en: "Slovenia",       eu: true  },
+  { code: "HR", flag: "🇭🇷", it: "Croazia",         en: "Croatia",        eu: true  },
+  { code: "RO", flag: "🇷🇴", it: "Romania",         en: "Romania",        eu: true  },
+  { code: "BG", flag: "🇧🇬", it: "Bulgaria",        en: "Bulgaria",       eu: true  },
+  { code: "GR", flag: "🇬🇷", it: "Grecia",          en: "Greece",         eu: true  },
+  { code: "DK", flag: "🇩🇰", it: "Danimarca",       en: "Denmark",        eu: true  },
+  { code: "SE", flag: "🇸🇪", it: "Svezia",          en: "Sweden",         eu: true  },
+  { code: "FI", flag: "🇫🇮", it: "Finlandia",       en: "Finland",        eu: true  },
+  { code: "IE", flag: "🇮🇪", it: "Irlanda",         en: "Ireland",        eu: true  },
+  { code: "EE", flag: "🇪🇪", it: "Estonia",         en: "Estonia",        eu: true  },
+  { code: "LV", flag: "🇱🇻", it: "Lettonia",        en: "Latvia",         eu: true  },
+  { code: "LT", flag: "🇱🇹", it: "Lituania",        en: "Lithuania",      eu: true  },
+  { code: "MT", flag: "🇲🇹", it: "Malta",           en: "Malta",          eu: true  },
+  { code: "CY", flag: "🇨🇾", it: "Cipro",           en: "Cyprus",         eu: true  },
+  // Outside the EU — customs border, extra rules (cross-border warning applies)
+  { code: "CH", flag: "🇨🇭", it: "Svizzera",        en: "Switzerland",    eu: false },
+  { code: "GB", flag: "🇬🇧", it: "Regno Unito",     en: "United Kingdom", eu: false },
+  { code: "NO", flag: "🇳🇴", it: "Norvegia",        en: "Norway",         eu: false },
 ];
 const countryByCode = (code) => COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
 
@@ -790,8 +822,14 @@ const REGIONS_BY_COUNTRY = {
   AT: ["Burgenland","Kärnten","Niederösterreich","Oberösterreich","Salzburg","Steiermark","Tirol","Vorarlberg","Wien"],
   FR: ["Auvergne-Rhône-Alpes","Bourgogne-Franche-Comté","Bretagne","Centre-Val de Loire","Corse","Grand Est","Hauts-de-France","Île-de-France","Normandie","Nouvelle-Aquitaine","Occitanie","Pays de la Loire","Provence-Alpes-Côte d'Azur"],
   CH: ["Zürich","Bern","Luzern","Genève","Vaud","Ticino","Basel-Stadt","St. Gallen","Aargau","Wallis","Graubünden","Altri Cantoni"],
+  ES: ["Andalucía","Aragón","Asturias","Baleares","Canarias","Cantabria","Castilla-La Mancha","Castilla y León","Cataluña","Extremadura","Galicia","La Rioja","Madrid","Murcia","Navarra","País Vasco","Valencia"],
+  NL: ["Drenthe","Flevoland","Friesland","Gelderland","Groningen","Limburg","Noord-Brabant","Noord-Holland","Overijssel","Utrecht","Zeeland","Zuid-Holland"],
+  CZ: ["Praha","Středočeský","Jihočeský","Plzeňský","Karlovarský","Ústecký","Liberecký","Královéhradecký","Pardubický","Vysočina","Jihomoravský","Olomoucký","Zlínský","Moravskoslezský"],
+  PL: ["Dolnośląskie","Kujawsko-Pomorskie","Lubelskie","Lubuskie","Łódzkie","Małopolskie","Mazowieckie","Opolskie","Podkarpackie","Podlaskie","Pomorskie","Śląskie","Świętokrzyskie","Warmińsko-Mazurskie","Wielkopolskie","Zachodniopomorskie"],
+  BE: ["Antwerpen","Brussel/Bruxelles","Hainaut","Liège","Limburg","Luxembourg","Namur","Oost-Vlaanderen","Vlaams-Brabant","Brabant wallon","West-Vlaanderen"],
 };
-const regionsForCountry = (code) => REGIONS_BY_COUNTRY[code] || REGIONS_BY_COUNTRY.IT;
+// Countries without a curated list get a free-text region field in the sell form.
+const regionsForCountry = (code) => REGIONS_BY_COUNTRY[code] || [];
 
 // Placeholder photos for the DEMO only. These are hotlinked stock images and
 // can rotate or break over time — that's expected. The real fix is hosting
@@ -2546,7 +2584,8 @@ function AuctionBidModal({ minNext, currentBid, onClose, onBid, t, lang }) {
 function CrossBorderNotice({ sellerCountry, t, lang, buyerCountry = "IT" }) {
   if (!sellerCountry || sellerCountry === buyerCountry) return null;
   const sc = countryByCode(sellerCountry);
-  const isSwiss = sellerCountry === "CH" || buyerCountry === "CH";
+  // Customs-border warning applies to ANY non-EU country (CH, GB, NO, …)
+  const isSwiss = !sc.eu || !countryByCode(buyerCountry).eu;
   return (
     <div className="px-5 mt-5">
       <div className={`rounded-xl p-4 ring-1 ${
@@ -3384,6 +3423,34 @@ function Checkout({ amount, onClose, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    SELL — simplified, single-page form
    ═════════════════════════════════════════════════════════════════ */
+/* Best-effort CITES (EU annex) status for the catalogue species. Used ONLY to
+   PRE-TICK the breeder's "CITES-listed" checkbox as a convenience — the breeder
+   can override it and stays responsible for the real status of their animal.
+   ⚠ VERIFY this list against the official EU Annexes / the Species+ database
+   (speciesplus.net) before launch — CITES listings change at each CoP. */
+const CITES_SPECIES = new Set([
+  // Geckos
+  "Phelsuma grandis", "Phelsuma laticauda", "Gekko gecko",
+  // Snakes
+  "Python regius", "Python brongersmai", "Morelia viridis", "Morelia spilota",
+  "Antaresia childreni", "Boa constrictor", "Eryx colubrinus", "Epicrates cenchria",
+  // Lizards
+  "Varanus acanthurus", "Varanus exanthematicus", "Salvator merianae",
+  "Corucia zebrata", "Uromastyx",
+  // Chameleons
+  "Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii",
+  "Furcifer lateralis", "Brookesia",
+  // Tortoises & turtles
+  "Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii",
+  "Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius",
+  "Stigmochelys pardalis", "Graptemys",
+  // Amphibians
+  "Dendrobates tinctorius", "Dendrobates auratus", "Phyllobates terribilis",
+  "Agalychnis callidryas", "Ambystoma mexicanum",
+  // Invertebrates
+  "Brachypelma hamorii", "Tliltocatl albopilosus", "Poecilotheria", "Pandinus imperator",
+]);
+
 function SellScreen({ t, lang, go, user }) {
   const [success, setSuccess] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
@@ -3391,6 +3458,8 @@ function SellScreen({ t, lang, go, user }) {
   const [title, setTitle] = useState("");
   const [sex, setSex] = useState("M");
   const [born, setBorn] = useState("");
+  const [bornPrecision, setBornPrecision] = useState("month"); // "day" | "month" | "year"
+  const [isCites, setIsCites] = useState(false);
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
   const [saving, setSaving] = useState(false);
@@ -3422,13 +3491,18 @@ function SellScreen({ t, lang, go, user }) {
     const s = String(val || "").trim();
     if (!s) return null;
     let yy, mm;
-    let m = /^(\d{4})-(\d{1,2})$/.exec(s);            // "YYYY-MM" from <input type="month">
+    let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);    // "YYYY-MM-DD" from <input type="date">
     if (m) { yy = parseInt(m[1], 10); mm = parseInt(m[2], 10); }
-    else {
-      m = /^(\d{1,2})[/-](\d{4})$/.exec(s);           // fallback "MM/YYYY" or "MM-YYYY"
-      if (m) { mm = parseInt(m[1], 10); yy = parseInt(m[2], 10); }
-      else return null;
+    else if ((m = /^(\d{4})-(\d{1,2})$/.exec(s))) {     // "YYYY-MM" from <input type="month">
+      yy = parseInt(m[1], 10); mm = parseInt(m[2], 10);
     }
+    else if ((m = /^(\d{4})$/.exec(s))) {               // "YYYY" year-only
+      yy = parseInt(m[1], 10); mm = 1;
+    }
+    else if ((m = /^(\d{1,2})[/-](\d{4})$/.exec(s))) {  // legacy "MM/YYYY"
+      mm = parseInt(m[1], 10); yy = parseInt(m[2], 10);
+    }
+    else return null;
     if (mm < 1 || mm > 12) return null;
     const now = new Date();
     return Math.max(0, (now.getFullYear() - yy) * 12 + (now.getMonth() + 1 - mm));
@@ -3439,6 +3513,7 @@ function SellScreen({ t, lang, go, user }) {
     if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
     if (!price || Number(price) <= 0) { setSaveErr(t.needPrice); return; }
     if (!user?.id) { setSaveErr(t.needLoginPub); return; }
+    if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
     try {
       const api = await import("./lib/api");
@@ -3453,6 +3528,8 @@ function SellScreen({ t, lang, go, user }) {
         species: speciesVal, common, category: catId,
         traits, price: Number(price), deposit: Math.round(Number(price) * 0.1),
         sex, ageMonths: monthsSince(born), weight: null,
+        birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
+        citesListed: isCites,
         country, region, city: null,
         sire: null, dam: null, desc,
         image: urls[0] || null,
@@ -3473,6 +3550,13 @@ function SellScreen({ t, lang, go, user }) {
   // Country → region
   const [country, setCountry] = useState("IT");
   const [region, setRegion] = useState(regionsForCountry("IT")[0]);
+
+  // Pre-tick CITES (and force a full birth date) when the chosen species is on our list.
+  useEffect(() => {
+    const c = CITES_SPECIES.has(speciesVal);
+    setIsCites(c);
+    if (c) setBornPrecision("day");
+  }, [speciesVal]);
 
   const subcats = catId ? subcatsFor(catId) : [];
   const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
@@ -3611,22 +3695,75 @@ function SellScreen({ t, lang, go, user }) {
         <SellPricing t={t} lang={lang} price={price} setPrice={setPrice} />
 
         <FormBlock label={t.born}>
-          <input type="month" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
-                 max={new Date().toISOString().slice(0, 7)} style={{ colorScheme: "dark" }} />
+          {/* Precision chooser — some breeders only know the year or month. */}
+          <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
+            {[
+              ["day",   lang === "it" ? "Data esatta" : "Exact date"],
+              ["month", lang === "it" ? "Mese e anno" : "Month & year"],
+              ["year",  lang === "it" ? "Solo anno" : "Year only"],
+            ].map(([key, label]) => {
+              const locked = isCites && key !== "day";
+              return (
+                <button type="button" key={key} disabled={locked}
+                        onClick={() => { setBornPrecision(key); setBorn(""); }}
+                        className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${
+                          bornPrecision === key ? "bg-amber-500 text-stone-950"
+                          : locked ? "text-stone-700 cursor-not-allowed"
+                          : "text-stone-400 hover:text-stone-200"
+                        }`}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {bornPrecision === "day" && (
+            <input type="date" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                   max={new Date().toISOString().slice(0, 10)} style={{ colorScheme: "dark" }} />
+          )}
+          {bornPrecision === "month" && (
+            <input type="month" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                   max={new Date().toISOString().slice(0, 7)} style={{ colorScheme: "dark" }} />
+          )}
+          {bornPrecision === "year" && (
+            <input type="number" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                   min="1980" max={new Date().getFullYear()} placeholder={String(new Date().getFullYear())} />
+          )}
         </FormBlock>
+
+        {/* CITES self-declaration. Pre-ticked from our best-effort list when the
+            species is selected; the breeder can override and remains responsible. */}
+        <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" checked={isCites}
+                   onChange={() => { const v = !isCites; setIsCites(v); if (v) { setBornPrecision("day"); setBorn(""); } }}
+                   className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <FileText size={15} className={isCites ? "text-amber-400" : "text-stone-400"} />
+                <span className="font-bold text-stone-100 text-sm">{t.citesCheckLabel}</span>
+              </div>
+              <p className="text-[11px] text-stone-400 leading-relaxed">{t.citesCheckHint}</p>
+            </div>
+          </label>
+        </div>
 
         {/* Country → region cascade */}
         <div className="grid grid-cols-2 gap-3">
           <FormBlock label={t.countryLabel}>
             <select className="form-input" value={country}
-                    onChange={e => { setCountry(e.target.value); setRegion(regionsForCountry(e.target.value)[0]); }}>
+                    onChange={e => { setCountry(e.target.value); setRegion(regionsForCountry(e.target.value)[0] || ""); }}>
               {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
             </select>
           </FormBlock>
           <FormBlock label={t.region}>
-            <select className="form-input" value={region} onChange={e => setRegion(e.target.value)}>
-              {regionsForCountry(country).map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+            {regionsForCountry(country).length > 0 ? (
+              <select className="form-input" value={region} onChange={e => setRegion(e.target.value)}>
+                {regionsForCountry(country).map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            ) : (
+              <input className="form-input" value={region} onChange={e => setRegion(e.target.value)}
+                     placeholder={lang === "it" ? "Regione / provincia" : "Region / province"} />
+            )}
           </FormBlock>
         </div>
 
