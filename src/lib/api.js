@@ -124,6 +124,41 @@ export async function createListing(listing, sellerId) {
   return mapListing(data);
 }
 
+// Upload listing photos to the public "listing-photos" bucket. Returns public URLs.
+export async function uploadListingPhotos(files, userId) {
+  const urls = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${userId}/${Date.now()}-${i}.${ext}`;
+    const { error } = await supabase.storage.from('listing-photos')
+      .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || 'image/jpeg' });
+    if (error) throw error;
+    const { data } = supabase.storage.from('listing-photos').getPublicUrl(path);
+    urls.push(data.publicUrl);
+  }
+  return urls;
+}
+
+// Find the seller row for this user, or create one on first listing.
+export async function getOrCreateSeller(user) {
+  const { data: existing } = await supabase.from('sellers')
+    .select('*').eq('owner_id', user.id).maybeSingle();
+  if (existing) return existing;
+  const baseName = user.name || (user.email ? user.email.split('@')[0] : 'Breeder');
+  const row = {
+    owner_id: user.id, name: baseName, country: user.country || 'IT',
+    region: user.region || null, member_since: new Date().getFullYear().toString(),
+  };
+  let { data: created, error } = await supabase.from('sellers').insert(row).select().single();
+  if (error && error.code === '23505') { // name already taken → add a short suffix
+    row.name = `${baseName} ${user.id.slice(0, 4)}`;
+    ({ data: created, error } = await supabase.from('sellers').insert(row).select().single());
+  }
+  if (error) throw error;
+  return created;
+}
+
 // ── SELLERS ─────────────────────────────────────────────────────────────────
 export async function fetchSeller(name) {
   const { data, error } = await supabase.from('sellers').select('*').eq('name', name).single();
@@ -245,7 +280,7 @@ export async function getSession() {
 }
 // Subscribe to login/logout changes. Returns an unsubscribe function.
 export function onAuthChange(cb) {
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => cb(session));
+const { data } = supabase.auth.onAuthStateChange((event, session) => cb(event, session));
   return () => data?.subscription?.unsubscribe();
 }
 // Send a password-reset email. The link returns the user to the app, where the

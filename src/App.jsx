@@ -100,6 +100,7 @@ const I18N = {
     cites: "Documenti CITES", citesNotice: "Documento di cessione richiesto per Allegato A/B",
     listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 3)", publishListing: "Pubblica annuncio",
     photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
+    needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
@@ -287,6 +288,7 @@ const I18N = {
     cites: "CITES paperwork", citesNotice: "Transfer document required for Annex A/B",
     listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 3)", publishListing: "Publish listing",
     photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
+    needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
@@ -3382,11 +3384,18 @@ function Checkout({ amount, onClose, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    SELL — simplified, single-page form
    ═════════════════════════════════════════════════════════════════ */
-function SellScreen({ t, lang, go }) {
+function SellScreen({ t, lang, go, user }) {
   const [success, setSuccess] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
-  // Photos (min 1, max 3). Preview only for now; actual upload to Supapase
-  // Storage happens when the sell form is wired to save (auth session).
+  // Captured listing fields
+  const [title, setTitle] = useState("");
+  const [sex, setSex] = useState("M");
+  const [born, setBorn] = useState("");
+  const [desc, setDesc] = useState("");
+  const [price, setPrice] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveErr, setSaveErr] = useState("");
+  // Photos (min 1, max 3). Files are uploaded to Supabase Storage on publish.
   const MAX_PHOTOS = 3;
   const [photos, setPhotos] = useState([]); // [{ file, url }]
   const [dragOver, setDragOver] = useState(false);
@@ -3409,9 +3418,46 @@ function SellScreen({ t, lang, go }) {
       return prev.filter((_, i) => i !== idx);
     });
   };
-  const handlePublish = () => {
+  const monthsSince = (mmYYYY) => {
+    const m = /^(\d{1,2})\/(\d{4})$/.exec((mmYYYY || "").trim());
+    if (!m) return null;
+    const mm = parseInt(m[1], 10), yy = parseInt(m[2], 10);
+    if (mm < 1 || mm > 12) return null;
+    const now = new Date();
+    return Math.max(0, (now.getFullYear() - yy) * 12 + (now.getMonth() + 1 - mm));
+  };
+  const handlePublish = async () => {
+    setSaveErr("");
     if (photos.length < 1) { setPhotoError(true); return; }
-    setSuccess(true);
+    if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
+    if (!price || Number(price) <= 0) { setSaveErr(t.needPrice); return; }
+    if (!user?.id) { setSaveErr(t.needLoginPub); return; }
+    setSaving(true);
+    try {
+      const api = await import("./lib/api");
+      const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
+      const urls = await api.uploadListingPhotos(photos.map(p => p.file), user.id);
+      const traits = selectedTraits.map(n => {
+        const e = exampleTraits.find(x => x.name === n);
+        return { name: n, cls: e?.cls || "line" };
+      });
+      const common = SPECIES_LABELS[speciesVal]?.it || title || speciesVal;
+      await api.createListing({
+        species: speciesVal, common, category: catId,
+        traits, price: Number(price), deposit: Math.round(Number(price) * 0.1),
+        sex, ageMonths: monthsSince(born), weight: null,
+        country, region, city: null,
+        sire: null, dam: null, desc,
+        image: urls[0] || null,
+        shipping: false, euShipping: false, localPickup: true,
+        expoIds: [], auction: null,
+      }, seller.id);
+      setSuccess(true);
+    } catch (err) {
+      setSaveErr(err?.message || "Error");
+    } finally {
+      setSaving(false);
+    }
   };
   // Cascading category → subcategory → species
   const [catId, setCatId] = useState("");
@@ -3487,7 +3533,8 @@ function SellScreen({ t, lang, go }) {
         </FormBlock>
 
         <FormBlock label={t.listingTitle}>
-          <input className="form-input" placeholder={lang === "it" ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
+          <input className="form-input" value={title} onChange={e => setTitle(e.target.value)}
+                 placeholder={lang === "it" ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
         </FormBlock>
 
         {/* Category → Subcategory → Species cascade */}
@@ -3531,8 +3578,8 @@ function SellScreen({ t, lang, go }) {
           )}
 
           <FormBlock label={t.sex}>
-            <select className="form-input">
-              <option>{t.male}</option><option>{t.female}</option><option>{t.pair}</option><option>{t.unsexed}</option>
+            <select className="form-input" value={sex} onChange={e => setSex(e.target.value)}>
+              <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="P">{t.pair}</option><option value="U">{t.unsexed}</option>
             </select>
           </FormBlock>
         </div>
@@ -3554,10 +3601,10 @@ function SellScreen({ t, lang, go }) {
         </FormBlock>
 
         {/* Sale type: fixed price or auction */}
-        <SellPricing t={t} lang={lang} />
+        <SellPricing t={t} lang={lang} price={price} setPrice={setPrice} />
 
         <FormBlock label={t.born}>
-          <input type="text" className="form-input" placeholder="MM/AAAA" />
+          <input type="text" className="form-input" value={born} onChange={e => setBorn(e.target.value)} placeholder="MM/AAAA" />
         </FormBlock>
 
         {/* Country → region cascade */}
@@ -3576,15 +3623,18 @@ function SellScreen({ t, lang, go }) {
         </div>
 
         <FormBlock label={t.description}>
-          <textarea rows="4" placeholder={t.describePlaceholder} className="form-input resize-none" />
+          <textarea rows="4" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
         </FormBlock>
 
         {/* ─── Delivery options ─── */}
         <DeliverySection lang={lang} t={t} />
 
-        <button onClick={handlePublish}
-                className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4">
-          {t.publishListing}
+        {saveErr && (
+          <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5 mt-2"><Info size={12} />{saveErr}</p>
+        )}
+        <button onClick={handlePublish} disabled={saving}
+                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4">
+          {saving ? t.publishing : t.publishListing}
         </button>
 
         <style>{`
@@ -3619,7 +3669,7 @@ function FormBlock({ label, children }) {
 /* SELL PRICING — toggle between a fixed price and an auction.
    Auction collects: start price (public) + reserve price (hidden floor) +
    duration. The reserve is never shown to buyers — only "reserve met / not". */
-function SellPricing({ t, lang }) {
+function SellPricing({ t, lang, price, setPrice }) {
   const [mode, setMode] = useState("fixed"); // "fixed" | "auction"
 
   return (
@@ -3642,7 +3692,7 @@ function SellPricing({ t, lang }) {
       {mode === "fixed" ? (
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-          <input type="number" className="form-input pl-7" placeholder="150" />
+          <input type="number" className="form-input pl-7" placeholder="150" value={price} onChange={e => setPrice(e.target.value)} />
         </div>
       ) : (
         <div className="space-y-3">
@@ -4228,7 +4278,7 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
           {mode === "signup" && (
             <div>
               <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.nameLabel}</label>
-              <input value={name} onChange={e => setName(e.target.value)} placeholder={lang === "it" ? "Mario Rossi" : "John Smith"}
+              <input value={name} onChange={e => setName(e.target.value)} placeholder={t.nameLabel}
                      className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
             </div>
           )}
