@@ -143,8 +143,38 @@ export async function uploadListingPhotos(files, userId) {
   return urls;
 }
 
-// Find the seller row for this user, or create one on first listing.
-export async function getOrCreateSeller(user) {
+// ── MY LISTINGS (owner management) ──────────────────────────────────────────
+// All three rely on the existing RLS owner policies: only the seller whose
+// owner_id matches the logged-in user can update or delete their rows.
+
+export async function fetchMyListings(userId) {
+  const { data: seller } = await supabase.from('sellers')
+    .select('id').eq('owner_id', userId).maybeSingle();
+  if (!seller) return [];
+  const { data, error } = await supabase.from('listings')
+    .select('*, sellers(*)').eq('seller_id', seller.id)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapListing);
+}
+
+export async function updateListing(id, fields) {
+  const patch = { updated_at: new Date().toISOString() };
+  if (fields.price != null) patch.price = fields.price;
+  if (fields.desc != null) patch.description = fields.desc;
+  if (fields.common != null) patch.common = fields.common;
+  const { data, error } = await supabase.from('listings')
+    .update(patch).eq('id', id).select('*, sellers(*)').single();
+  if (error) throw error;
+  return mapListing(data);
+}
+
+export async function deleteListing(id) {
+  const { error } = await supabase.from('listings').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// Find the seller row for this user, or create one on first listing.export async function getOrCreateSeller(user) {
   const { data: existing } = await supabase.from('sellers')
     .select('*').eq('owner_id', user.id).maybeSingle();
   if (existing) return existing;
@@ -315,4 +345,31 @@ export async function requestAccountDeletion(userId) {
     .eq('id', userId);
   await supabase.auth.signOut();
   return true;
+}
+// ── MY LISTINGS (owner management) ──────────────────────────────────────────
+export async function fetchMyListings(userId) {
+  const { data: seller } = await supabase.from('sellers')
+    .select('id').eq('owner_id', userId).maybeSingle();
+  if (!seller) return [];
+  const { data, error } = await supabase.from('listings')
+    .select('*, sellers(*)').eq('seller_id', seller.id)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapListing);
+}
+
+export async function updateListing(id, fields) {
+  const patch = { updated_at: new Date().toISOString() };
+  if (fields.price != null) patch.price = fields.price;
+  if (fields.desc != null) patch.description = fields.desc;
+  if (fields.common != null) patch.common = fields.common;
+  const { data, error } = await supabase.from('listings')
+    .update(patch).eq('id', id).select('*, sellers(*)').single();
+  if (error) throw error;
+  return mapListing(data);
+}
+
+export async function deleteListing(id) {
+  const { error } = await supabase.from('listings').delete().eq('id', id);
+  if (error) throw error;
 }
