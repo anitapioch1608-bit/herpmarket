@@ -104,6 +104,9 @@ const I18N = {
     citesCheckLabel: "Specie CITES (Allegato A/B/C/D Reg. CE 338/97)",
     citesCheckHint: "Sei responsabile dello stato CITES del tuo esemplare. Per le specie CITES è richiesta la data di nascita esatta.",
     needFullBirth: "Per le specie CITES inserisci la data di nascita esatta (giorno, mese e anno)",
+    mlIntro: "I tuoi annunci pubblicati. Modifica prezzo e descrizione o elimina un annuncio.",
+    mlEmpty: "Non hai ancora pubblicato annunci.", mlEdit: "Modifica", mlSave: "Salva", mlDelete: "Elimina",
+    mlConfirmDelete: "Eliminare definitivamente questo annuncio?", mlDeleted: "Annuncio eliminato.",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
@@ -295,6 +298,9 @@ const I18N = {
     citesCheckLabel: "CITES species (Annex A/B/C/D, EU Reg. 338/97)",
     citesCheckHint: "You are responsible for your animal's CITES status. CITES species require an exact date of birth.",
     needFullBirth: "CITES species require an exact date of birth (day, month and year)",
+    mlIntro: "Your published listings. Edit price and description or delete a listing.",
+    mlEmpty: "You haven't published any listings yet.", mlEdit: "Edit", mlSave: "Save", mlDelete: "Delete",
+    mlConfirmDelete: "Permanently delete this listing?", mlDeleted: "Listing deleted.",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
@@ -1208,7 +1214,14 @@ export default function HerpMarket() {
   const [view, setView] = useState("home");
   const [viewData, setViewData] = useState(null);
   const [lang, setLang] = useState("it");
-  const [favorites, setFavorites] = useState([1, 4]);
+  // Favorites persist locally so they survive a refresh. (Cross-device sync via
+  // the wishlists table is a later nicety.)
+  const [favorites, setFavorites] = useState(() => {
+    try { const s = localStorage.getItem("hm_favs"); return s ? JSON.parse(s) : []; } catch (e) { return []; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("hm_favs", JSON.stringify(favorites)); } catch (e) {}
+  }, [favorites]);
   const [filter, setFilter] = useState({
     category: null, subCategory: null, sex: null, region: null, country: null,
     sort: "newest", search: "",
@@ -1360,6 +1373,7 @@ export default function HerpMarket() {
       case "chat":      return user ? <ChatList {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "thread":    return user ? <ChatThread chat={viewData} {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
+      case "mylistings": return user ? <MyListingsScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
       case "legal":     return <Legal {...props} />;
       case "inventory": return <InventoryScreen {...props} />;
@@ -1378,7 +1392,7 @@ export default function HerpMarket() {
     }
   };
 
-  const profileViews = ["profile", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
+  const profileViews = ["profile", "mylistings", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   // Private pre-launch gate: block the whole site until the access password is entered.
   if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
@@ -1394,6 +1408,13 @@ export default function HerpMarket() {
         body { background: #0c0a09; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .anim-up { animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+        .form-input {
+          width: 100%; background: rgb(28 25 23); border: 1px solid rgb(41 37 36);
+          border-radius: 0.5rem; padding: 0.75rem 0.875rem; font-size: 0.875rem;
+          color: rgb(245 245 244); outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: rgb(245 158 11 / 0.6); }
+        .form-input::placeholder { color: rgb(120 113 108); }
       `}</style>
 
       {/* Desktop sidebar */}
@@ -4164,7 +4185,7 @@ function ChatThread({ chat, t, lang, go }) {
 /* ═══════════════════════════════════════════════════════════════════
    PROFILE — grouped sections, logout, user info from auth state
    ═════════════════════════════════════════════════════════════════ */
-function Profile({ t, go, lang, user, handleLogout }) {
+function Profile({ t, go, lang, user, handleLogout, favorites }) {
   return (
     <div className="max-w-2xl mx-auto w-full pb-10">
       <header className="px-5 md:px-8 pt-8 pb-6 border-b border-stone-800">
@@ -4184,7 +4205,8 @@ function Profile({ t, go, lang, user, handleLogout }) {
       <div className="p-4 md:p-6 space-y-6">
         {/* GROUP 1: Breeding Management */}
         <ProfileGroup label={t.breedingMgmt}>
-          <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub="2" onClick={() => go("wishlist")} />
+          <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub={String((favorites || []).length)} onClick={() => go("wishlist")} />
+          <ProfileRow icon={<PackageCheck size={18} />} label={t.myListings} onClick={() => go("mylistings")} />
           <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
           <ProfileRow icon={<Grid3x3 size={18} />} label={t.lineage} badge="PRO" onClick={() => go("lineage")} />
           <ProfileRow icon={<GitBranch size={18} />} label={t.breedingProjects} badge="SOON" onClick={() => go("breeding")} />
@@ -4287,6 +4309,146 @@ function ProfileRow({ icon, label, sub, onClick, badge }) {
       )}
       <ChevronRight size={16} className="text-stone-600" />
     </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MY LISTINGS — the breeder's own published listings.
+   Edit price/description inline; delete with confirm. RLS guarantees
+   only the owner can change their rows.
+   ═════════════════════════════════════════════════════════════════ */
+function MyListingsScreen({ t, lang, go, user }) {
+  const [items, setItems] = useState(null);   // null = loading
+  const [editId, setEditId] = useState(null);
+  const [ePrice, setEPrice] = useState("");
+  const [eDesc, setEDesc] = useState("");
+  const [confirmDel, setConfirmDel] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const load = () => {
+    import("./lib/api")
+      .then(api => api.fetchMyListings(user.id))
+      .then(setItems)
+      .catch(e => { setErr(e?.message || "Error"); setItems([]); });
+  };
+  useEffect(() => { if (user?.id) load(); }, [user?.id]);
+
+  const startEdit = (l) => {
+    setEditId(l.id); setEPrice(String(l.price ?? "")); setEDesc(l.desc || "");
+    setConfirmDel(null); setErr("");
+  };
+  const saveEdit = async (id) => {
+    if (!ePrice || Number(ePrice) <= 0) { setErr(t.needPrice); return; }
+    setBusy(true); setErr("");
+    try {
+      const api = await import("./lib/api");
+      await api.updateListing(id, { price: Number(ePrice), desc: eDesc });
+      setEditId(null); load();
+    } catch (e) { setErr(e?.message || "Error"); }
+    finally { setBusy(false); }
+  };
+  const doDelete = async (id) => {
+    setBusy(true); setErr("");
+    try {
+      const api = await import("./lib/api");
+      await api.deleteListing(id);
+      setConfirmDel(null); load();
+    } catch (e) { setErr(e?.message || "Error"); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.myListings}</h1>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.mlIntro}</p>
+        </div>
+      </header>
+
+      <div className="px-5 md:px-8 pt-4 space-y-2.5">
+        {err && (
+          <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5"><Info size={12} />{err}</p>
+        )}
+        {items === null ? (
+          <p className="text-center text-stone-500 text-sm py-16 italic">…</p>
+        ) : items.length === 0 ? (
+          <div className="text-center py-16 text-stone-500">
+            <PackageCheck size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-display italic">{t.mlEmpty}</p>
+            <button onClick={() => go("sell")}
+                    className="mt-5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
+              {t.sellCta}
+            </button>
+          </div>
+        ) : items.map(l => (
+          <div key={l.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-3 p-2.5">
+              <button onClick={() => go("detail", l)} className="w-14 h-14 rounded-lg overflow-hidden bg-stone-800 shrink-0">
+                <img src={l.image} alt={l.common}
+                     onError={(e) => { e.target.onerror = null; e.target.src = fallback(l.common); }}
+                     className="w-full h-full object-cover" />
+              </button>
+              <button onClick={() => go("detail", l)} className="flex-1 min-w-0 text-left">
+                <div className="font-bold text-stone-100 text-sm truncate">{l.common}</div>
+                <div className="text-[11px] text-stone-500 italic truncate">{l.species}</div>
+                <div className="text-[11px] text-amber-400 font-bold mt-0.5">{formatPrice(l.price)}</div>
+              </button>
+              <div className="flex flex-col gap-1.5 shrink-0">
+                <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                        className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
+                  {t.mlEdit}
+                </button>
+                <button onClick={() => { setConfirmDel(confirmDel === l.id ? null : l.id); setEditId(null); }}
+                        className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                  {t.mlDelete}
+                </button>
+              </div>
+            </div>
+
+            {/* Inline edit panel */}
+            {editId === l.id && (
+              <div className="border-t border-stone-800 p-3 space-y-2.5 bg-stone-950/40">
+                <div>
+                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
+                  <div className="relative max-w-[160px]">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                    <input type="number" className="form-input pl-7" value={ePrice} onChange={e => setEPrice(e.target.value)} />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.description}</div>
+                  <textarea rows="3" className="form-input resize-none" value={eDesc} onChange={e => setEDesc(e.target.value)} />
+                </div>
+                <button onClick={() => saveEdit(l.id)} disabled={busy}
+                        className="px-5 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors">
+                  {busy ? t.processing : t.mlSave}
+                </button>
+              </div>
+            )}
+
+            {/* Delete confirm panel */}
+            {confirmDel === l.id && (
+              <div className="border-t border-stone-800 p-3 bg-rose-500/5">
+                <p className="text-[11px] text-stone-300 mb-2">{t.mlConfirmDelete}</p>
+                <div className="flex gap-2">
+                  <button onClick={() => doDelete(l.id)} disabled={busy}
+                          className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-rose-500 hover:bg-rose-400 disabled:bg-stone-700 text-white transition-colors">
+                    {busy ? t.processing : t.confirmDelete}
+                  </button>
+                  <button onClick={() => setConfirmDel(null)}
+                          className="flex-1 py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+                    {t.keepAccount}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
