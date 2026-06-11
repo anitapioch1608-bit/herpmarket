@@ -3418,10 +3418,17 @@ function SellScreen({ t, lang, go, user }) {
       return prev.filter((_, i) => i !== idx);
     });
   };
-  const monthsSince = (mmYYYY) => {
-    const m = /^(\d{1,2})\/(\d{4})$/.exec((mmYYYY || "").trim());
-    if (!m) return null;
-    const mm = parseInt(m[1], 10), yy = parseInt(m[2], 10);
+  const monthsSince = (val) => {
+    const s = String(val || "").trim();
+    if (!s) return null;
+    let yy, mm;
+    let m = /^(\d{4})-(\d{1,2})$/.exec(s);            // "YYYY-MM" from <input type="month">
+    if (m) { yy = parseInt(m[1], 10); mm = parseInt(m[2], 10); }
+    else {
+      m = /^(\d{1,2})[/-](\d{4})$/.exec(s);           // fallback "MM/YYYY" or "MM-YYYY"
+      if (m) { mm = parseInt(m[1], 10); yy = parseInt(m[2], 10); }
+      else return null;
+    }
     if (mm < 1 || mm > 12) return null;
     const now = new Date();
     return Math.max(0, (now.getFullYear() - yy) * 12 + (now.getMonth() + 1 - mm));
@@ -3604,7 +3611,8 @@ function SellScreen({ t, lang, go, user }) {
         <SellPricing t={t} lang={lang} price={price} setPrice={setPrice} />
 
         <FormBlock label={t.born}>
-          <input type="text" className="form-input" value={born} onChange={e => setBorn(e.target.value)} placeholder="MM/AAAA" />
+          <input type="month" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                 max={new Date().toISOString().slice(0, 7)} style={{ colorScheme: "dark" }} />
         </FormBlock>
 
         {/* Country → region cascade */}
