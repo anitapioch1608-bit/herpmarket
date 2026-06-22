@@ -103,6 +103,8 @@ const I18N = {
     photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
     needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…",
     reserveTooLow: "Il prezzo di riserva non può essere inferiore al prezzo di partenza",
+    needRegion: "Seleziona la regione", chooseRegion: "Seleziona regione…",
+    needTitle: "Inserisci un titolo per l'annuncio", needCategory: "Seleziona una categoria",
     citesCheckLabel: "Specie CITES (Allegato A/B/C/D Reg. CE 338/97)",
     citesCheckHint: "Sei responsabile dello stato CITES del tuo esemplare. Per le specie CITES è richiesta la data di nascita esatta.",
     needFullBirth: "Per le specie CITES inserisci la data di nascita esatta (giorno, mese e anno)",
@@ -304,6 +306,8 @@ const I18N = {
     photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
     needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…",
     reserveTooLow: "The reserve price can't be lower than the starting price",
+    needRegion: "Select the region", chooseRegion: "Select region…",
+    needTitle: "Enter a listing title", needCategory: "Select a category",
     citesCheckLabel: "CITES species (Annex A/B/C/D, EU Reg. 338/97)",
     citesCheckHint: "You are responsible for your animal's CITES status. CITES species require an exact date of birth.",
     needFullBirth: "CITES species require an exact date of birth (day, month and year)",
@@ -781,13 +785,13 @@ function getTraitsForScope(categoryId, species) {
 
 /* ───── Categories (counts driven by mock listings; placeholders here) ── */
 const CATEGORIES = [
-  { id: "geckos",      it: "Gechi",       en: "Geckos",      emoji: "🦎", count: 412 },
-  { id: "snakes",      it: "Serpenti",    en: "Snakes",      emoji: "🐍", count: 287 },
-  { id: "lizards",     it: "Sauri",       en: "Lizards",     emoji: "🦖", count: 203 },
-  { id: "chameleons",  it: "Camaleonti",  en: "Chameleons",  emoji: "🦎", count: 94  },
-  { id: "tortoises",   it: "Testuggini",  en: "Tortoises",   emoji: "🐢", count: 156 },
-  { id: "amphibians",  it: "Anfibi",      en: "Amphibians",  emoji: "🐸", count: 78  },
-  { id: "inverts",     it: "Invertebrati",en: "Invertebrates",emoji: "🕷️", count: 132 },
+  { id: "geckos",      it: "Gechi",       en: "Geckos",      emoji: "🦎" },
+  { id: "snakes",      it: "Serpenti",    en: "Snakes",      emoji: "🐍" },
+  { id: "lizards",     it: "Sauri",       en: "Lizards",     emoji: "🦖" },
+  { id: "chameleons",  it: "Camaleonti",  en: "Chameleons",  emoji: "🦎" },
+  { id: "tortoises",   it: "Testuggini",  en: "Tortoises",   emoji: "🐢" },
+  { id: "amphibians",  it: "Anfibi",      en: "Amphibians",  emoji: "🐸" },
+  { id: "inverts",     it: "Invertebrati",en: "Invertebrates",emoji: "🕷️" },
 ];
 
 const REGIONS = [
@@ -1751,6 +1755,12 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
   const near = LIST.filter(l => l.region === userRegion);
   const all = LIST;
   const [showAllExpos, setShowAllExpos] = useState(false);
+  // Real per-category counts from the actual listings (no more fake 412).
+  const catCounts = useMemo(() => {
+    const m = {};
+    LIST.forEach(l => { if (l.category) m[l.category] = (m[l.category] || 0) + 1; });
+    return m;
+  }, [LIST]);
 
   return (
     <div className="max-w-7xl mx-auto w-full">
@@ -1829,7 +1839,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
                     style={{ animationDelay: `${i * 30}ms` }}>
               <div className="text-2xl mb-1.5">{c.emoji}</div>
               <div className="font-bold text-sm text-stone-100">{c[lang]}</div>
-              <div className="text-[10px] text-stone-500 font-medium">{c.count} {lang === "it" ? "annunci" : "listings"}</div>
+              <div className="text-[10px] text-stone-500 font-medium">{catCounts[c.id] || 0} {lang === "it" ? "annunci" : "listings"}</div>
             </button>
           ))}
         </div>
@@ -2743,7 +2753,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
       <div className="px-5 mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
         <Spec label={t.sex}>{sexLabel(a.sex, t)}</Spec>
         <Spec label={t.age}>{formatAge(a.ageMonths, t)}</Spec>
-        <Spec label={t.weight}>{a.weight}</Spec>
+        {a.weight && <Spec label={t.weight}>{a.weight}</Spec>}
         <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag} {a.city}</Spec>
       </div>
 
@@ -3493,6 +3503,7 @@ function SellScreen({ t, lang, go, user }) {
   const [title, setTitle] = useState("");
   const [sex, setSex] = useState("M");
   const [born, setBorn] = useState("");
+  const [weight, setWeight] = useState("");
   const [bornPrecision, setBornPrecision] = useState("month"); // "day" | "month" | "year"
   const [isCites, setIsCites] = useState(false);
   const [desc, setDesc] = useState("");
@@ -3549,12 +3560,15 @@ function SellScreen({ t, lang, go, user }) {
   const handlePublish = async () => {
     setSaveErr("");
     if (photos.length < 1) { setPhotoError(true); return; }
+    if (!title.trim()) { setSaveErr(t.needTitle); return; }
+    if (!catId) { setSaveErr(t.needCategory); return; }
     if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
     const isAuction = saleMode === "auction";
     const basePrice = isAuction ? Number(startPrice) : Number(price);
     if (!basePrice || basePrice <= 0) { setSaveErr(t.needPrice); return; }
     if (isAuction && reserve && Number(reserve) < basePrice) { setSaveErr(t.reserveTooLow); return; }
     if (!user?.id) { setSaveErr(t.needLoginPub); return; }
+    if (!region || !region.trim()) { setSaveErr(t.needRegion); return; }
     if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
     try {
@@ -3581,7 +3595,7 @@ function SellScreen({ t, lang, go, user }) {
       await api.createListing({
         species: speciesVal, common, category: catId,
         traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
-        sex, ageMonths: monthsSince(born), weight: null,
+        sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
         birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
         citesListed: isCites,
         country, region, city: null,
@@ -3603,7 +3617,19 @@ function SellScreen({ t, lang, go, user }) {
   const [speciesVal, setSpeciesVal] = useState("");
   // Country → region
   const [country, setCountry] = useState("IT");
-  const [region, setRegion] = useState(regionsForCountry("IT")[0]);
+  const [region, setRegion] = useState("");   // empty until chosen/prefilled — prevents silent wrong default
+
+  // Pre-fill location from the breeder's saved store profile (they can still change it).
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchMySeller(user.id)).then(s => {
+      if (!on || !s) return;
+      if (s.country) setCountry(s.country);
+      if (s.region) setRegion(s.region);
+    }).catch(() => {});
+    return () => { on = false; };
+  }, [user?.id]);
 
   // Pre-tick CITES (and force a full birth date) when the chosen species is on our list.
   useEffect(() => {
@@ -3673,18 +3699,21 @@ function SellScreen({ t, lang, go, user }) {
               </button>
             )}
           </div>
-          <p className="text-xs text-stone-500 mt-2">{t.uploadPhotos} · {t.photoHint}</p>
+          <p className="text-xs text-stone-500 mt-2 flex items-center gap-1.5">
+            {photos.length >= 1 && <CheckCircle size={12} className="text-emerald-400" />}
+            {t.uploadPhotos} · {t.photoHint}
+          </p>
           {photoError && <p className="text-xs text-red-400 mt-1">{t.photoNeed}</p>}
         </FormBlock>
 
-        <FormBlock label={t.listingTitle}>
+        <FormBlock label={t.listingTitle} required done={!!title.trim()}>
           <input className="form-input" value={title} onChange={e => setTitle(e.target.value)}
                  placeholder={lang === "it" ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
         </FormBlock>
 
         {/* Category → Subcategory → Species cascade */}
         <div className="grid grid-cols-1 gap-3">
-          <FormBlock label={t.category}>
+          <FormBlock label={t.category} required done={!!catId}>
             <select className="form-input" value={catId}
                     onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
               <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
@@ -3703,7 +3732,7 @@ function SellScreen({ t, lang, go, user }) {
           )}
 
           {subcatId && (
-            <FormBlock label={t.species}>
+            <FormBlock label={t.species} required done={!!speciesVal && speciesVal !== "__other"}>
               {speciesOptions.length > 0 ? (
                 <select className="form-input" value={speciesVal} onChange={e => setSpeciesVal(e.target.value)}>
                   <option value="">{t.pickSpecies}</option>
@@ -3750,9 +3779,10 @@ function SellScreen({ t, lang, go, user }) {
                      mode={saleMode} setMode={setSaleMode}
                      startPrice={startPrice} setStartPrice={setStartPrice}
                      reserve={reserve} setReserve={setReserve}
-                     durationDays={durationDays} setDurationDays={setDurationDays} />
+                     durationDays={durationDays} setDurationDays={setDurationDays}
+                     done={saleMode === "auction" ? Number(startPrice) > 0 : Number(price) > 0} />
 
-        <FormBlock label={t.born}>
+        <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
           {/* Precision chooser — some breeders only know the year or month. */}
           <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
             {[
@@ -3788,6 +3818,11 @@ function SellScreen({ t, lang, go, user }) {
           )}
         </FormBlock>
 
+        <FormBlock label={t.weight}>
+          <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)}
+                 placeholder={lang === "it" ? "es. 38g (facoltativo)" : "e.g. 38g (optional)"} />
+        </FormBlock>
+
         {/* CITES self-declaration. Pre-ticked from our best-effort list when the
             species is selected; the breeder can override and remains responsible. */}
         <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
@@ -3809,13 +3844,14 @@ function SellScreen({ t, lang, go, user }) {
         <div className="grid grid-cols-2 gap-3">
           <FormBlock label={t.countryLabel}>
             <select className="form-input" value={country}
-                    onChange={e => { setCountry(e.target.value); setRegion(regionsForCountry(e.target.value)[0] || ""); }}>
+                    onChange={e => { setCountry(e.target.value); setRegion(""); }}>
               {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
             </select>
           </FormBlock>
-          <FormBlock label={t.region}>
+          <FormBlock label={t.region} required done={!!region && !!region.trim()}>
             {regionsForCountry(country).length > 0 ? (
               <select className="form-input" value={region} onChange={e => setRegion(e.target.value)}>
+                <option value="">{t.chooseRegion}</option>
                 {regionsForCountry(country).map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             ) : (
@@ -3860,10 +3896,16 @@ function SellScreen({ t, lang, go, user }) {
   );
 }
 
-function FormBlock({ label, children }) {
+function FormBlock({ label, children, done, required }) {
   return (
     <div>
-      {label && <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">{label}</div>}
+      {label && (
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">{label}</span>
+          {required && !done && <span className="text-rose-400 text-[11px] leading-none">*</span>}
+          {done && <CheckCircle size={12} className="text-emerald-400" />}
+        </div>
+      )}
       {children}
     </div>
   );
@@ -3872,9 +3914,9 @@ function FormBlock({ label, children }) {
 /* SELL PRICING — toggle between a fixed price and an auction.
    Auction collects: start price (public) + reserve price (hidden floor) +
    duration. The reserve is never shown to buyers — only "reserve met / not". */
-function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setStartPrice, reserve, setReserve, durationDays, setDurationDays }) {
+function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setStartPrice, reserve, setReserve, durationDays, setDurationDays, done }) {
   return (
-    <FormBlock label={lang === "it" ? "Tipo di vendita" : "Sale type"}>
+    <FormBlock label={lang === "it" ? "Tipo di vendita" : "Sale type"} required done={done}>
       <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-3">
         <button type="button" onClick={() => setMode("fixed")}
                 className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${
