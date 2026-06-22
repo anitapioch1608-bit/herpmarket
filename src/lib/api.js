@@ -46,6 +46,7 @@ export function mapListing(row) {
 export function mapSeller(row) {
   if (!row) return null;
   return {
+    id: row.id,
     name: row.name,
     country: row.country || 'IT',
     region: row.region,
@@ -57,6 +58,11 @@ export function mapSeller(row) {
     reviewCount: row.review_count,
     specialties: row.specialties || [],
     bio: row.bio_it,
+    bioIt: row.bio_it || "",
+    bioEn: row.bio_en || "",
+    avatarUrl: row.avatar_url || null,
+    expoIds: [],   // sellers table has no expo links yet — safe default for the UI
+    reviews: [],   // reviews load separately later — safe default for the UI
   };
 }
 
@@ -172,6 +178,27 @@ export async function updateListing(id, fields) {
 export async function deleteListing(id) {
   const { error } = await supabase.from('listings').delete().eq('id', id);
   if (error) throw error;
+}
+
+// ── MY STORE (seller profile editing) ───────────────────────────────────────
+export async function fetchMySeller(userId) {
+  const { data, error } = await supabase.from('sellers')
+    .select('*').eq('owner_id', userId).maybeSingle();
+  if (error) throw error;
+  return data ? mapSeller(data) : null;
+}
+
+export async function updateMySeller(sellerId, fields) {
+  const patch = {};
+  if (fields.name != null) patch.name = fields.name;
+  if (fields.city != null) patch.city = fields.city;
+  if (fields.bio != null) { patch.bio_it = fields.bio; patch.bio_en = fields.bio; }
+  if (fields.specialties != null) patch.specialties = fields.specialties;
+  if (fields.avatarUrl != null) patch.avatar_url = fields.avatarUrl;
+  const { data, error } = await supabase.from('sellers')
+    .update(patch).eq('id', sellerId).select().single();
+  if (error) throw error;
+  return mapSeller(data);
 }
 
 // Find the seller row for this user, or create one on first listing.

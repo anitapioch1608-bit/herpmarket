@@ -107,6 +107,11 @@ const I18N = {
     mlIntro: "I tuoi annunci pubblicati. Modifica prezzo e descrizione o elimina un annuncio.",
     mlEmpty: "Non hai ancora pubblicato annunci.", mlEdit: "Modifica", mlSave: "Salva", mlDelete: "Elimina",
     mlConfirmDelete: "Eliminare definitivamente questo annuncio?", mlDeleted: "Annuncio eliminato.",
+    spTitle: "Il mio negozio", spIntro: "Personalizza la tua pagina allevatore: foto, descrizione e dettagli.",
+    spPhoto: "Foto del profilo", spUpload: "Carica foto", spCity: "Città", spBio: "Descrizione",
+    spSpecialties: "Specializzazioni (separate da virgola)", spSpecialtiesPh: "es. Correlophus ciliatus, Python regius",
+    spSave: "Salva modifiche", spSaved: "Modifiche salvate!", spNameTaken: "Questo nome è già in uso, scegline un altro.",
+    spView: "Vedi la tua pagina pubblica",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
@@ -301,6 +306,11 @@ const I18N = {
     mlIntro: "Your published listings. Edit price and description or delete a listing.",
     mlEmpty: "You haven't published any listings yet.", mlEdit: "Edit", mlSave: "Save", mlDelete: "Delete",
     mlConfirmDelete: "Permanently delete this listing?", mlDeleted: "Listing deleted.",
+    spTitle: "My store", spIntro: "Customise your breeder page: photo, description and details.",
+    spPhoto: "Profile photo", spUpload: "Upload photo", spCity: "City", spBio: "Description",
+    spSpecialties: "Specialties (comma-separated)", spSpecialtiesPh: "e.g. Correlophus ciliatus, Python regius",
+    spSave: "Save changes", spSaved: "Changes saved!", spNameTaken: "That name is already taken, choose another.",
+    spView: "View your public page",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
@@ -1374,6 +1384,7 @@ export default function HerpMarket() {
       case "thread":    return user ? <ChatThread chat={viewData} {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "mylistings": return user ? <MyListingsScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
+      case "editstore": return user ? <EditStoreScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
       case "legal":     return <Legal {...props} />;
       case "inventory": return <InventoryScreen {...props} />;
@@ -1392,7 +1403,7 @@ export default function HerpMarket() {
     }
   };
 
-  const profileViews = ["profile", "mylistings", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
+  const profileViews = ["profile", "mylistings", "editstore", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   // Private pre-launch gate: block the whole site until the access password is entered.
   if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
@@ -4207,6 +4218,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
         <ProfileGroup label={t.breedingMgmt}>
           <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub={String((favorites || []).length)} onClick={() => go("wishlist")} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t.myListings} onClick={() => go("mylistings")} />
+          <ProfileRow icon={<Camera size={18} />} label={t.spTitle} onClick={() => go("editstore")} />
           <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
           <ProfileRow icon={<Grid3x3 size={18} />} label={t.lineage} badge="PRO" onClick={() => go("lineage")} />
           <ProfileRow icon={<GitBranch size={18} />} label={t.breedingProjects} badge="SOON" onClick={() => go("breeding")} />
@@ -4447,6 +4459,154 @@ function MyListingsScreen({ t, lang, go, user }) {
             )}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EDIT STORE — the breeder edits their own public page:
+   profile photo, display name, city, bio, specialties.
+   Creates the seller row on first visit if it doesn't exist yet.
+   ═════════════════════════════════════════════════════════════════ */
+function EditStoreScreen({ t, lang, go, user }) {
+  const [seller, setSeller] = useState(null);   // mapped seller (with id)
+  const [loaded, setLoaded] = useState(false);
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("");
+  const [bio, setBio] = useState("");
+  const [specs, setSpecs] = useState("");
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    (async () => {
+      try {
+        const api = await import("./lib/api");
+        let s = await api.fetchMySeller(user.id);
+        if (!s) {
+          // First visit before any listing: create the store row now.
+          const created = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region: user.region, country: "IT" });
+          s = await api.fetchMySeller(user.id);
+          if (!s && created) s = { id: created.id, name: created.name };
+        }
+        if (on && s) {
+          setSeller(s);
+          setName(s.name || "");
+          setCity(s.city || "");
+          setBio(s.bioIt || "");
+          setSpecs((s.specialties || []).join(", "));
+          setAvatarPreview(s.avatarUrl || null);
+        }
+      } catch (e) { if (on) setErr(e?.message || "Error"); }
+      finally { if (on) setLoaded(true); }
+    })();
+    return () => { on = false; };
+  }, [user?.id]);
+
+  const pickAvatar = (fileList) => {
+    const f = Array.from(fileList || []).find(x => x.type.startsWith("image/"));
+    if (!f) return;
+    setAvatarFile(f);
+    setAvatarPreview(URL.createObjectURL(f));
+  };
+
+  const save = async () => {
+    if (!seller?.id || busy) return;
+    setBusy(true); setErr(""); setSaved(false);
+    try {
+      const api = await import("./lib/api");
+      let avatarUrl = null;
+      if (avatarFile) {
+        const urls = await api.uploadListingPhotos([avatarFile], user.id);
+        avatarUrl = urls[0] || null;
+      }
+      const fields = {
+        name: name.trim() || seller.name,
+        city: city.trim(),
+        bio: bio.trim(),
+        specialties: specs.split(",").map(s => s.trim()).filter(Boolean),
+      };
+      if (avatarUrl) fields.avatarUrl = avatarUrl;
+      const updated = await api.updateMySeller(seller.id, fields);
+      setSeller(updated);
+      setAvatarFile(null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 4000);
+    } catch (e) {
+      setErr(e?.code === "23505" ? t.spNameTaken : (e?.message || "Error"));
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.spTitle}</h1>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.spIntro}</p>
+        </div>
+      </header>
+
+      <div className="p-5 md:p-8 space-y-5">
+        {!loaded ? (
+          <p className="text-center text-stone-500 text-sm py-16 italic">…</p>
+        ) : (
+          <>
+            {/* Avatar */}
+            <FormBlock label={t.spPhoto}>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                     onChange={e => { pickAvatar(e.target.files); e.target.value = ""; }} />
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-500 to-amber-700 ring-1 ring-stone-700 flex items-center justify-center font-display text-3xl text-stone-50 font-bold shrink-0">
+                  {avatarPreview ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" /> : initialsOf(name || user?.name)}
+                </div>
+                <button type="button" onClick={() => fileRef.current?.click()}
+                        className="px-4 py-2.5 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors flex items-center gap-2">
+                  <UploadCloud size={14} />{t.spUpload}
+                </button>
+              </div>
+            </FormBlock>
+
+            <FormBlock label={t.nameLabel}>
+              <input className="form-input" value={name} onChange={e => setName(e.target.value)} />
+            </FormBlock>
+
+            <FormBlock label={t.spCity}>
+              <input className="form-input" value={city} onChange={e => setCity(e.target.value)} />
+            </FormBlock>
+
+            <FormBlock label={t.spBio}>
+              <textarea rows="5" className="form-input resize-none" value={bio} onChange={e => setBio(e.target.value)}
+                        placeholder={lang === "it" ? "Racconta il tuo allevamento: da quanto allevi, le tue linee, come lavori…" : "Tell buyers about your breeding: how long, your lines, how you work…"} />
+            </FormBlock>
+
+            <FormBlock label={t.spSpecialties}>
+              <input className="form-input" value={specs} onChange={e => setSpecs(e.target.value)} placeholder={t.spSpecialtiesPh} />
+            </FormBlock>
+
+            {err && <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5"><Info size={12} />{err}</p>}
+            {saved && <p className="text-xs text-emerald-400 font-bold flex items-center gap-1.5"><CheckCircle size={12} />{t.spSaved}</p>}
+
+            <button onClick={save} disabled={busy || !seller?.id}
+                    className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors">
+              {busy ? t.processing : t.spSave}
+            </button>
+
+            {seller?.name && (
+              <button onClick={() => go("seller", seller.name)}
+                      className="w-full py-2.5 rounded-lg text-xs font-bold text-stone-400 hover:text-amber-400 transition-colors">
+                {t.spView} →
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -4847,9 +5007,20 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
    ═════════════════════════════════════════════════════════════════ */
 function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, listingsData }) {
   const [tab, setTab] = useState("animals");
+  // Live seller row from Supabase — used when the name isn't in the demo SELLERS
+  // table (i.e. every real breeder account). Demo entries keep their rich data.
+  const [liveSeller, setLiveSeller] = useState(null);
+  useEffect(() => {
+    if (!sellerName || SELLERS[sellerName]) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchSeller(sellerName))
+      .then(s => { if (on && s) setLiveSeller(s); })
+      .catch(() => {});
+    return () => { on = false; };
+  }, [sellerName]);
   if (!sellerName) return null;
 
-  const seller = SELLERS[sellerName];
+  const seller = SELLERS[sellerName] || liveSeller;
   const sellerListings = (listingsData || LISTINGS).filter(l => l.seller === sellerName);
 
   // Fallback minimal data if seller missing from SELLERS table
@@ -4882,8 +5053,8 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
       {/* Identity block */}
       <div className="px-5 md:px-8 -mt-12 md:-mt-14 relative">
         <div className="flex items-end gap-4">
-          <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-800 ring-4 ring-stone-950 flex items-center justify-center font-display text-4xl text-stone-50 font-bold shadow-2xl">
-            {data.name[0]}
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-500 to-amber-800 ring-4 ring-stone-950 flex items-center justify-center font-display text-4xl text-stone-50 font-bold shadow-2xl">
+            {data.avatarUrl ? <img src={data.avatarUrl} alt={data.name} className="w-full h-full object-cover" /> : data.name[0]}
           </div>
           <div className="flex-1 pb-1 min-w-0">
             <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight flex items-center gap-2 leading-tight">
