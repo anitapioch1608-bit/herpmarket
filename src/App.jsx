@@ -46,6 +46,7 @@ const I18N = {
     advFilters: "Filtri avanzati", priceRange: "Fascia di prezzo", anyPrice: "Qualsiasi", min: "Min", max: "Max",
     traitsLabel: "Geni e tratti", traitClassLabel: "Tipo genetico", subCategoryLabel: "Specie",
     sellerLabel: "Allevatore", anySeller: "Tutti gli allevatori", anySpecies: "Tutte le specie",
+    anyRegion: "Tutte le regioni", geneticsBreeding: "Genetica e progetti di riproduzione",
     expoOnlyLabel: "Solo con ritiro in fiera", verifiedOnlyLabel: "Solo allevatori verificati",
     clearAll: "Cancella tutto", classRecessive: "Recessivo", classDominant: "Dominante", classIncDom: "Co-dom", classLine: "Linea/Poligenico", classLocality: "Località", classHet: "Het (portatore)",
     selectCategoryFirst: "Seleziona prima una categoria per vedere i tratti disponibili",
@@ -101,6 +102,7 @@ const I18N = {
     listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 3)", publishListing: "Pubblica annuncio",
     photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
     needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…",
+    reserveTooLow: "Il prezzo di riserva non può essere inferiore al prezzo di partenza",
     citesCheckLabel: "Specie CITES (Allegato A/B/C/D Reg. CE 338/97)",
     citesCheckHint: "Sei responsabile dello stato CITES del tuo esemplare. Per le specie CITES è richiesta la data di nascita esatta.",
     needFullBirth: "Per le specie CITES inserisci la data di nascita esatta (giorno, mese e anno)",
@@ -245,6 +247,7 @@ const I18N = {
     advFilters: "Advanced filters", priceRange: "Price range", anyPrice: "Any", min: "Min", max: "Max",
     traitsLabel: "Genes & traits", traitClassLabel: "Genetic type", subCategoryLabel: "Species",
     sellerLabel: "Breeder", anySeller: "All breeders", anySpecies: "All species",
+    anyRegion: "All regions", geneticsBreeding: "Genetics & breeding projects",
     expoOnlyLabel: "Expo pickup only", verifiedOnlyLabel: "Verified breeders only",
     clearAll: "Clear all", classRecessive: "Recessive", classDominant: "Dominant", classIncDom: "Co-dom", classLine: "Line/Polygenic", classLocality: "Locality", classHet: "Het (carrier)",
     selectCategoryFirst: "Select a category first to see available traits",
@@ -300,6 +303,7 @@ const I18N = {
     listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 3)", publishListing: "Publish listing",
     photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
     needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…",
+    reserveTooLow: "The reserve price can't be lower than the starting price",
     citesCheckLabel: "CITES species (Annex A/B/C/D, EU Reg. 338/97)",
     citesCheckHint: "You are responsible for your animal's CITES status. CITES species require an exact date of birth.",
     needFullBirth: "CITES species require an exact date of birth (day, month and year)",
@@ -1388,7 +1392,6 @@ export default function HerpMarket() {
       case "wishlist":  return <Wishlist {...props} />;
       case "legal":     return <Legal {...props} />;
       case "inventory": return <InventoryScreen {...props} />;
-      case "lineage":   return <LineageScreen {...props} />;
       case "breeding":  return <BreedingProjectsScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
       case "reviews":   return <ReviewsScreen {...props} />;
@@ -1403,7 +1406,7 @@ export default function HerpMarket() {
     }
   };
 
-  const profileViews = ["profile", "mylistings", "editstore", "wishlist", "legal", "inventory", "lineage", "transport", "reviews", "documents", "about", "terms", "settings"];
+  const profileViews = ["profile", "mylistings", "editstore", "wishlist", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   // Private pre-launch gate: block the whole site until the access password is entered.
   if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
@@ -2321,12 +2324,12 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               </div>
             </FilterGroup>
 
-            {/* Region */}
+            {/* Region — adapts to the selected country; free of country shows IT regions */}
             <FilterGroup label={t.region}>
               <select value={filter.region || ""} onChange={e => setFilter({ ...filter, region: e.target.value || null })}
                       className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
-                <option value="">{REGIONS[0]}</option>
-                {REGIONS.slice(1).map(r => <option key={r} value={r}>{r}</option>)}
+                <option value="">{t.anyRegion}</option>
+                {(regionsForCountry(filter.country || "IT")).map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </FilterGroup>
 
@@ -3494,6 +3497,10 @@ function SellScreen({ t, lang, go, user }) {
   const [isCites, setIsCites] = useState(false);
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
+  const [saleMode, setSaleMode] = useState("fixed");   // "fixed" | "auction"
+  const [startPrice, setStartPrice] = useState("");
+  const [reserve, setReserve] = useState("");
+  const [durationDays, setDurationDays] = useState(5);
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
   // Photos (min 1, max 3). Files are uploaded to Supabase Storage on publish.
@@ -3543,7 +3550,10 @@ function SellScreen({ t, lang, go, user }) {
     setSaveErr("");
     if (photos.length < 1) { setPhotoError(true); return; }
     if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
-    if (!price || Number(price) <= 0) { setSaveErr(t.needPrice); return; }
+    const isAuction = saleMode === "auction";
+    const basePrice = isAuction ? Number(startPrice) : Number(price);
+    if (!basePrice || basePrice <= 0) { setSaveErr(t.needPrice); return; }
+    if (isAuction && reserve && Number(reserve) < basePrice) { setSaveErr(t.reserveTooLow); return; }
     if (!user?.id) { setSaveErr(t.needLoginPub); return; }
     if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
@@ -3556,9 +3566,21 @@ function SellScreen({ t, lang, go, user }) {
         return { name: n, cls: e?.cls || "line" };
       });
       const common = SPECIES_LABELS[speciesVal]?.it || title || speciesVal;
+      let auction = null;
+      if (isAuction) {
+        const days = Number(durationDays) || 5;
+        auction = {
+          startPrice: basePrice,
+          reservePrice: reserve ? Number(reserve) : null,
+          currentBid: basePrice,
+          bidCount: 0,
+          endsAt: new Date(Date.now() + days * 86400000).toISOString(),
+          highBidder: null,
+        };
+      }
       await api.createListing({
         species: speciesVal, common, category: catId,
-        traits, price: Number(price), deposit: Math.round(Number(price) * 0.1),
+        traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
         sex, ageMonths: monthsSince(born), weight: null,
         birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
         citesListed: isCites,
@@ -3566,7 +3588,7 @@ function SellScreen({ t, lang, go, user }) {
         sire: null, dam: null, desc,
         image: urls[0] || null,
         shipping: false, euShipping: false, localPickup: true,
-        expoIds: [], auction: null,
+        expoIds: [], auction,
       }, seller.id);
       setSuccess(true);
     } catch (err) {
@@ -3724,7 +3746,11 @@ function SellScreen({ t, lang, go, user }) {
         </FormBlock>
 
         {/* Sale type: fixed price or auction */}
-        <SellPricing t={t} lang={lang} price={price} setPrice={setPrice} />
+        <SellPricing t={t} lang={lang} price={price} setPrice={setPrice}
+                     mode={saleMode} setMode={setSaleMode}
+                     startPrice={startPrice} setStartPrice={setStartPrice}
+                     reserve={reserve} setReserve={setReserve}
+                     durationDays={durationDays} setDurationDays={setDurationDays} />
 
         <FormBlock label={t.born}>
           {/* Precision chooser — some breeders only know the year or month. */}
@@ -3846,9 +3872,7 @@ function FormBlock({ label, children }) {
 /* SELL PRICING — toggle between a fixed price and an auction.
    Auction collects: start price (public) + reserve price (hidden floor) +
    duration. The reserve is never shown to buyers — only "reserve met / not". */
-function SellPricing({ t, lang, price, setPrice }) {
-  const [mode, setMode] = useState("fixed"); // "fixed" | "auction"
-
+function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setStartPrice, reserve, setReserve, durationDays, setDurationDays }) {
   return (
     <FormBlock label={lang === "it" ? "Tipo di vendita" : "Sale type"}>
       <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-3">
@@ -3878,7 +3902,7 @@ function SellPricing({ t, lang, price, setPrice }) {
               <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.startPrice}</div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-                <input type="number" className="form-input pl-7" placeholder="100" />
+                <input type="number" className="form-input pl-7" placeholder="100" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
               </div>
             </div>
             <div>
@@ -3887,17 +3911,17 @@ function SellPricing({ t, lang, price, setPrice }) {
               </div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-                <input type="number" className="form-input pl-7" placeholder="200" />
+                <input type="number" className="form-input pl-7" placeholder="200" value={reserve} onChange={e => setReserve(e.target.value)} />
               </div>
             </div>
           </div>
           <div>
             <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{lang === "it" ? "Durata" : "Duration"}</div>
-            <select className="form-input">
-              <option>{lang === "it" ? "3 giorni" : "3 days"}</option>
-              <option>{lang === "it" ? "5 giorni" : "5 days"}</option>
-              <option>{lang === "it" ? "7 giorni" : "7 days"}</option>
-              <option>{lang === "it" ? "10 giorni" : "10 days"}</option>
+            <select className="form-input" value={durationDays} onChange={e => setDurationDays(Number(e.target.value))}>
+              <option value={3}>{lang === "it" ? "3 giorni" : "3 days"}</option>
+              <option value={5}>{lang === "it" ? "5 giorni" : "5 days"}</option>
+              <option value={7}>{lang === "it" ? "7 giorni" : "7 days"}</option>
+              <option value={10}>{lang === "it" ? "10 giorni" : "10 days"}</option>
             </select>
           </div>
           <div className="bg-amber-500/5 ring-1 ring-amber-500/20 rounded-lg p-3 flex gap-2 items-start">
@@ -4220,8 +4244,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
           <ProfileRow icon={<PackageCheck size={18} />} label={t.myListings} onClick={() => go("mylistings")} />
           <ProfileRow icon={<Camera size={18} />} label={t.spTitle} onClick={() => go("editstore")} />
           <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
-          <ProfileRow icon={<Grid3x3 size={18} />} label={t.lineage} badge="PRO" onClick={() => go("lineage")} />
-          <ProfileRow icon={<GitBranch size={18} />} label={t.breedingProjects} badge="SOON" onClick={() => go("breeding")} />
+          <ProfileRow icon={<GitBranch size={18} />} label={t.geneticsBreeding} badge="SOON" onClick={() => go("breeding")} />
           <ProfileRow icon={<Star size={18} />} label={t.reviews} sub="4.9 · 47" onClick={() => go("reviews")} />
         </ProfileGroup>
 
@@ -5590,86 +5613,6 @@ function InventoryScreen({ t, go, lang }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   LINEAGE — genetics & pedigree. Shows breeding pairings with the
-   genetic outcome, plus a simple parent→offspring tree. (PRO feature.)
-   ═════════════════════════════════════════════════════════════════ */
-const PAIRINGS_DEMO = [
-  {
-    id: "p1", sire: "Lilly White het Axanthic", dam: "Red Harlequin",
-    species: "Correlophus ciliatus", expected: "Jul 2026", status: "expected", eggs: 4,
-    outcomes: ["Lilly White", "Harlequin", "het Axanthic"],
-  },
-  {
-    id: "p2", sire: "Banana Pastel", dam: "Clown",
-    species: "Python regius", expected: "May 2026", status: "hatched", eggs: 6,
-    outcomes: ["Banana Clown", "Pastel Clown", "Banana Pastel het Clown"],
-  },
-];
-
-function LineageScreen({ t, go, lang }) {
-  return (
-    <div className="max-w-3xl mx-auto w-full pb-24">
-      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
-        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.lineage}</h1>
-            <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 rounded">PRO</span>
-          </div>
-          <p className="text-[11px] text-stone-500 mt-0.5">{t.lineageIntro}</p>
-        </div>
-      </header>
-
-      <div className="px-5 md:px-8 pt-5">
-        <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.lineageProjects}</h2>
-        <div className="space-y-4">
-          {PAIRINGS_DEMO.map(p => (
-            <div key={p.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-2xl p-4">
-              {/* Pairing header */}
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-display italic text-amber-500 text-sm">{p.species}</span>
-                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded ring-1 ${
-                  p.status === "hatched" ? "text-emerald-300 bg-emerald-500/10 ring-emerald-500/20" : "text-sky-300 bg-sky-500/10 ring-sky-500/20"
-                }`}>
-                  {p.status === "hatched" ? `${t.lineageHatched} · ${p.eggs}` : `${t.lineageExpected} ${p.expected}`}
-                </span>
-              </div>
-
-              {/* Parent → offspring tree */}
-              <div className="flex items-stretch gap-2">
-                <div className="flex-1 space-y-2">
-                  <div className="bg-stone-800/60 rounded-lg p-2.5">
-                    <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-0.5">♂ {t.lineageSire}</div>
-                    <div className="text-xs font-bold text-stone-100 leading-tight">{p.sire}</div>
-                  </div>
-                  <div className="bg-stone-800/60 rounded-lg p-2.5">
-                    <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-0.5">♀ {t.lineageDam}</div>
-                    <div className="text-xs font-bold text-stone-100 leading-tight">{p.dam}</div>
-                  </div>
-                </div>
-                {/* Connector */}
-                <div className="flex items-center text-stone-600">
-                  <ChevronRight size={18} />
-                </div>
-                {/* Outcomes */}
-                <div className="flex-1 bg-amber-500/5 ring-1 ring-amber-500/15 rounded-lg p-2.5">
-                  <div className="text-[9px] text-amber-400/70 uppercase tracking-widest font-bold mb-1.5">{t.lineageOffspring}</div>
-                  <div className="flex flex-wrap gap-1">
-                    {p.outcomes.map((o, i) => (
-                      <span key={i} className="text-[10px] bg-stone-800 text-stone-200 rounded px-1.5 py-0.5">{o}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════
    BREEDING PROJECTS — coming-soon page with a real preview of the
    planned visual planner (replaces the Excel sheets breeders use).
    ═════════════════════════════════════════════════════════════════ */
@@ -5682,7 +5625,7 @@ function BreedingProjectsScreen({ t, go, lang }) {
         <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.breedingProjects}</h1>
+            <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.geneticsBreeding}</h1>
             <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 rounded">{t.breedingSoon}</span>
           </div>
           <p className="text-[11px] text-stone-500 mt-0.5">{t.breedingIntro}</p>
