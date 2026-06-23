@@ -36,6 +36,7 @@ export function mapListing(row) {
     createdAt: row.created_at || null,
     updatedAt: row.updated_at || null,
     seller: row.sellers?.name || row.seller_name,
+    sellerId: row.seller_id || row.sellers?.id || null,
     verified: row.sellers?.verified ?? false,
     rating: row.sellers?.rating ?? 0,
     reviews: row.sellers?.review_count ?? 0,
@@ -201,6 +202,81 @@ export async function updateMySeller(sellerId, fields) {
   return mapSeller(data);
 }
 
+// ── CHAT (real threads + messages) ──────────────────────────────────────────
+// A thread links one listing + one buyer + one seller. RLS guarantees only
+// those two parties can read or write it.
+
+// Open (or reuse) the thread between the logged-in buyer and a listing's seller.
+export async function getOrCreateThread(listingId, sellerId, buyerId) {
+  const { data: existing } = await supabase.from('threads')
+    .select('*').eq('listing_id', listingId).eq('buyer_id', buyerId).maybeSingle();
+  if (existing) return existing;
+  const { data, error } = await supabase.from('threads')
+    .insert({ listing_id: listingId, seller_id: sellerId, buyer_id: buyerId })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+// List all threads the current user is part of (as buyer or as seller-owner),
+// newest activity first, with the listing + last message for the preview row.
+export async function fetchMyThreads(userId) {
+  // seller rows owned by me (to catch threads where I'm the seller)
+  const { data: mySellers } = await supabase.from('sellers').select('id').eq('owner_id', userId);
+  const sellerIds = (mySellers || []).map(s => s.id);
+  let q = supabase.from('threads')
+    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id)')
+    .order('created_at', { ascending: false });
+  // buyer_id = me OR seller_id in my seller ids
+  const orParts = [`buyer_id.eq.${userId}`];
+  if (sellerIds.length) orParts.push(`seller_id.in.(${sellerIds.join(',')})`);
+  q = q.or(orParts.join(','));
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data || []).map(thr => {
+    const msgs = (thr.messages || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const last = msgs[msgs.length - 1];
+    return {
+      id: thr.id,
+      listingId: thr.listing_id,
+      sellerId: thr.seller_id,
+      buyerId: thr.buyer_id,
+      iAmSeller: sellerIds.includes(thr.seller_id),
+      listing: thr.listings ? mapListing(thr.listings) : null,
+      lastMsg: last ? last.body : "",
+      lastAt: last ? last.created_at : thr.created_at,
+      unread: msgs.filter(m => m.sender_id !== userId).length, // refined later with read_at
+    };
+  }).sort((a, b) => new Date(b.lastAt) - new Date(a.lastAt));
+}
+
+export async function fetchMessages(threadId) {
+  const { data, error } = await supabase.from('messages')
+    .select('*').eq('thread_id', threadId).order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function sendMessage(threadId, senderId, body) {
+  const { data, error } = await supabase.from('messages')
+    .insert({ thread_id: threadId, sender_id: senderId, body })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+// Live updates: call onNew for every new message in this thread. Returns an
+// unsubscribe function. (Requires Realtime enabled on the messages table.)
+export function subscribeMessages(threadId, onNew) {
+  const channel = supabase
+    .channel(`messages:${threadId}`)
+    .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `thread_id=eq.${threadId}` },
+        payload => onNew(payload.new))
+    .subscribe();
+  return () => supabase.removeChannel(channel);
+}
+
 // Find the seller row for this user, or create one on first listing.
 export async function getOrCreateSeller(user) {
   const { data: existing } = await supabase.from('sellers')
@@ -265,36 +341,6 @@ export async function updateTransactionState(txId, patch) {
     .update(patch).eq('id', txId).select().single();
   if (error) throw error;
   return data;
-}
-
-// ── CHAT ────────────────────────────────────────────────────────────────────
-export async function getOrCreateThread(listingId, buyerId, sellerId) {
-  const { data: existing } = await supabase.from('threads')
-    .select('*').eq('listing_id', listingId).eq('buyer_id', buyerId).maybeSingle();
-  if (existing) return existing;
-  const { data, error } = await supabase.from('threads')
-    .insert({ listing_id: listingId, buyer_id: buyerId, seller_id: sellerId }).select().single();
-  if (error) throw error;
-  return data;
-}
-export async function fetchMessages(threadId) {
-  const { data, error } = await supabase.from('messages')
-    .select('*').eq('thread_id', threadId).order('created_at');
-  if (error) throw error;
-  return data || [];
-}
-export async function sendMessage(threadId, senderId, body) {
-  const { data, error } = await supabase.from('messages')
-    .insert({ thread_id: threadId, sender_id: senderId, body }).select().single();
-  if (error) throw error;
-  return data;
-}
-export function subscribeToMessages(threadId, onMessage) {
-  return supabase.channel(`thread:${threadId}`)
-    .on('postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'messages', filter: `thread_id=eq.${threadId}` },
-      payload => onMessage(payload.new))
-    .subscribe();
 }
 
 // ── BIDS ────────────────────────────────────────────────────────────────────

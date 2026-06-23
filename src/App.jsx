@@ -117,7 +117,11 @@ const I18N = {
     spSave: "Salva modifiche", spSaved: "Modifiche salvate!", spNameTaken: "Questo nome è già in uso, scegline un altro.",
     spView: "Vedi la tua pagina pubblica",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
-    typeMessage: "Scrivi un messaggio…", onlineNow: "Online", translateIT: "Traduci in italiano",
+    typeMessage: "Scrivi un messaggio…",
+    chatEmpty: "Nessun messaggio ancora. Scrivi per primo!",
+    chatNoThreads: "Nessuna conversazione. Contatta un allevatore da un annuncio.",
+    chatNoThread: "Impossibile aprire la conversazione per questo annuncio.",
+    chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
     invIntro: "Gestisci la tua collezione: esemplari riproduttori, in vendita e venduti.",
@@ -320,7 +324,11 @@ const I18N = {
     spSave: "Save changes", spSaved: "Changes saved!", spNameTaken: "That name is already taken, choose another.",
     spView: "View your public page",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
-    typeMessage: "Type a message…", onlineNow: "Online", translateIT: "Translate to Italian",
+    typeMessage: "Type a message…",
+    chatEmpty: "No messages yet. Be the first to write!",
+    chatNoThreads: "No conversations yet. Contact a breeder from a listing.",
+    chatNoThread: "Couldn't open the conversation for this listing.",
+    chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
     invIntro: "Manage your collection: breeders, animals for sale, and sold animals.",
@@ -1178,6 +1186,19 @@ const formatAge = (months, t) => {
   return `${years} ${years === 1 ? t.year : t.years}`;
 };
 const formatPrice = (n) => `€${n.toLocaleString("it-IT")}`;
+// Compact relative time for chat list ("now", "5m", "3h", "2d", or a date).
+const relTime = (iso, t) => {
+  if (!iso) return "";
+  const d = new Date(iso), now = new Date();
+  const mins = Math.floor((now - d) / 60000);
+  if (mins < 1) return t?.tNow || "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d`;
+  return d.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit" });
+};
 const formatDate = (iso, lang) => {
   if (!iso) return null;
   const d = new Date(iso);
@@ -1388,8 +1409,8 @@ export default function HerpMarket() {
       case "expo":      return <ExpoDetail expo={viewData} {...props} />;
       case "seller":    return <SellerProfile sellerName={viewData} {...props} />;
       case "sell":      return user ? <SellScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
-      case "chat":      return user ? <ChatList {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
-      case "thread":    return user ? <ChatThread chat={viewData} {...props} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "chat":      return user ? <ChatList {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "thread":    return user ? <ChatThread chat={viewData} {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "mylistings": return user ? <MyListingsScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "editstore": return user ? <EditStoreScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
@@ -2710,7 +2731,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   // Handover stage uses the two booleans below; when both are true → completed.
 
   const handleMessage = () => {
-    requireAuth(t.loginToMessage, () => go("thread", { id: 99, listing: a, lastMsg: "", time: "" }));
+    requireAuth(t.loginToMessage, () => go("thread", { listing: a }));
   };
 
   return (
@@ -3631,6 +3652,9 @@ function SellScreen({ t, lang, go, user }) {
     return () => { on = false; };
   }, [user?.id]);
 
+  // Reset chosen traits when the category changes (trait list is category-specific).
+  useEffect(() => { setSelectedTraits([]); }, [catId]);
+
   // Pre-tick CITES (and force a full birth date) when the chosen species is on our list.
   useEffect(() => {
     const c = CITES_SPECIES.has(speciesVal);
@@ -3640,12 +3664,52 @@ function SellScreen({ t, lang, go, user }) {
 
   const subcats = catId ? subcatsFor(catId) : [];
   const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
-  const exampleTraits = [
-    { name: "Pastel", cls: "incDom" }, { name: "Banana", cls: "incDom" },
-    { name: "Albino", cls: "recessive" }, { name: "Pied", cls: "recessive" },
-    { name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" },
-    { name: "Wild Type", cls: "wild" }
+  // Traits/morphs vary hugely by animal, so offer a relevant set per category.
+  // "line" = line-bred/colour trait, "recessive"/"incDom"/"dom" = inheritance,
+  // "wild" = wild type. Best-effort hobby lists; breeders can also free-type.
+  const TRAITS_BY_CATEGORY = {
+    geckos: [
+      { name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" },
+      { name: "Pinstripe", cls: "line" }, { name: "Dalmatian", cls: "line" },
+      { name: "Flame", cls: "line" }, { name: "Axanthic", cls: "recessive" },
+      { name: "Cappuccino", cls: "incDom" }, { name: "Wild Type", cls: "wild" },
+    ],
+    snakes: [
+      { name: "Pastel", cls: "incDom" }, { name: "Banana", cls: "incDom" },
+      { name: "Albino", cls: "recessive" }, { name: "Pied", cls: "recessive" },
+      { name: "Clown", cls: "recessive" }, { name: "Spider", cls: "dominant" },
+      { name: "Mojave", cls: "incDom" }, { name: "Wild Type", cls: "wild" },
+    ],
+    lizards: [
+      { name: "Red", cls: "line" }, { name: "Citrus", cls: "line" },
+      { name: "Hypo", cls: "recessive" }, { name: "Translucent", cls: "recessive" },
+      { name: "Leatherback", cls: "incDom" }, { name: "Silkback", cls: "incDom" },
+      { name: "Witblits", cls: "recessive" }, { name: "Zero", cls: "recessive" },
+      { name: "Wild Type", cls: "wild" },
+    ],
+    chameleons: [
+      { name: "Nosy Be", cls: "line" }, { name: "Ambilobe", cls: "line" },
+      { name: "Ambanja", cls: "line" }, { name: "Sambava", cls: "line" },
+      { name: "Wild Type", cls: "wild" },
+    ],
+    tortoises: [
+      { name: "High Yellow", cls: "line" }, { name: "Ivory", cls: "recessive" },
+      { name: "Albino", cls: "recessive" }, { name: "Wild Type", cls: "wild" },
+    ],
+    amphibians: [
+      { name: "Albino", cls: "recessive" }, { name: "Leucistic", cls: "recessive" },
+      { name: "Melanoid", cls: "recessive" }, { name: "Copper", cls: "recessive" },
+      { name: "Wild Type", cls: "wild" },
+    ],
+    inverts: [
+      { name: "Normal", cls: "wild" }, { name: "Line-bred colour", cls: "line" },
+    ],
+  };
+  const GENERIC_TRAITS = [
+    { name: "Albino", cls: "recessive" }, { name: "Hypo", cls: "recessive" },
+    { name: "Line-bred", cls: "line" }, { name: "Wild Type", cls: "wild" },
   ];
+  const exampleTraits = TRAITS_BY_CATEGORY[catId] || GENERIC_TRAITS;
 
   if (success) {
     return (
@@ -4166,31 +4230,52 @@ function DeliveryCard({ icon, title, subtitle, checked, onChange }) {
 /* ═══════════════════════════════════════════════════════════════════
    CHAT
    ═════════════════════════════════════════════════════════════════ */
-function ChatList({ t, go }) {
+function ChatList({ t, go, user }) {
+  const [threads, setThreads] = useState(null);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchMyThreads(user.id))
+      .then(rows => { if (on) setThreads(rows); })
+      .catch(e => { if (on) { setErr(e?.message || "Error"); setThreads([]); } });
+    return () => { on = false; };
+  }, [user?.id]);
+
   return (
     <div className="max-w-3xl mx-auto w-full">
       <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800">
         <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight">{t.chat}</h1>
       </header>
       <div className="p-3 md:p-5 space-y-1">
-        {CHATS.map(chat => (
-          <button key={chat.id} onClick={() => go("thread", chat)}
+        {err && <p className="text-xs text-rose-400 px-3 py-2">{err}</p>}
+        {threads === null ? (
+          <p className="text-center text-stone-600 text-sm py-16 italic">…</p>
+        ) : threads.length === 0 ? (
+          <div className="text-center py-16 text-stone-500">
+            <MessageCircle size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-display italic">{t.chatNoThreads}</p>
+          </div>
+        ) : threads.map(thr => (
+          <button key={thr.id} onClick={() => go("thread", thr)}
                   className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-stone-900/60 transition-colors text-left">
             <div className="relative shrink-0">
-              <img src={chat.listing.image} alt=""
+              <img src={thr.listing?.image} alt=""
                    onError={(e) => { e.target.onerror = null; e.target.src = fallback(t.realPhoto); }}
                    className="w-12 h-12 rounded-lg object-cover" />
-              {chat.unread > 0 && (
-                <div className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">{chat.unread}</div>
+              {thr.unread > 0 && (
+                <div className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">{thr.unread}</div>
               )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-baseline">
-                <div className="font-bold text-sm text-stone-100 truncate">{chat.listing.seller}</div>
-                <div className="text-[10px] text-stone-500 font-medium shrink-0 ml-2">{chat.time}</div>
+                <div className="font-bold text-sm text-stone-100 truncate">
+                  {thr.iAmSeller ? t.chatBuyer : (thr.listing?.seller || t.chatSeller)}
+                </div>
+                <div className="text-[10px] text-stone-500 font-medium shrink-0 ml-2">{relTime(thr.lastAt, t)}</div>
               </div>
-              <div className="text-xs text-stone-400 truncate">{chat.lastMsg}</div>
-              <div className="text-[10px] text-amber-400 font-bold mt-0.5 truncate italic font-display">{chat.listing.common} · {chat.listing.traits[0]?.name}</div>
+              <div className="text-xs text-stone-400 truncate">{thr.lastMsg || t.chatEmpty}</div>
+              <div className="text-[10px] text-amber-400 font-bold mt-0.5 truncate italic font-display">{thr.listing?.common}</div>
             </div>
           </button>
         ))}
@@ -4199,18 +4284,70 @@ function ChatList({ t, go }) {
   );
 }
 
-function ChatThread({ chat, t, lang, go }) {
+function ChatThread({ chat, t, lang, go, user }) {
   const target = chat?.listing || LISTINGS[0];
-  const [messages, setMessages] = useState([
-    { from: "me", text: "Salve, l'esemplare è ancora disponibile per la fiera di Verona?" },
-    { from: "them", text: "Ciao! Sì, lo porto a Verona. Se vuoi bloccarlo prima che lo venda ad altri, puoi inviare una richiesta tramite l'app." },
-  ]);
+  const [threadId, setThreadId] = useState(chat?.id && chat.id !== 99 ? chat.id : null);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const scrollRef = useRef(null);
 
-  const send = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { from: "me", text: input }]);
+  // Resolve (or create) the real thread for this listing, then load its messages.
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    (async () => {
+      try {
+        const api = await import("./lib/api");
+        let tid = threadId;
+        if (!tid) {
+          // Need the seller_id of this listing to open a thread.
+          const sellerId = target.sellerId || target.seller_id;
+          if (!sellerId || !target.id) { if (on) { setErr(t.chatNoThread); setLoading(false); } return; }
+          const thread = await api.getOrCreateThread(target.id, sellerId, user.id);
+          tid = thread.id;
+          if (on) setThreadId(tid);
+        }
+        const msgs = await api.fetchMessages(tid);
+        if (on) { setMessages(msgs); setLoading(false); }
+      } catch (e) { if (on) { setErr(e?.message || "Error"); setLoading(false); } }
+    })();
+    return () => { on = false; };
+  }, [user?.id]);
+
+  // Live updates: append new messages as they arrive.
+  useEffect(() => {
+    if (!threadId) return;
+    let unsub = () => {};
+    (async () => {
+      const api = await import("./lib/api");
+      unsub = api.subscribeMessages(threadId, (m) => {
+        setMessages(prev => prev.some(x => x.id === m.id) ? prev : [...prev, m]);
+      });
+    })();
+    return () => unsub();
+  }, [threadId]);
+
+  // Auto-scroll to newest.
+  useEffect(() => { scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight); }, [messages]);
+
+  const send = async () => {
+    const body = input.trim();
+    if (!body || !threadId || !user?.id) return;
     setInput("");
+    // Optimistic add; real row arrives via subscription (dedup by id).
+    const optimistic = { id: `tmp-${Date.now()}`, sender_id: user.id, body, created_at: new Date().toISOString() };
+    setMessages(prev => [...prev, optimistic]);
+    try {
+      const api = await import("./lib/api");
+      const saved = await api.sendMessage(threadId, user.id, body);
+      setMessages(prev => prev.map(m => m.id === optimistic.id ? saved : m));
+    } catch (e) {
+      setErr(e?.message || "Error");
+      setMessages(prev => prev.filter(m => m.id !== optimistic.id)); // roll back
+      setInput(body);
+    }
   };
 
   return (
@@ -4223,9 +4360,7 @@ function ChatThread({ chat, t, lang, go }) {
              className="w-10 h-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
           <div className="font-bold text-sm text-stone-100 truncate">{target.seller}</div>
-          <div className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />{t.onlineNow}
-          </div>
+          <div className="text-[10px] text-stone-500 font-medium truncate font-display italic">{target.common}</div>
         </div>
         <button onClick={() => go("detail", target)}
                 className="text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300">
@@ -4234,24 +4369,33 @@ function ChatThread({ chat, t, lang, go }) {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-3">
-        {messages.map((m, i) => (
-          <div key={i} className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
-            m.from === "me" ? "ml-auto bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"
-          }`}>
-            {m.text}
-          </div>
-        ))}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-3">
+        {loading ? (
+          <p className="text-center text-stone-600 text-sm py-10 italic">…</p>
+        ) : err ? (
+          <p className="text-center text-rose-400 text-xs py-10">{err}</p>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-stone-600 text-xs py-10 italic">{t.chatEmpty}</p>
+        ) : messages.map((m) => {
+          const mine = m.sender_id === user?.id;
+          return (
+            <div key={m.id} className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
+              mine ? "ml-auto bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"
+            }`}>
+              {m.body}
+            </div>
+          );
+        })}
       </div>
 
       {/* Input */}
       <div className="px-3 py-3 border-t border-stone-800 flex gap-2 bg-stone-950">
         <input value={input} onChange={e => setInput(e.target.value)}
                onKeyDown={e => e.key === "Enter" && send()}
-               placeholder={t.typeMessage}
-               className="flex-1 bg-stone-900 ring-1 ring-stone-800 rounded-full px-4 py-2.5 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
-        <button onClick={send}
-                className="bg-amber-500 hover:bg-amber-400 text-stone-950 p-2.5 rounded-full transition-colors">
+               placeholder={t.typeMessage} disabled={!threadId}
+               className="flex-1 bg-stone-900 ring-1 ring-stone-800 rounded-full px-4 py-2.5 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all disabled:opacity-50" />
+        <button onClick={send} disabled={!threadId}
+                className="bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 text-stone-950 p-2.5 rounded-full transition-colors">
           <Send size={18} />
         </button>
       </div>
