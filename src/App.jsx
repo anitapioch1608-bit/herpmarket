@@ -1759,20 +1759,22 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             return (
               <button key={expo.id}
                       onClick={() => go("expo", expo)}
-                      className={`anim-up bg-gradient-to-br from-emerald-800 to-teal-700 rounded-xl p-4 cursor-pointer hover:scale-[1.02] transition-transform text-left relative overflow-hidden group`}
+                      className={`anim-up bg-gradient-to-br from-emerald-800 to-teal-700 rounded-xl p-3 cursor-pointer hover:scale-[1.02] transition-transform text-left relative overflow-hidden group`}
                       style={{ animationDelay: `${i * 50}ms` }}>
-                <div className="flex items-start justify-between">
-                  <div className="text-[10px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-base leading-none shrink-0">{countryByCode(expo.country).flag}</span>
+                    <div className="text-[9px] text-white/80 uppercase tracking-widest font-bold truncate">{expo.date}</div>
+                  </div>
                   {expoAnimalsCount > 0 && (
-                    <div className="bg-white/15 backdrop-blur ring-1 ring-white/20 rounded-full px-2 py-0.5 text-[10px] font-bold text-white">
-                      {expoAnimalsCount} {lang === "it" ? "animali" : "animals"}
+                    <div className="bg-white/15 backdrop-blur ring-1 ring-white/20 rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white shrink-0">
+                      {expoAnimalsCount}
                     </div>
                   )}
                 </div>
-                <h4 className="font-display text-lg text-white mt-1 leading-tight">{expo.name}</h4>
-                <div className="flex items-center gap-1.5 text-white/80 text-xs mt-1.5">
-                  <span className="text-sm leading-none">{countryByCode(expo.country).flag}</span>
-                  <MapPin size={11} />{expo.location}
+                <h4 className="font-display text-base text-white mt-1.5 leading-tight">{expo.name}</h4>
+                <div className="flex items-center gap-1 text-white/80 text-[11px] mt-1">
+                  <MapPin size={10} />{expo.location}
                 </div>
                 <ChevronRight size={16} className="absolute bottom-3 right-3 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </button>
@@ -1886,16 +1888,15 @@ function AllExposModal({ onClose, go, t, lang }) {
                   {groups[monthKey].map(expo => (
                     <button key={expo.id}
                             onClick={() => { onClose(); go("expo", expo); }}
-                            className={`w-full bg-gradient-to-r from-emerald-800 to-teal-700 rounded-xl p-3 flex items-center gap-3 text-left hover:scale-[1.01] transition-transform group`}>
-                      <div className="bg-black/30 backdrop-blur rounded-lg px-2.5 py-1.5 text-center shrink-0 min-w-[58px]">
-                        <div className="text-[9px] uppercase tracking-widest text-white/70 font-bold leading-none">{monthNames[parseInt(expo.dateISO.slice(5, 7), 10) - 1]}</div>
-                        <div className="font-display text-lg text-white leading-none mt-0.5">{expo.dateISO.slice(8, 10)}</div>
+                            className={`w-full bg-gradient-to-r from-emerald-800 to-teal-700 rounded-lg p-2.5 flex items-center gap-2.5 text-left hover:scale-[1.01] transition-transform group`}>
+                      <div className="bg-black/30 backdrop-blur rounded-md px-2 py-1 text-center shrink-0 min-w-[50px]">
+                        <div className="text-[8px] uppercase tracking-widest text-white/70 font-bold leading-none">{monthNames[parseInt(expo.dateISO.slice(5, 7), 10) - 1]}</div>
+                        <div className="font-display text-base text-white leading-none mt-0.5">{expo.dateISO.slice(8, 10)}</div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-white text-sm leading-tight truncate">{expo.name}</div>
+                        <div className="font-bold text-white text-[13px] leading-tight truncate">{expo.name}</div>
                         <div className="flex items-center gap-1.5 text-white/80 text-[11px] mt-0.5">
-                          <span className="leading-none">{countryByCode(expo.country).flag}</span>
-                          <MapPin size={10} className="shrink-0" />
+                          <span className="text-sm leading-none shrink-0">{countryByCode(expo.country).flag}</span>
                           <span className="truncate">{expo.location}</span>
                         </div>
                       </div>
