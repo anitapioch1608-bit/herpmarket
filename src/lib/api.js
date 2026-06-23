@@ -392,14 +392,35 @@ export async function updateTransactionState(txId, patch) {
 
 // ── BIDS ────────────────────────────────────────────────────────────────────
 export async function placeBid(listingId, bidderId, amount) {
+  // Re-read the current auction to guard against a higher bid landing first.
+  const { data: l, error: readErr } = await supabase.from('listings')
+    .select('auction').eq('id', listingId).single();
+  if (readErr) throw readErr;
+  const cur = l?.auction || {};
+  if (amount <= (cur.currentBid || cur.startPrice || 0)) {
+    const e = new Error('bid_too_low'); e.code = 'bid_too_low'; e.currentBid = cur.currentBid; throw e;
+  }
   const { error: bidErr } = await supabase.from('bids')
     .insert({ listing_id: listingId, bidder_id: bidderId, amount });
   if (bidErr) throw bidErr;
-  // bump the listing's auction.currentBid (in production do this in an Edge fn / RPC)
-  const { data: l } = await supabase.from('listings').select('auction').eq('id', listingId).single();
-  const a = { ...(l?.auction || {}), currentBid: amount, bidCount: (l?.auction?.bidCount || 0) + 1 };
-  await supabase.from('listings').update({ auction: a }).eq('id', listingId);
+  const a = { ...cur, currentBid: amount, bidCount: (cur.bidCount || 0) + 1, highBidder: bidderId };
+  const { error: updErr } = await supabase.from('listings').update({ auction: a }).eq('id', listingId);
+  if (updErr) throw updErr;
   return a;
+  // NOTE: race-safe enough for beta. For high volume, move to a Postgres RPC
+  // that does the compare-and-set atomically in one transaction.
+}
+
+// Live auction updates: fires onUpdate(auctionObject) whenever this listing's
+// row changes (i.e. a new bid bumped currentBid). Returns an unsubscribe fn.
+export function subscribeAuction(listingId, onUpdate) {
+  const channel = supabase
+    .channel(`auction:${listingId}`)
+    .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'listings', filter: `id=eq.${listingId}` },
+        payload => { if (payload.new?.auction) onUpdate(payload.new.auction); })
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 }
 
 // ── AUTH ────────────────────────────────────────────────────────────────────

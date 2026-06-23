@@ -2361,21 +2361,45 @@ function bidIncrement(amount) {
   return 50;
 }
 
-function AuctionBox({ auction, t, lang, user, requireAuth }) {
+function AuctionBox({ auction, listingId, t, lang, user, requireAuth }) {
   const [bid, setBid] = useState(auction.currentBid);
   const [bidCount, setBidCount] = useState(auction.bidCount);
+  const [highBidder, setHighBidder] = useState(auction.highBidder || null);
   const [showBidModal, setShowBidModal] = useState(false);
-  const [myStatus, setMyStatus] = useState(null); // null | "winning" | "outbid"
+  const [bidErr, setBidErr] = useState("");
+  const [busy, setBusy] = useState(false);
   const cd = useCountdown(auction.endsAt);
 
   const minNext = bid + bidIncrement(bid);
-  const reserveMet = bid >= auction.reservePrice;
+  const reserveMet = auction.reservePrice ? bid >= auction.reservePrice : true;
+  const myStatus = highBidder && user?.id ? (highBidder === user.id ? "winning" : "outbid") : null;
 
-  const placeBid = (amount) => {
-    setBid(amount);
-    setBidCount(c => c + 1);
-    setMyStatus("winning");
-    setShowBidModal(false);
+  // Live updates: when anyone bids, the listing row changes → refresh figures.
+  useEffect(() => {
+    if (!listingId) return;
+    let unsub = () => {};
+    (async () => {
+      const api = await import("./lib/api");
+      unsub = api.subscribeAuction(listingId, (a) => {
+        setBid(a.currentBid);
+        setBidCount(a.bidCount);
+        setHighBidder(a.highBidder || null);
+      });
+    })();
+    return () => unsub();
+  }, [listingId]);
+
+  const placeBid = async (amount) => {
+    if (!listingId || busy) return;
+    setBusy(true); setBidErr("");
+    try {
+      const api = await import("./lib/api");
+      const a = await api.placeBid(listingId, user.id, amount);
+      setBid(a.currentBid); setBidCount(a.bidCount); setHighBidder(a.highBidder || user.id);
+      setShowBidModal(false);
+    } catch (e) {
+      setBidErr(e?.code === "bid_too_low" ? t.outbid : (e?.message || "Error"));
+    } finally { setBusy(false); }
   };
 
   return (
@@ -2423,10 +2447,13 @@ function AuctionBox({ auction, t, lang, user, requireAuth }) {
         </div>
       )}
 
-      {/* Bid button */}
+      {bidErr && <div className="mt-3 text-[11px] font-bold text-rose-300">{bidErr}</div>}
+
+      {/* Bid button — sellers can't bid on their own auction */}
       {!cd.ended && (
         <button onClick={() => { if (requireAuth(t.placeBid, () => setShowBidModal(true))) setShowBidModal(true); }}
-                className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
+                disabled={busy}
+                className="w-full mt-4 bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
           {t.placeBid} · {t.minimumBid} {formatPrice(minNext)}
         </button>
       )}
@@ -2434,14 +2461,14 @@ function AuctionBox({ auction, t, lang, user, requireAuth }) {
       <p className="text-[10px] text-stone-500 leading-relaxed mt-3">{t.auctionInfo}</p>
 
       {showBidModal && (
-        <AuctionBidModal minNext={minNext} currentBid={bid} onClose={() => setShowBidModal(false)}
+        <AuctionBidModal minNext={minNext} currentBid={bid} busy={busy} onClose={() => setShowBidModal(false)}
                          onBid={placeBid} t={t} lang={lang} />
       )}
     </div>
   );
 }
 
-function AuctionBidModal({ minNext, currentBid, onClose, onBid, t, lang }) {
+function AuctionBidModal({ minNext, currentBid, busy, onClose, onBid, t, lang }) {
   const [value, setValue] = useState(minNext);
   const tooLow = value < minNext;
 
@@ -2475,9 +2502,9 @@ function AuctionBidModal({ minNext, currentBid, onClose, onBid, t, lang }) {
           })}
         </div>
         {tooLow && <p className="text-[11px] text-rose-400 font-bold mt-2">{t.bidTooLow}</p>}
-        <button onClick={() => onBid(value)} disabled={tooLow}
+        <button onClick={() => onBid(value)} disabled={tooLow || busy}
                 className="w-full mt-4 bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
-          {t.placeBid}
+          {busy ? t.processing : t.placeBid}
         </button>
       </div>
     </div>
@@ -2601,7 +2628,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           {a.traits.map((tr, i) => <TraitChip key={i} trait={tr} size="sm" />)}
         </div>
         {a.auction ? (
-          <AuctionBox auction={a.auction} t={t} lang={lang} user={user} requireAuth={requireAuth} />
+          <AuctionBox auction={a.auction} listingId={a.id} t={t} lang={lang} user={user} requireAuth={requireAuth} />
         ) : (
           <div className="mt-5 flex items-baseline gap-3">
             <span className="font-display font-bold text-4xl text-stone-50">{formatPrice(a.price)}</span>
