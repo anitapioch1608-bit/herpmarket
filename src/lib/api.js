@@ -62,6 +62,8 @@ export function mapSeller(row) {
     bioIt: row.bio_it || "",
     bioEn: row.bio_en || "",
     avatarUrl: row.avatar_url || null,
+    pro: !!row.pro,
+    website: row.website || "",
     expoIds: [],   // sellers table has no expo links yet — safe default for the UI
     reviews: [],   // reviews load separately later — safe default for the UI
   };
@@ -189,6 +191,50 @@ export async function fetchMySeller(userId) {
   return data ? mapSeller(data) : null;
 }
 
+// ── KYC / VERIFICATION (seller side) ────────────────────────────────────────
+// Upload a verification document to the PRIVATE kyc-docs bucket, under a folder
+// named after the user id (the storage policy enforces this). Returns the path.
+export async function uploadKycDoc(userId, kind, file) {
+  const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+  const path = `${userId}/${kind}-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from('kyc-docs').upload(path, file, { upsert: true });
+  if (error) throw error;
+  return path;
+}
+
+// Save doc paths + ASL number and move the seller to 'pending' review.
+export async function submitKyc(userId, { visuraPath, docPath, asl }) {
+  const { data: seller } = await supabase.from('sellers')
+    .select('id').eq('owner_id', userId).maybeSingle();
+  if (!seller) throw new Error('No seller profile yet');
+  const patch = { kyc_status: 'pending', kyc_submitted_at: new Date().toISOString() };
+  if (visuraPath) patch.kyc_visura_path = visuraPath;
+  if (docPath) patch.kyc_doc_path = docPath;
+  if (asl) patch.kyc_asl = asl;
+  const { error } = await supabase.from('sellers').update(patch).eq('id', seller.id);
+  if (error) throw error;
+  return true;
+}
+
+// Read my current verification status for the Settings screen.
+export async function fetchMyKyc(userId) {
+  const { data, error } = await supabase.from('sellers')
+    .select('verified, kyc_status').eq('owner_id', userId).maybeSingle();
+  if (error) throw error;
+  return data || { verified: false, kyc_status: 'unverified' };
+}
+
+// Count a seller's current listings — used for the free-tier cap (5).
+export async function countMyListings(userId) {
+  const { data: seller } = await supabase.from('sellers')
+    .select('id').eq('owner_id', userId).maybeSingle();
+  if (!seller) return 0;
+  const { count, error } = await supabase.from('listings')
+    .select('id', { count: 'exact', head: true }).eq('seller_id', seller.id);
+  if (error) throw error;
+  return count || 0;
+}
+
 export async function updateMySeller(sellerId, fields) {
   const patch = {};
   if (fields.name != null) patch.name = fields.name;
@@ -196,6 +242,7 @@ export async function updateMySeller(sellerId, fields) {
   if (fields.bio != null) { patch.bio_it = fields.bio; patch.bio_en = fields.bio; }
   if (fields.specialties != null) patch.specialties = fields.specialties;
   if (fields.avatarUrl != null) patch.avatar_url = fields.avatarUrl;
+  if (fields.website != null) patch.website = fields.website;
   const { data, error } = await supabase.from('sellers')
     .update(patch).eq('id', sellerId).select().single();
   if (error) throw error;

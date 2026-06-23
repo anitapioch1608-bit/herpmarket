@@ -122,7 +122,10 @@ const I18N = {
     chatNoThreads: "Nessuna conversazione. Contatta un allevatore da un annuncio.",
     chatNoThread: "Impossibile aprire la conversazione per questo annuncio.",
     chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora",
-    noReviewsYet: "Nessuna recensione", onlineNow: "Online", translateIT: "Traduci in italiano",
+    noReviewsYet: "Nessuna recensione",
+    proCapReached: "Hai raggiunto il limite di 5 annunci del piano gratuito. Passa a Pro per annunci illimitati — scrivici per attivarlo!",
+    spWebsite: "Sito web", spWebsitePh: "https://iltuosito.it", proOnly: "Solo Pro", spWebsiteProNote: "Mostra un link al tuo sito sulla tua pagina pubblica (funzione Pro).",
+    visitWebsite: "Visita il sito", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
     invIntro: "Gestisci la tua collezione: esemplari riproduttori, in vendita e venduti.",
@@ -330,7 +333,10 @@ const I18N = {
     chatNoThreads: "No conversations yet. Contact a breeder from a listing.",
     chatNoThread: "Couldn't open the conversation for this listing.",
     chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now",
-    noReviewsYet: "No reviews yet", onlineNow: "Online", translateIT: "Translate to Italian",
+    noReviewsYet: "No reviews yet",
+    proCapReached: "You've reached the free plan's 5-listing limit. Upgrade to Pro for unlimited listings — message us to enable it!",
+    spWebsite: "Website", spWebsitePh: "https://yoursite.com", proOnly: "Pro only", spWebsiteProNote: "Show a link to your site on your public page (Pro feature).",
+    visitWebsite: "Visit website", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
     invIntro: "Manage your collection: breeders, animals for sale, and sold animals.",
@@ -634,7 +640,7 @@ const SPECIES_TRAITS = {
 const CATEGORY_SPECIES = {
   geckos:     ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Rhacodactylus leachianus", "Mniarogekko chahoua", "Correlophus sarasinorum", "Phelsuma grandis", "Phelsuma laticauda", "Gekko gecko", "Eublepharis macularius", "Hemitheconyx caudicinctus", "Paroedura picta", "Coleonyx variegatus"],
   snakes:     ["Python regius", "Python brongersmai", "Morelia viridis", "Morelia spilota", "Antaresia childreni", "Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Pituophis catenifer", "Thamnophis sirtalis", "Boa constrictor", "Eryx colubrinus", "Epicrates cenchria"],
-  lizards:    ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii", "Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis", "Varanus acanthurus", "Varanus exanthematicus", "Salvator merianae"],
+  lizards:    ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii", "Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis", "Takydromus smaragdinus", "Varanus acanthurus", "Varanus exanthematicus", "Salvator merianae"],
   chameleons: ["Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii", "Furcifer lateralis", "Brookesia"],
   tortoises:  ["Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii", "Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius", "Stigmochelys pardalis", "Trachemys scripta", "Graptemys", "Sternotherus odoratus"],
   amphibians: ["Dendrobates tinctorius", "Dendrobates auratus", "Phyllobates terribilis", "Agalychnis callidryas", "Ceratophrys ornata", "Ranoidea caerulea", "Ambystoma mexicanum", "Pleurodeles waltl"],
@@ -659,6 +665,7 @@ const CATEGORY_SUBCATS = {
   lizards: [
     { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii"] },
     { id: "lizards_skinks",  it: "Scinchi",  en: "Skinks",   species: ["Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis"] },
+    { id: "lizards_other",   it: "Altri sauri", en: "Other lizards", species: ["Takydromus smaragdinus"] },
     { id: "lizards_monitors",it: "Varani",   en: "Monitors", species: ["Varanus acanthurus", "Varanus exanthematicus"] },
     { id: "lizards_tegus",   it: "Tegu e altri", en: "Tegus & others", species: ["Salvator merianae"] },
   ],
@@ -738,6 +745,7 @@ const SPECIES_LABELS = {
   "Furcifer pardalis":         { it: "Camaleonte pantera",   en: "Panther chameleon" },
   "Chamaeleo calyptratus":     { it: "Camaleonte velato",    en: "Veiled chameleon" },
   "Trioceros jacksonii":       { it: "Camaleonte di Jackson", en: "Jackson's chameleon" },
+  "Takydromus smaragdinus":    { it: "Lucertola d'erba",      en: "Green grass lizard" },
   "Furcifer lateralis":        { it: "Camaleonte tappeto",   en: "Carpet chameleon" },
   "Brookesia":                 { it: "Camaleonte pigmeo",    en: "Pygmy chameleon" },
   // ── Tortoises & turtles ──
@@ -882,92 +890,7 @@ const IMG = {
   hognose:  "https://images.unsplash.com/photo-1531386151447-fd76ad50012f?auto=format&fit=crop&w=800&q=80",
 };
 
-const LISTINGS = [
-  {
-    id: 1, species: "Correlophus ciliatus", common: "Geco crestato",
-    traits: [{ name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" }],
-    price: 180, deposit: 18, sex: "F", ageMonths: 14, weight: "38g",
-    region: "Piemonte", city: "Torino", distanceKm: 8,
-    seller: "Piedmont Geckos", country: "IT", verified: true, rating: 4.9, reviews: 47,
-    image: IMG.crested, category: "geckos", expoId: 1, shipping: false, expoIds: [1, 2],
-    sire: "Axanthic Lilly White", dam: "Red Harlequin",
-    desc: "Esemplare nato in casa, alimentazione a base di Pangea e insetti vivi. Carattere molto docile, abituata alla manipolazione.",
-    // Auction: start 120, hidden reserve 200, current high bid 165, ends in ~2 days
-    auction: { startPrice: 120, reservePrice: 200, currentBid: 165, bidCount: 7, endsAt: "2026-06-02T20:00:00", highBidder: "marco_r" },
-  },
-  {
-    id: 2, species: "Furcifer pardalis", common: "Camaleonte pantera",
-    traits: [{ name: "Ambilobe", cls: "locality" }, { name: "Blue Bar", cls: "line" }],
-    price: 320, deposit: 32, sex: "M", ageMonths: 8, weight: "82g",
-    region: "Lombardia", city: "Milano", distanceKm: 0,
-    seller: "ExoBreed Italia", country: "DE", verified: true, rating: 4.8, reviews: 62,
-    image: IMG.panther, category: "chameleons", expoId: 1, shipping: true, expoIds: [12],
-    sire: "Ambilobe Blue Bar", dam: "Ambilobe Red Bar",
-    desc: "Maschio dai colori spettacolari, in piena salute. CITES Allegato B completo."
-  },
-  {
-    id: 3, species: "Eublepharis macularius", common: "Geco leopardino",
-    traits: [{ name: "Tremper Albino", cls: "recessive" }, { name: "het Eclipse", cls: "het" }],
-    price: 75, deposit: 8, sex: "U", ageMonths: 3, weight: "16g",
-    region: "Campania", city: "Napoli", distanceKm: 720,
-    seller: "LeoMorphs Campania", country: "IT", verified: true, rating: 4.7, reviews: 38,
-    image: IMG.leopard, category: "geckos", expoId: null, shipping: true, expoIds: [],
-    sire: "Tremper Albino", dam: "het Tremper het Eclipse",
-    desc: "Cucciolo svezzato, mangia camole e tarme regolarmente."
-  },
-  {
-    id: 4, species: "Python regius", common: "Pitone reale",
-    traits: [{ name: "Banana", cls: "incDom" }, { name: "Pastel", cls: "incDom" }, { name: "Clown", cls: "recessive" }],
-    price: 240, deposit: 24, sex: "M", ageMonths: 5, weight: "180g",
-    region: "Veneto", city: "Verona", distanceKm: 145,
-    seller: "Veneto Royals", country: "AT", verified: true, rating: 4.9, reviews: 91,
-    image: IMG.ball, category: "snakes", expoId: 1, shipping: true, expoIds: [1],
-    sire: "Banana Pastel", dam: "Clown",
-    desc: "Mangia regolarmente topi decongelati. Tre mute completate.",
-    // Auction: reserve already met, lively bidding, ends in ~5 hours
-    auction: { startPrice: 150, reservePrice: 220, currentBid: 255, bidCount: 14, endsAt: "2026-05-31T18:30:00", highBidder: "snake_fan" },
-  },
-  {
-    id: 5, species: "Pogona vitticeps", common: "Pogona",
-    traits: [{ name: "Hypo Zero", cls: "recessive" }, { name: "Leatherback", cls: "incDom" }],
-    price: 160, deposit: 16, sex: "P", ageMonths: 4, weight: "45g",
-    region: "Piemonte", city: "Cuneo", distanceKm: 95,
-    seller: "DragoMania Piemonte", country: "IT", verified: false, rating: 4.4, reviews: 18,
-    image: IMG.beardie, category: "lizards", expoId: 2, shipping: false, expoIds: [2],
-    sire: null, dam: null,
-    desc: "Coppia giovane, ottimi mangiatori. Pronti per nuovo terrario."
-  },
-  {
-    id: 6, species: "Testudo hermanni", common: "Testuggine di Hermann",
-    traits: [{ name: "hermanni boettgeri", cls: "locality" }, { name: "CB 2024", cls: "wild" }],
-    price: 220, deposit: 22, sex: "F", ageMonths: 18, weight: "180g",
-    region: "Toscana", city: "Firenze", distanceKm: 340,
-    seller: "Testudo Toscana", country: "IT", verified: true, rating: 5.0, reviews: 24,
-    image: IMG.tortoise, category: "tortoises", expoId: null, shipping: true, expoIds: [],
-    sire: null, dam: null,
-    desc: "Esemplare nato in cattività con documenti CITES Allegato A in regola."
-  },
-  {
-    id: 7, species: "Pantherophis guttatus", common: "Serpente del grano",
-    traits: [{ name: "Anery", cls: "recessive" }, { name: "Motley", cls: "recessive" }],
-    price: 85, deposit: 9, sex: "F", ageMonths: 6, weight: "55g",
-    region: "Lombardia", city: "Bergamo", distanceKm: 45,
-    seller: "Snake Italia BG", country: "IT", verified: true, rating: 4.6, reviews: 33,
-    image: IMG.corn, category: "snakes", expoId: 2, shipping: false, expoIds: [2],
-    sire: "Anery Motley", dam: "Anery",
-    desc: "Femmina giovane, alimentazione regolare con topi decongelati."
-  },
-  {
-    id: 8, species: "Heterodon nasicus", common: "Hognose occidentale",
-    traits: [{ name: "Albino", cls: "recessive" }, { name: "Conda", cls: "incDom" }],
-    price: 280, deposit: 28, sex: "M", ageMonths: 4, weight: "32g",
-    region: "Piemonte", city: "Asti", distanceKm: 55,
-    seller: "Piedmont Geckos", country: "IT", verified: true, rating: 4.9, reviews: 47,
-    image: IMG.hognose, category: "snakes", expoId: 1, shipping: true, expoIds: [1],
-    sire: "Albino Conda", dam: "het Albino Conda",
-    desc: "Mangia regolarmente in pinzetta. Carattere tipico hognose."
-  },
-];
+const LISTINGS = [];  // demo listings removed — marketplace shows real Supabase data only
 
 /* EXPOS — comprehensive 2026 European reptile expo calendar.
    Sorted by ISO date. The `getUpcomingExpos()` helper below filters
@@ -1091,95 +1014,9 @@ function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().
     .sort((a, b) => a.dateISO.localeCompare(b.dateISO));
 }
 
-const SELLERS = {
-  "Piedmont Geckos": {
-    name: "Piedmont Geckos", country: "IT", region: "Piemonte", city: "Torino", verified: true,
-    memberSince: "2021", totalSales: 287, rating: 4.9, reviewCount: 47,
-    specialties: ["Correlophus ciliatus", "Heterodon nasicus", "Eublepharis macularius"],
-    expoIds: [1, 2],
-    bioIt: "Allevamento amatoriale specializzato in gechi crestati morph ad alta qualità e hognose albini. Nato nel 2021 come progetto familiare, oggi conta oltre 80 esemplari riproduttori in struttura dedicata.",
-    bioEn: "Amateur breeding focused on high-end crested gecko morphs and albino hognose snakes. Started in 2021 as a family project, now home to 80+ breeder animals in a dedicated facility.",
-    reviews: [
-      { buyer: "Marco T.", rating: 5, date: "03/2026", text: "Esemplare in forma perfetta, ritirato in fiera a Verona. Allevatore molto disponibile e preparato." },
-      { buyer: "Sara B.", rating: 5, date: "02/2026", text: "Imballaggio impeccabile per il trasporto. Geco arrivato perfetto e già abituato al cibo." },
-      { buyer: "Luca D.", rating: 4, date: "01/2026", text: "Tutto regolare, comunicazione un po' lenta ma risultato ottimo." },
-    ],
-  },
-  "ExoBreed Italia": {
-    name: "ExoBreed Italia", country: "DE", region: "Bayern", city: "München", verified: true,
-    memberSince: "2019", totalSales: 412, rating: 4.8, reviewCount: 62,
-    specialties: ["Furcifer pardalis", "Chamaeleo calyptratus"],
-    expoIds: [1],
-    bioIt: "Allevamento professionale di camaleonti pantera con linee Ambilobe, Ambanja e Nosy Be. Tutti gli esemplari sono nati in cattività con documentazione CITES completa.",
-    bioEn: "Professional panther chameleon breeder working with Ambilobe, Ambanja and Nosy Be locales. All animals are captive-bred with full CITES documentation.",
-    reviews: [
-      { buyer: "Paolo M.", rating: 5, date: "04/2026", text: "Camaleonte stupendo, colori esattamente come nelle foto. CITES Allegato B perfetto." },
-      { buyer: "Elena R.", rating: 5, date: "03/2026", text: "Professionali e seri. Consiglio anche ai principianti." },
-    ],
-  },
-  "LeoMorphs Campania": {
-    name: "LeoMorphs Campania", country: "IT", region: "Campania", city: "Napoli", verified: true,
-    memberSince: "2022", totalSales: 156, rating: 4.7, reviewCount: 38,
-    specialties: ["Eublepharis macularius"],
-    expoIds: [2, 3],
-    bioIt: "Specializzati esclusivamente in gechi leopardini. Lavoriamo con linee Tremper, Bell, Eclipse e combinazioni recessive.",
-    bioEn: "Exclusively focused on leopard geckos. We work with Tremper, Bell, Eclipse lines and recessive combinations.",
-    reviews: [
-      { buyer: "Andrea V.", rating: 5, date: "02/2026", text: "Genetica chiara e ben documentata. Ottimo allevatore." },
-    ],
-  },
-  "Veneto Royals": {
-    name: "Veneto Royals", country: "AT", region: "Tirol", city: "Innsbruck", verified: true,
-    memberSince: "2020", totalSales: 523, rating: 4.9, reviewCount: 91,
-    specialties: ["Python regius"],
-    expoIds: [1, 2],
-    bioIt: "Uno dei maggiori allevamenti italiani di pitone reale. Oltre 200 morph diversi in stock, dalla genetica base alle combinazioni più rare.",
-    bioEn: "One of Italy's largest ball python breeders. Over 200 different morphs in stock, from baseline genetics to rare combinations.",
-    reviews: [
-      { buyer: "Stefano L.", rating: 5, date: "04/2026", text: "Pitone arrivato in salute perfetta, già mangia in pinzetta. Veramente professionali." },
-      { buyer: "Davide G.", rating: 5, date: "03/2026", text: "Quinto acquisto da loro, sempre top." },
-    ],
-  },
-  "DragoMania Piemonte": {
-    name: "DragoMania Piemonte", country: "IT", region: "Piemonte", city: "Cuneo", verified: false,
-    memberSince: "2024", totalSales: 34, rating: 4.4, reviewCount: 18,
-    specialties: ["Pogona vitticeps"],
-    expoIds: [],
-    bioIt: "Piccolo allevamento amatoriale di pogona vitticeps morph. Vendita preferibilmente con ritiro a mano.",
-    bioEn: "Small amateur breeder of bearded dragon morphs. Prefer in-person pickup.",
-    reviews: [
-      { buyer: "Giovanni P.", rating: 4, date: "01/2026", text: "Animale in salute, allevatore disponibile per consigli." },
-    ],
-  },
-  "Testudo Toscana": {
-    name: "Testudo Toscana", country: "IT", region: "Toscana", city: "Firenze", verified: true,
-    memberSince: "2018", totalSales: 89, rating: 5.0, reviewCount: 24,
-    specialties: ["Testudo hermanni", "Testudo graeca"],
-    expoIds: [3],
-    bioIt: "Allevamento ufficialmente registrato di testuggini di Hermann e graeca. Tutti gli esemplari sono nati in cattività con CITES Allegato A individuale.",
-    bioEn: "Officially registered Hermann's and Greek tortoise breeder. All animals captive-bred with individual CITES Annex A certificates.",
-    reviews: [
-      { buyer: "Maria F.", rating: 5, date: "05/2026", text: "Documentazione CITES perfetta, microchip già inserito. Allevatore serissimo." },
-    ],
-  },
-  "Snake Italia BG": {
-    name: "Snake Italia BG", country: "IT", region: "Lombardia", city: "Bergamo", verified: true,
-    memberSince: "2020", totalSales: 178, rating: 4.6, reviewCount: 33,
-    specialties: ["Pantherophis guttatus", "Lampropeltis"],
-    expoIds: [2],
-    bioIt: "Allevamento dedicato a serpenti del grano e re. Lavoriamo principalmente con morph recessive e combo.",
-    bioEn: "Focused on corn snakes and king snakes. We mainly work with recessive morphs and combos.",
-    reviews: [
-      { buyer: "Roberto S.", rating: 5, date: "03/2026", text: "Animale arrivato perfetto. Risposta veloce ai messaggi." },
-    ],
-  },
-};
+const SELLERS = {};  // demo sellers removed — real breeder pages load from Supabase
 
-const CHATS = [
-  { id: 1, listing: LISTINGS[0], lastMsg: "Perfetto, ci vediamo allo stand di Verona!", time: "14:20", unread: 0 },
-  { id: 2, listing: LISTINGS[3], lastMsg: "I documenti CITES sono pronti.", time: "Ieri", unread: 2 },
-  { id: 3, listing: LISTINGS[1], lastMsg: "Salve, è ancora disponibile?", time: "Lun", unread: 0 },
-];
+const CHATS = [];  // demo chats removed — real threads load from Supabase
 
 /* ───── Utilities ───────────────────────────────────────────────── */
 const formatAge = (months, t) => {
@@ -1188,6 +1025,7 @@ const formatAge = (months, t) => {
   return `${years} ${years === 1 ? t.year : t.years}`;
 };
 const formatPrice = (n) => `€${n.toLocaleString("it-IT")}`;
+const FREE_LISTING_LIMIT = 5;  // free sellers; Pro = unlimited
 // Compact relative time for chat list ("now", "5m", "3h", "2d", or a date).
 const relTime = (iso, t) => {
   if (!iso) return "";
@@ -1294,12 +1132,12 @@ export default function HerpMarket() {
   useEffect(() => {
     import('./lib/api').then(({ fetchListings }) => {
       fetchListings({})
-        .then(rows => { if (rows && rows.length) setLiveListings(rows); })
-        .catch(err => console.warn('[HerpMarket] Supabase fetch failed, using demo data:', err));
+        .then(rows => { setLiveListings(rows || []); })
+        .catch(err => { console.warn('[HerpMarket] Supabase fetch failed:', err); setLiveListings([]); });
     });
   }, []);
-  // Use live data when available, otherwise the built-in demo data.
-  const LISTINGS_DATA = liveListings || LISTINGS;
+  // Live data is the source of truth once loaded (empty array = empty marketplace).
+  const LISTINGS_DATA = liveListings || [];
 
   // ── Real auth session (Supabase) ──
   // Loads any existing session on startup and keeps `user` in sync with login/
@@ -3610,6 +3448,16 @@ function SellScreen({ t, lang, go, user }) {
     try {
       const api = await import("./lib/api");
       const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
+      // Free-tier cap: 5 listings. Pro sellers are unlimited.
+      const mySeller = await api.fetchMySeller(user.id);
+      if (!mySeller?.pro) {
+        const count = await api.countMyListings(user.id);
+        if (count >= FREE_LISTING_LIMIT) {
+          setSaving(false);
+          setSaveErr(t.proCapReached);
+          return;
+        }
+      }
       const urls = await api.uploadListingPhotos(photos.map(p => p.file), user.id);
       const traits = selectedTraits.map(n => {
         const e = exampleTraits.find(x => x.name === n);
@@ -4312,7 +4160,7 @@ function ChatList({ t, go, user }) {
 }
 
 function ChatThread({ chat, t, lang, go, user }) {
-  const target = chat?.listing || LISTINGS[0];
+  const target = chat?.listing || {};
   const [threadId, setThreadId] = useState(chat?.id && chat.id !== 99 ? chat.id : null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -4712,6 +4560,8 @@ function EditStoreScreen({ t, lang, go, user }) {
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [specs, setSpecs] = useState("");
+  const [website, setWebsite] = useState("");
+  const [isPro, setIsPro] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const fileRef = useRef(null);
@@ -4738,6 +4588,8 @@ function EditStoreScreen({ t, lang, go, user }) {
           setCity(s.city || "");
           setBio(s.bioIt || "");
           setSpecs((s.specialties || []).join(", "));
+          setWebsite(s.website || "");
+          setIsPro(!!s.pro);
           setAvatarPreview(s.avatarUrl || null);
         }
       } catch (e) { if (on) setErr(e?.message || "Error"); }
@@ -4768,6 +4620,7 @@ function EditStoreScreen({ t, lang, go, user }) {
         city: city.trim(),
         bio: bio.trim(),
         specialties: specs.split(",").map(s => s.trim()).filter(Boolean),
+        website: isPro ? website.trim() : "",
       };
       if (avatarUrl) fields.avatarUrl = avatarUrl;
       const updated = await api.updateMySeller(seller.id, fields);
@@ -4825,6 +4678,15 @@ function EditStoreScreen({ t, lang, go, user }) {
 
             <FormBlock label={t.spSpecialties}>
               <input className="form-input" value={specs} onChange={e => setSpecs(e.target.value)} placeholder={t.spSpecialtiesPh} />
+            </FormBlock>
+
+            <FormBlock label={t.spWebsite}>
+              <div className="flex items-center gap-2 mb-1.5">
+                {!isPro && <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 px-2 py-0.5 rounded-full">{t.proOnly}</span>}
+              </div>
+              <input className="form-input disabled:opacity-50" value={website} disabled={!isPro}
+                     onChange={e => setWebsite(e.target.value)} placeholder={t.spWebsitePh} />
+              {!isPro && <p className="text-[10px] text-stone-500 mt-1.5">{t.spWebsiteProNote}</p>}
             </FormBlock>
 
             {err && <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5"><Info size={12} />{err}</p>}
@@ -5269,7 +5131,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
     rating: sellerListings[0]?.rating || 0,
     reviewCount: sellerListings[0]?.reviews || 0,
     specialties: [], expoIds: [], reviews: [],
-    bioIt: "", bioEn: "",
+    bioIt: "", bioEn: "", website: "", pro: false,
   };
 
   const attendedExpos = data.expoIds.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
@@ -5386,6 +5248,14 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
               </div>
             )}
 
+            {data.website && (
+              <a href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
+                 target="_blank" rel="noopener noreferrer"
+                 className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 font-bold transition-colors">
+                <Globe size={15} />{t.visitWebsite}
+              </a>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
               <InfoCell label={t.sellerMemberSince} value={data.memberSince} />
               <InfoCell label={t.sellerTotalSales} value={data.totalSales} />
@@ -5476,9 +5346,41 @@ function InfoCell({ label, value }) {
 function SettingsScreen({ t, go, lang, setLang, user }) {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifPrefs, setNotifPrefs] = useState({ messages: true, reservations: true, priceDrops: true, expo: false });
-  const [uploads, setUploads] = useState({ visura: false, asl: "", doc: false });
-  const [kycSubmitted, setKycSubmitted] = useState(false);
-  const kycStatus = user?.verified ? "verified" : (kycSubmitted ? "pending" : "unverified");
+  const [uploads, setUploads] = useState({ visuraPath: "", docPath: "", asl: "" });
+  const [kycStatus, setKycStatus] = useState(user?.verified ? "verified" : "unverified");
+  const [kycBusy, setKycBusy] = useState("");   // "visura" | "doc" | "submit"
+  const [kycErr, setKycErr] = useState("");
+
+  // Load real verification status on open.
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchMyKyc(user.id)).then(k => {
+      if (!on || !k) return;
+      setKycStatus(k.verified ? "verified" : (k.kyc_status || "unverified"));
+    }).catch(() => {});
+    return () => { on = false; };
+  }, [user?.id]);
+
+  const handleKycFile = async (kind, file) => {
+    setKycErr(""); setKycBusy(kind);
+    try {
+      const api = await import("./lib/api");
+      const path = await api.uploadKycDoc(user.id, kind, file);
+      setUploads(u => ({ ...u, [kind === "visura" ? "visuraPath" : "docPath"]: path }));
+    } catch (e) { setKycErr(e?.message || "Upload failed"); }
+    finally { setKycBusy(""); }
+  };
+
+  const submitKyc = async () => {
+    setKycErr(""); setKycBusy("submit");
+    try {
+      const api = await import("./lib/api");
+      await api.submitKyc(user.id, { visuraPath: uploads.visuraPath, docPath: uploads.docPath, asl: uploads.asl });
+      setKycStatus("pending");
+    } catch (e) { setKycErr(e?.message || "Submit failed"); }
+    finally { setKycBusy(""); }
+  };
 
   const enableNotifications = async () => {
     // Real permission prompt. Sending actual pushes requires a service worker + backend (VAPID).
@@ -5542,19 +5444,20 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
               <>
                 <p className="text-sm text-stone-400 mt-2 mb-4">{t.kycIntro}</p>
                 <div className="space-y-2.5">
-                  <UploadRow label={t.kycVisura} done={uploads.visura} onUpload={() => setUploads({ ...uploads, visura: true })} t={t} />
+                  <UploadRow label={t.kycVisura} done={!!uploads.visuraPath} busy={kycBusy === "visura"} onFile={(f) => handleKycFile("visura", f)} t={t} />
                   <div className="bg-stone-900 ring-1 ring-stone-800 rounded-lg px-3 py-2.5">
                     <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.kycAsl}</div>
                     <input value={uploads.asl} onChange={e => setUploads({ ...uploads, asl: e.target.value })}
                            placeholder="IT-XX-00000"
                            className="w-full bg-stone-950 ring-1 ring-stone-800 rounded-md px-3 py-2 text-sm text-stone-100 outline-none focus:ring-amber-500/60" />
                   </div>
-                  <UploadRow label={t.kycDoc} done={uploads.doc} onUpload={() => setUploads({ ...uploads, doc: true })} t={t} />
+                  <UploadRow label={t.kycDoc} done={!!uploads.docPath} busy={kycBusy === "doc"} onFile={(f) => handleKycFile("doc", f)} t={t} />
                 </div>
-                <button onClick={() => setKycSubmitted(true)}
-                        disabled={!uploads.visura && !uploads.asl && !uploads.doc}
+                {kycErr && <p className="text-xs text-rose-400 mt-3">{kycErr}</p>}
+                <button onClick={submitKyc}
+                        disabled={(!uploads.visuraPath && !uploads.docPath && !uploads.asl) || kycBusy === "submit"}
                         className="w-full mt-4 py-3 rounded-lg text-sm font-bold bg-sky-500 hover:bg-sky-400 text-stone-950 transition-colors disabled:bg-stone-800 disabled:text-stone-500">
-                  {t.kycSubmit}
+                  {kycBusy === "submit" ? t.processing : t.kycSubmit}
                 </button>
                 <div className="mt-4 pt-4 border-t border-stone-800">
                   <div className="text-[11px] font-bold text-stone-300">{t.kycWhy}</div>
@@ -5719,19 +5622,24 @@ function PrivacySection({ t, lang, go }) {
   );
 }
 
-function UploadRow({ label, done, onUpload, t }) {
+function UploadRow({ label, done, onFile, t, busy }) {
+  const ref = useRef(null);
   return (
-    <button onClick={onUpload}
-            className={`w-full flex items-center justify-between rounded-lg px-3 py-3 ring-1 transition-colors ${
-              done ? "bg-emerald-500/10 ring-emerald-500/30" : "bg-stone-900 ring-stone-800 hover:ring-stone-700"
-            }`}>
-      <span className="text-sm font-medium text-stone-200">{label}</span>
-      {done ? (
-        <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold"><Check size={14} />{t.kycUploaded}</span>
-      ) : (
-        <span className="flex items-center gap-1.5 text-stone-400 text-xs font-bold"><UploadCloud size={14} />{t.kycUpload}</span>
-      )}
-    </button>
+    <>
+      <input ref={ref} type="file" accept="image/*,application/pdf" className="hidden"
+             onChange={e => { if (e.target.files?.[0]) onFile(e.target.files[0]); e.target.value = ""; }} />
+      <button type="button" onClick={() => ref.current?.click()} disabled={busy}
+              className={`w-full flex items-center justify-between rounded-lg px-3 py-3 ring-1 transition-colors ${
+                done ? "bg-emerald-500/10 ring-emerald-500/30" : "bg-stone-900 ring-stone-800 hover:ring-stone-700"
+              }`}>
+        <span className="text-sm font-medium text-stone-200">{label}</span>
+        {done ? (
+          <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold"><Check size={14} />{t.kycUploaded}</span>
+        ) : (
+          <span className="flex items-center gap-1.5 text-stone-400 text-xs font-bold"><UploadCloud size={14} />{t.kycUpload}</span>
+        )}
+      </button>
+    </>
   );
 }
 
