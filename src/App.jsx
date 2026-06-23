@@ -121,7 +121,8 @@ const I18N = {
     chatEmpty: "Nessun messaggio ancora. Scrivi per primo!",
     chatNoThreads: "Nessuna conversazione. Contatta un allevatore da un annuncio.",
     chatNoThread: "Impossibile aprire la conversazione per questo annuncio.",
-    chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora", onlineNow: "Online", translateIT: "Traduci in italiano",
+    chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora",
+    noReviewsYet: "Nessuna recensione", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
     invIntro: "Gestisci la tua collezione: esemplari riproduttori, in vendita e venduti.",
@@ -328,7 +329,8 @@ const I18N = {
     chatEmpty: "No messages yet. Be the first to write!",
     chatNoThreads: "No conversations yet. Contact a breeder from a listing.",
     chatNoThread: "Couldn't open the conversation for this listing.",
-    chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now", onlineNow: "Online", translateIT: "Translate to Italian",
+    chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now",
+    noReviewsYet: "No reviews yet", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
     invIntro: "Manage your collection: breeders, animals for sale, and sold animals.",
@@ -2849,10 +2851,16 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
               {a.verified && <ShieldCheck size={14} className="text-sky-400" />}
             </div>
             <div className="flex items-center gap-1 text-xs text-stone-400 mt-0.5">
-              <Star size={11} fill="currentColor" className="text-amber-400" />
-              <span className="font-bold text-stone-200">{a.rating}</span>
-              <span>({a.reviews})</span>
-              <span className="text-stone-600 mx-1">·</span>
+              {a.reviews > 0 ? (
+                <>
+                  <Star size={11} fill="currentColor" className="text-amber-400" />
+                  <span className="font-bold text-stone-200">{a.rating}</span>
+                  <span>({a.reviews})</span>
+                  <span className="text-stone-600 mx-1">·</span>
+                </>
+              ) : (
+                <><span className="text-stone-500 italic">{t.noReviewsYet}</span><span className="text-stone-600 mx-1">·</span></>
+              )}
               <span>{a.region}</span>
             </div>
           </div>
@@ -3520,6 +3528,13 @@ const CITES_SPECIES = new Set([
 function SellScreen({ t, lang, go, user }) {
   const [success, setSuccess] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
+  const [customTrait, setCustomTrait] = useState("");
+  const addCustomTrait = () => {
+    const v = customTrait.trim();
+    if (!v) return;
+    if (!selectedTraits.includes(v)) setSelectedTraits(prev => [...prev, v]);
+    setCustomTrait("");
+  };
   // Captured listing fields
   const [title, setTitle] = useState("");
   const [sex, setSex] = useState("M");
@@ -3824,16 +3839,28 @@ function SellScreen({ t, lang, go, user }) {
 
         <FormBlock label={t.traits}>
           <div className="flex flex-wrap gap-1.5">
-            {exampleTraits.map((tr, i) => {
+            {/* Preset chips for the category + any custom traits the user added */}
+            {[...exampleTraits, ...selectedTraits.filter(n => !exampleTraits.some(e => e.name === n)).map(n => ({ name: n, cls: "line" }))].map((tr, i) => {
               const isSelected = selectedTraits.includes(tr.name);
               return (
-                <button key={i}
+                <button key={tr.name + i} type="button"
                         onClick={() => setSelectedTraits(isSelected ? selectedTraits.filter(s => s !== tr.name) : [...selectedTraits, tr.name])}
                         className="transition-transform hover:scale-105">
                   <span className={isSelected ? "" : "opacity-40"}><TraitChip trait={tr} size="sm" /></span>
                 </button>
               );
             })}
+          </div>
+          {/* Add a trait that isn't listed — it's saved with the listing. */}
+          <div className="flex gap-2 mt-2.5">
+            <input value={customTrait} onChange={e => setCustomTrait(e.target.value)}
+                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomTrait(); } }}
+                   placeholder={lang === "it" ? "Aggiungi un'altra morph…" : "Add another morph…"}
+                   className="form-input flex-1" />
+            <button type="button" onClick={addCustomTrait}
+                    className="px-4 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors shrink-0">
+              {lang === "it" ? "Aggiungi" : "Add"}
+            </button>
           </div>
           <p className="text-[10px] text-stone-500 mt-2">{t.pickTraits}</p>
         </FormBlock>
@@ -4431,7 +4458,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
           <ProfileRow icon={<Camera size={18} />} label={t.spTitle} onClick={() => go("editstore")} />
           <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
           <ProfileRow icon={<GitBranch size={18} />} label={t.geneticsBreeding} badge="SOON" onClick={() => go("breeding")} />
-          <ProfileRow icon={<Star size={18} />} label={t.reviews} sub="4.9 · 47" onClick={() => go("reviews")} />
+          <ProfileRow icon={<Star size={18} />} label={t.reviews} onClick={() => go("reviews")} />
         </ProfileGroup>
 
         {/* GROUP 2: Bureaucracy & Legal */}
