@@ -111,6 +111,12 @@ const I18N = {
     mlIntro: "I tuoi annunci pubblicati. Modifica prezzo e descrizione o elimina un annuncio.",
     mlEmpty: "Non hai ancora pubblicato annunci.", mlEdit: "Modifica", mlSave: "Salva", mlDelete: "Elimina",
     mlConfirmDelete: "Eliminare definitivamente questo annuncio?", mlDeleted: "Annuncio eliminato.",
+    markSold: "Segna come venduto", soldBadge: "Venduto", markSoldTitle: "Registra la vendita",
+    soldWalkin: "Acquirente in fiera", soldAppUser: "Utente HerpMarket",
+    soldPickBuyer: "Scegli l'acquirente…", soldNoInquirers: "Nessun utente ti ha contattato per questo annuncio. Usa 'Acquirente in fiera'.",
+    soldBuyerName: "Nome e cognome acquirente", soldBuyerAddress: "Indirizzo (per i documenti CITES)",
+    soldCitesNote: "Specie CITES: nome e indirizzo dell'acquirente sono necessari per la dichiarazione di cessione.",
+    confirmSold: "Conferma vendita",
     spTitle: "Il mio negozio", spIntro: "Personalizza la tua pagina allevatore: foto, descrizione e dettagli.",
     spPhoto: "Foto del profilo", spUpload: "Carica foto", spCity: "Città", spBio: "Descrizione",
     spSpecialties: "Specializzazioni (separate da virgola)", spSpecialtiesPh: "es. Correlophus ciliatus, Python regius",
@@ -322,6 +328,12 @@ const I18N = {
     mlIntro: "Your published listings. Edit price and description or delete a listing.",
     mlEmpty: "You haven't published any listings yet.", mlEdit: "Edit", mlSave: "Save", mlDelete: "Delete",
     mlConfirmDelete: "Permanently delete this listing?", mlDeleted: "Listing deleted.",
+    markSold: "Mark as sold", soldBadge: "Sold", markSoldTitle: "Record the sale",
+    soldWalkin: "Expo / walk-in buyer", soldAppUser: "HerpMarket user",
+    soldPickBuyer: "Choose the buyer…", soldNoInquirers: "No users contacted you about this listing. Use 'Expo / walk-in buyer'.",
+    soldBuyerName: "Buyer's full name", soldBuyerAddress: "Address (for CITES documents)",
+    soldCitesNote: "CITES species: the buyer's name and address are needed for the transfer declaration.",
+    confirmSold: "Confirm sale",
     spTitle: "My store", spIntro: "Customise your breeder page: photo, description and details.",
     spPhoto: "Profile photo", spUpload: "Upload photo", spCity: "City", spBio: "Description",
     spSpecialties: "Specialties (comma-separated)", spSpecialtiesPh: "e.g. Correlophus ciliatus, Python regius",
@@ -1747,7 +1759,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             return (
               <button key={expo.id}
                       onClick={() => go("expo", expo)}
-                      className={`anim-up bg-gradient-to-br ${expo.color} rounded-xl p-4 cursor-pointer hover:scale-[1.02] transition-transform text-left relative overflow-hidden group`}
+                      className={`anim-up bg-gradient-to-br from-emerald-800 to-teal-700 rounded-xl p-4 cursor-pointer hover:scale-[1.02] transition-transform text-left relative overflow-hidden group`}
                       style={{ animationDelay: `${i * 50}ms` }}>
                 <div className="flex items-start justify-between">
                   <div className="text-[10px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
@@ -1758,8 +1770,9 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
                   )}
                 </div>
                 <h4 className="font-display text-lg text-white mt-1 leading-tight">{expo.name}</h4>
-                <div className="flex items-center gap-1 text-white/80 text-xs mt-1.5">
-                  <MapPin size={11} />{expo.location} {expo.country !== "IT" && <span className="text-[9px] uppercase font-black ml-1 bg-white/20 px-1.5 py-0.5 rounded">{expo.country}</span>}
+                <div className="flex items-center gap-1.5 text-white/80 text-xs mt-1.5">
+                  <span className="text-sm leading-none">{countryByCode(expo.country).flag}</span>
+                  <MapPin size={11} />{expo.location}
                 </div>
                 <ChevronRight size={16} className="absolute bottom-3 right-3 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </button>
@@ -1873,7 +1886,7 @@ function AllExposModal({ onClose, go, t, lang }) {
                   {groups[monthKey].map(expo => (
                     <button key={expo.id}
                             onClick={() => { onClose(); go("expo", expo); }}
-                            className={`w-full bg-gradient-to-r ${expo.color} rounded-xl p-3 flex items-center gap-3 text-left hover:scale-[1.01] transition-transform group`}>
+                            className={`w-full bg-gradient-to-r from-emerald-800 to-teal-700 rounded-xl p-3 flex items-center gap-3 text-left hover:scale-[1.01] transition-transform group`}>
                       <div className="bg-black/30 backdrop-blur rounded-lg px-2.5 py-1.5 text-center shrink-0 min-w-[58px]">
                         <div className="text-[9px] uppercase tracking-widest text-white/70 font-bold leading-none">{monthNames[parseInt(expo.dateISO.slice(5, 7), 10) - 1]}</div>
                         <div className="font-display text-lg text-white leading-none mt-0.5">{expo.dateISO.slice(8, 10)}</div>
@@ -1881,9 +1894,9 @@ function AllExposModal({ onClose, go, t, lang }) {
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-white text-sm leading-tight truncate">{expo.name}</div>
                         <div className="flex items-center gap-1.5 text-white/80 text-[11px] mt-0.5">
+                          <span className="leading-none">{countryByCode(expo.country).flag}</span>
                           <MapPin size={10} className="shrink-0" />
                           <span className="truncate">{expo.location}</span>
-                          {expo.country !== "IT" && <span className="text-[9px] uppercase font-black bg-white/20 px-1.5 py-0.5 rounded">{expo.country}</span>}
                         </div>
                       </div>
                       <ChevronRight size={16} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -2810,7 +2823,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                               className={`w-full text-left rounded-lg p-2.5 flex items-center gap-2.5 transition-all ${
                                 selected ? "bg-amber-500/15 ring-1 ring-amber-500/40" : "bg-stone-900/60 ring-1 ring-stone-800 hover:ring-stone-700"
                               }`}>
-                        <div className={`rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br ${ex.color}`}>
+                        <div className={`rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br from-emerald-800 to-teal-700`}>
                           <div className="text-[8px] uppercase tracking-widest text-white/80 font-bold leading-none">{ex.date.split(" ")[0]}</div>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -4440,14 +4453,105 @@ function ProfileRow({ icon, label, sub, onClick, badge }) {
    Edit price/description inline; delete with confirm. RLS guarantees
    only the owner can change their rows.
    ═════════════════════════════════════════════════════════════════ */
+/* The two-path "mark as sold" form: sold to an app user, or to a walk-in. */
+function MarkSoldPanel({ listing, t, lang, busy, onCancel, onConfirm, user }) {
+  const [mode, setMode] = useState("walkin");   // "app" | "walkin"
+  const [inquirers, setInquirers] = useState([]);
+  const [buyerId, setBuyerId] = useState("");
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerAddress, setBuyerAddress] = useState("");
+
+  useEffect(() => {
+    let on = true;
+    import("./lib/api").then(api => api.fetchListingInquirers(listing.id))
+      .then(list => { if (on) setInquirers(list); }).catch(() => {});
+    return () => { on = false; };
+  }, [listing.id]);
+
+  const canConfirm = mode === "app" ? !!buyerId : !!buyerName.trim();
+  const submit = () => {
+    if (mode === "app") {
+      const chosen = inquirers.find(i => i.id === buyerId);
+      onConfirm({ channel: "app", buyerId, buyerName: chosen?.name || null });
+    } else {
+      onConfirm({ channel: "cash_expo", buyerName: buyerName.trim(), buyerAddress: buyerAddress.trim() });
+    }
+  };
+
+  return (
+    <div className="border-t border-stone-800 p-3.5 bg-emerald-500/5 space-y-3">
+      <div className="text-[11px] font-bold text-stone-200">{t.markSoldTitle}</div>
+
+      {/* Path toggle */}
+      <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1">
+        <button onClick={() => setMode("walkin")}
+                className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-colors ${mode === "walkin" ? "bg-amber-500 text-stone-950" : "text-stone-400"}`}>
+          {t.soldWalkin}
+        </button>
+        <button onClick={() => setMode("app")}
+                className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-colors ${mode === "app" ? "bg-amber-500 text-stone-950" : "text-stone-400"}`}>
+          {t.soldAppUser}
+        </button>
+      </div>
+
+      {mode === "app" ? (
+        inquirers.length > 0 ? (
+          <select className="form-input" value={buyerId} onChange={e => setBuyerId(e.target.value)}>
+            <option value="">{t.soldPickBuyer}</option>
+            {inquirers.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+          </select>
+        ) : (
+          <p className="text-[11px] text-stone-500 italic">{t.soldNoInquirers}</p>
+        )
+      ) : (
+        <div className="space-y-2">
+          <input className="form-input" value={buyerName} onChange={e => setBuyerName(e.target.value)} placeholder={t.soldBuyerName} />
+          <input className="form-input" value={buyerAddress} onChange={e => setBuyerAddress(e.target.value)} placeholder={t.soldBuyerAddress} />
+          {listing.citesListed && <p className="text-[10px] text-amber-300/80">{t.soldCitesNote}</p>}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <button onClick={submit} disabled={!canConfirm || busy}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-emerald-500 hover:bg-emerald-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors">
+          {busy ? t.processing : t.confirmSold}
+        </button>
+        <button onClick={onCancel}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+          {t.deleteCancel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MyListingsScreen({ t, lang, go, user }) {
   const [items, setItems] = useState(null);   // null = loading
   const [editId, setEditId] = useState(null);
   const [ePrice, setEPrice] = useState("");
   const [eDesc, setEDesc] = useState("");
   const [confirmDel, setConfirmDel] = useState(null);
+  const [soldFor, setSoldFor] = useState(null);   // listing being marked sold (opens modal)
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  const doMarkSold = async (listing, payload) => {
+    setBusy(true); setErr("");
+    try {
+      const api = await import("./lib/api");
+      const seller = await api.fetchMySeller(user.id);
+      await api.markListingSold({
+        sellerId: seller.id,
+        listingId: listing.id,
+        sellerCountry: seller.country,
+        citesListed: listing.citesListed,
+        amount: listing.price,
+        ...payload,
+      });
+      setSoldFor(null); load();
+    } catch (e) { setErr(e?.message || "Error"); }
+    finally { setBusy(false); }
+  };
 
   const load = () => {
     import("./lib/api")
@@ -4515,21 +4619,43 @@ function MyListingsScreen({ t, lang, go, user }) {
                      className="w-full h-full object-cover" />
               </button>
               <button onClick={() => go("detail", l)} className="flex-1 min-w-0 text-left">
-                <div className="font-bold text-stone-100 text-sm truncate">{l.common}</div>
+                <div className="font-bold text-stone-100 text-sm truncate flex items-center gap-2">
+                  {l.common}
+                  {l.status === "sold" && <span className="text-[9px] font-black uppercase tracking-widest bg-stone-700 text-stone-300 px-1.5 py-0.5 rounded">{t.soldBadge}</span>}
+                </div>
                 <div className="text-[11px] text-stone-500 italic truncate">{l.species}</div>
                 <div className="text-[11px] text-amber-400 font-bold mt-0.5">{formatPrice(l.price)}</div>
               </button>
-              <div className="flex flex-col gap-1.5 shrink-0">
-                <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
-                        className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
-                  {t.mlEdit}
-                </button>
-                <button onClick={() => { setConfirmDel(confirmDel === l.id ? null : l.id); setEditId(null); }}
-                        className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
-                  {t.mlDelete}
-                </button>
-              </div>
+              {l.status === "sold" ? (
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <button onClick={() => { setConfirmDel(confirmDel === l.id ? null : l.id); setEditId(null); }}
+                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                    {t.mlDelete}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <button onClick={() => { setSoldFor(soldFor?.id === l.id ? null : l); setEditId(null); setConfirmDel(null); }}
+                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
+                    {t.markSold}
+                  </button>
+                  <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
+                    {t.mlEdit}
+                  </button>
+                  <button onClick={() => { setConfirmDel(confirmDel === l.id ? null : l.id); setEditId(null); }}
+                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                    {t.mlDelete}
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Mark-as-sold panel */}
+            {soldFor?.id === l.id && (
+              <MarkSoldPanel listing={l} t={t} lang={lang} busy={busy} onCancel={() => setSoldFor(null)}
+                             onConfirm={(payload) => doMarkSold(l, payload)} user={user} />
+            )}
 
             {/* Inline edit panel */}
             {editId === l.id && (
@@ -5064,7 +5190,7 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
   return (
     <div className="max-w-5xl mx-auto w-full pb-10">
       {/* Hero header */}
-      <div className={`relative bg-gradient-to-br ${expo.color} px-5 md:px-8 pt-6 pb-7`}>
+      <div className={`relative bg-gradient-to-br from-emerald-800 to-teal-700 px-5 md:px-8 pt-6 pb-7`}>
         <button onClick={() => go("home")}
                 className="p-2 bg-black/30 hover:bg-black/50 backdrop-blur rounded-full text-white transition-colors mb-4">
           <ChevronLeft size={20} />
@@ -5310,7 +5436,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
                   {attendedExpos.map(expo => (
                     <button key={expo.id} onClick={() => go("expo", expo)}
                             className="w-full bg-stone-900/60 ring-1 ring-stone-800 hover:ring-amber-500/40 rounded-xl p-3 flex items-center gap-3 transition-all text-left group">
-                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expo.color} flex items-center justify-center shrink-0`}>
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-800 to-teal-700 flex items-center justify-center shrink-0`}>
                         <Calendar size={16} className="text-white" />
                       </div>
                       <div className="flex-1 min-w-0">

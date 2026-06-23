@@ -191,6 +191,47 @@ export async function fetchMySeller(userId) {
   return data ? mapSeller(data) : null;
 }
 
+// ── MARK AS SOLD (seller-initiated cash / expo sales) ───────────────────────
+// Records a completed transaction and flips the listing to 'sold'.
+// opts: { sellerId, listingId, channel, buyerId?, buyerName?, buyerAddress?, amount?,
+//         buyerCountry?, sellerCountry?, citesListed? }
+export async function markListingSold(opts) {
+  const row = {
+    listing_id: opts.listingId,
+    seller_id: opts.sellerId,
+    buyer_id: opts.buyerId || null,
+    buyer_name: opts.buyerName || null,
+    buyer_address: opts.buyerAddress || null,
+    sale_channel: opts.channel || 'cash_expo',
+    state: 'completed',
+    amount: opts.amount ?? null,
+    buyer_country: opts.buyerCountry || null,
+    seller_country: opts.sellerCountry || null,
+    cross_border: !!(opts.buyerCountry && opts.sellerCountry && opts.buyerCountry !== opts.sellerCountry),
+    seller_handover: true,
+    buyer_handover: true,
+    sold_at: new Date().toISOString(),
+  };
+  const { data: tx, error } = await supabase.from('transactions').insert(row).select().single();
+  if (error) throw error;
+  // Take it off the market.
+  const { error: updErr } = await supabase.from('listings').update({ status: 'sold' }).eq('id', opts.listingId);
+  if (updErr) throw updErr;
+  return tx;
+}
+
+// People who messaged the seller about a listing — candidates for "sold to user".
+export async function fetchListingInquirers(listingId) {
+  const { data, error } = await supabase.from('threads')
+    .select('buyer_id, profiles:buyer_id(id, name)')
+    .eq('listing_id', listingId);
+  if (error) throw error;
+  // de-dup by buyer
+  const seen = {};
+  (data || []).forEach(t => { if (t.buyer_id && !seen[t.buyer_id]) seen[t.buyer_id] = t.profiles?.name || t.buyer_id; });
+  return Object.entries(seen).map(([id, name]) => ({ id, name }));
+}
+
 // ── KYC / VERIFICATION (seller side) ────────────────────────────────────────
 // Upload a verification document to the PRIVATE kyc-docs bucket, under a folder
 // named after the user id (the storage policy enforces this). Returns the path.
