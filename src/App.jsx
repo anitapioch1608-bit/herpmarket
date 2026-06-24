@@ -3813,7 +3813,7 @@ function SellScreen({ t, lang, go, user }) {
         birthDate: (born || "").trim() || null,
         citesListed: isCites,
         country, region, city: null,
-        sire: null, dam: null, desc,
+        sire: null, dam: null, desc: desc.trim(),
         image: urls[0] || null, images: urls,
         shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction,
@@ -5310,7 +5310,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
         birthDate: (born || "").trim() || null,
         citesListed: isCites, country, region, city: null,
-        sire: sire.trim() || null, dam: dam.trim() || null, desc,
+        sire: sire.trim() || null, dam: dam.trim() || null, desc: desc.trim(),
         image: urls[0] || null, images: urls, shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction: null, status,
       }, seller.id);
@@ -5663,7 +5663,8 @@ function EditStoreScreen({ t, lang, go, user }) {
             {saved && <p className="text-xs text-emerald-400 font-bold flex items-center gap-1.5"><CheckCircle size={12} />{t.spSaved}</p>}
 
             <button onClick={save} disabled={busy || !seller?.id}
-                    className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors">
+                    className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors inline-flex items-center justify-center gap-2">
+              {busy && <Loader2 size={16} className="animate-spin" />}
               {busy ? t.processing : t.spSave}
             </button>
 
