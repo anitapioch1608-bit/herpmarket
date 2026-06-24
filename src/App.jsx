@@ -256,7 +256,8 @@ const I18N = {
     crossBorderTitle: "Vendita transfrontaliera",
     crossBorderEu: "Questo esemplare proviene da un altro Paese UE. Per il trasporto è richiesta la registrazione TRACES e, per le specie CITES Allegato A/B, la documentazione di movimento intra-UE.",
     crossBorderCh: "Attenzione: questo Paese non fa parte dell'UE. Il movimento di animali vivi da/verso l'UE attraversa una frontiera doganale e richiede controlli veterinari di confine e permessi di importazione/esportazione. Verifica i requisiti prima di procedere.",
-    sellerCountryLabel: "Paese del venditore", countryLabel: "Paese", anyCountry: "Tutti i Paesi",
+    sellerCountryLabel: "Paese del venditore", countryLabel: "Paese", anyCountry: "Tutti i Paesi", clearFilters: "Cancella filtri", viewMyListing: "Vedi il mio annuncio", msgSending: "Invio…", msgSent: "Inviato", verifyBannerTitle: "Verifica il tuo account", verifyBannerSub: "Ottieni la spunta blu e aumenta la fiducia degli acquirenti.",
+    nextStepsTitle: "Prossimi passi", nextStepsExpo: (name, date) => `Il venditore ti incontrerà a ${name}${date ? " il " + date : ""}. L'acconto del 10% resta protetto dal sistema di pagamento fino alla consegna.`, nextStepsExpoGeneric: "Il venditore ti incontrerà alla fiera concordata. L'acconto del 10% resta protetto fino alla consegna.", nextStepsShipping: "Il venditore ti contatterà in chat per concordare la spedizione (di solito lun–mer). Riceverai qui i dettagli di tracciamento.",
     resultsCount: (n) => `${n} ${n === 1 ? "annuncio trovato" : "annunci trovati"}`,
     secureCheckout: "Pagamento sicuro",
     payNow: "Paga",
@@ -494,7 +495,8 @@ const I18N = {
     crossBorderTitle: "Cross-border sale",
     crossBorderEu: "This animal is located in another EU country. Transport requires TRACES registration and, for CITES Annex A/B species, intra-EU movement documentation.",
     crossBorderCh: "Note: this country is not part of the EU. Moving live animals to/from the EU crosses a customs border and requires border veterinary checks and import/export permits. Check the requirements before proceeding.",
-    sellerCountryLabel: "Seller country", countryLabel: "Country", anyCountry: "All countries",
+    sellerCountryLabel: "Seller country", countryLabel: "Country", anyCountry: "All countries", clearFilters: "Clear filters", viewMyListing: "View my listing", msgSending: "Sending…", msgSent: "Sent", verifyBannerTitle: "Verify your account", verifyBannerSub: "Get the blue check and build buyer trust.",
+    nextStepsTitle: "Next steps", nextStepsExpo: (name, date) => `The seller will meet you at ${name}${date ? " on " + date : ""}. Your 10% deposit is held securely by the payment provider until handover.`, nextStepsExpoGeneric: "The seller will meet you at the agreed expo. Your 10% deposit is held securely until handover.", nextStepsShipping: "The seller will contact you in chat to confirm shipping (usually Mon–Wed). You'll receive tracking details here.",
     resultsCount: (n) => `${n} ${n === 1 ? "listing" : "listings"} found`,
     secureCheckout: "Secure checkout",
     payNow: "Pay",
@@ -1659,7 +1661,7 @@ function ImageCarousel({ images, alt, fallbackLabel, rounded = "", showCounter =
 
   return (
     <div className={`relative w-full h-full ${rounded}`} onTouchStart={multi ? onTouchStart : undefined} onTouchEnd={multi ? onTouchEnd : undefined}>
-      <img src={pics[at]} alt={alt}
+      <img src={pics[at]} alt={alt} loading="lazy"
            onError={(e) => { e.target.onerror = null; e.target.src = fallback(fallbackLabel || alt || ""); }}
            className={imgClass || "w-full h-full object-cover"} />
       {multi && (
@@ -2250,6 +2252,14 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
           <div className="text-center py-20 text-stone-500">
             <p className="font-display italic text-lg">{lang === "it" ? "Nessun risultato trovato" : "No results found"}</p>
             <p className="text-xs mt-2">{lang === "it" ? "Prova a modificare i filtri" : "Try adjusting your filters"}</p>
+            <button onClick={() => setFilter({
+                      category: null, subCategory: null, sex: null, region: null, country: null,
+                      sort: "newest", search: "", priceMin: null, priceMax: null, traits: [], traitClass: null,
+                      seller: null, expoOnly: false, verifiedOnly: false, auctionOnly: false,
+                    })}
+                    className="mt-5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
+              {t.clearFilters}
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
@@ -2337,7 +2347,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 flex-1">
                   <span className="text-stone-400 text-sm shrink-0">€</span>
-                  <input type="number" inputMode="numeric" placeholder={t.min}
+                  <input type="number" min="0" inputMode="numeric" placeholder={t.min}
                          value={filter.priceMin ?? ""}
                          onChange={e => setFilter({ ...filter, priceMin: e.target.value === "" ? null : Number(e.target.value) })}
                          className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
@@ -2345,7 +2355,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                 <span className="text-stone-600">–</span>
                 <div className="flex items-center gap-1.5 flex-1">
                   <span className="text-stone-400 text-sm shrink-0">€</span>
-                  <input type="number" inputMode="numeric" placeholder={t.max}
+                  <input type="number" min="0" inputMode="numeric" placeholder={t.max}
                          value={filter.priceMax ?? ""}
                          onChange={e => setFilter({ ...filter, priceMax: e.target.value === "" ? null : Number(e.target.value) })}
                          className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
@@ -2521,16 +2531,25 @@ function BottomSheet({ title, onClose, children }) {
 // Returns a live-ticking countdown for a target ISO datetime.
 // Ticks every second in the final 5 minutes (so the timer is accurate near the
 // end and doesn't let a buyer bid on an already-closed auction), 30s otherwise.
+// Parse an ISO timestamp as UTC. If the stored string has no timezone marker
+// (no trailing Z and no +hh:mm offset), append "Z" so every device — whatever
+// its local timezone — counts down to the exact same closing instant.
+function parseAsUTC(iso) {
+  if (!iso) return NaN;
+  const s = String(iso);
+  const hasTZ = /[zZ]$|[+-]\d{2}:?\d{2}$/.test(s);
+  return new Date(hasTZ ? s : s + "Z").getTime();
+}
+
 function useCountdown(endsAtISO) {
   const [now, setNow] = useState(Date.now());
+  const end = parseAsUTC(endsAtISO);
   useEffect(() => {
-    const end = new Date(endsAtISO).getTime();
     const remaining = end - Date.now();
     const fast = remaining > 0 && remaining < 5 * 60 * 1000;
     const id = setInterval(() => setNow(Date.now()), fast ? 1000 : 1000 * 30);
     return () => clearInterval(id);
-  }, [endsAtISO, now > new Date(endsAtISO).getTime() - 5 * 60 * 1000]);
-  const end = new Date(endsAtISO).getTime();
+  }, [endsAtISO, now > end - 5 * 60 * 1000]);
   const diff = end - now;
   if (diff <= 0) return { ended: true, d: 0, h: 0, m: 0 };
   const d = Math.floor(diff / 86400000);
@@ -2706,7 +2725,7 @@ function AuctionBidModal({ minNext, currentBid, busy, onClose, onBid, t, lang })
         <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.yourBid}</label>
         <div className="flex items-center gap-2">
           <span className="text-stone-400 text-lg shrink-0">€</span>
-          <input type="number" inputMode="numeric" value={value}
+          <input type="number" min="0" inputMode="numeric" value={value}
                  onChange={e => setValue(Number(e.target.value))}
                  className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-lg font-bold text-stone-100 outline-none focus:ring-amber-500/60" />
         </div>
@@ -3231,6 +3250,17 @@ function TxStatusPanel({
           <StatusBlock icon={<PackageCheck size={16} className="text-sky-400" />}
                        color="sky"
                        title={t.txPaid}>
+            {/* Next steps — reduces buyer anxiety during the wait */}
+            <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-lg p-3 mb-3">
+              <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t.nextStepsTitle}</div>
+              <p className="text-[11px] text-stone-300 leading-relaxed">
+                {isExpoFlow
+                  ? (expo
+                      ? t.nextStepsExpo(expo.name, expo.dateISO ? new Date(expo.dateISO).toLocaleDateString() : "")
+                      : t.nextStepsExpoGeneric)
+                  : t.nextStepsShipping}
+              </p>
+            </div>
             <div className="space-y-2 text-[11px]">
               <HandoverIndicator
                 label={t.docSellerLabel}
@@ -3658,6 +3688,8 @@ const isCitesSpecies = (name) => !!name && CITES_SPECIES_LOWER.has(name.trim().t
 
 function SellScreen({ t, lang, go, user }) {
   const [success, setSuccess] = useState(false);
+  const [createdListing, setCreatedListing] = useState(null);
+  const [tosAccepted, setTosAccepted] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
   const [customTrait, setCustomTrait] = useState("");
   const addCustomTrait = () => {
@@ -3774,7 +3806,7 @@ function SellScreen({ t, lang, go, user }) {
           highBidder: null,
         };
       }
-      await api.createListing({
+      const created = await api.createListing({
         species: speciesVal, common, title: headline, category: catId,
         traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
         sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
@@ -3786,6 +3818,7 @@ function SellScreen({ t, lang, go, user }) {
         shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction,
       }, seller.id);
+      setCreatedListing(created);
       setSuccess(true);
     } catch (err) {
       setSaveErr(err?.message || "Error");
@@ -3840,10 +3873,18 @@ function SellScreen({ t, lang, go, user }) {
         </div>
         <h2 className="font-display text-2xl text-stone-50">{lang === "it" ? "Annuncio pubblicato" : "Listing published"}</h2>
         <p className="text-stone-400 text-sm mt-1.5">{lang === "it" ? "Sarà visibile agli acquirenti entro pochi minuti." : "It'll be visible to buyers within a few minutes."}</p>
-        <button onClick={() => { setSuccess(false); go("home"); }}
-                className="mt-6 px-6 py-3 bg-amber-500 text-stone-950 font-bold text-sm rounded-lg hover:bg-amber-400 transition-colors">
-          {t.backToBrowse}
-        </button>
+        <div className="flex flex-col gap-2 mt-6 w-full max-w-[260px]">
+          {createdListing && (
+            <button onClick={() => { setSuccess(false); go("detail", createdListing); }}
+                    className="px-6 py-3 bg-amber-500 text-stone-950 font-bold text-sm rounded-lg hover:bg-amber-400 transition-colors">
+              {t.viewMyListing}
+            </button>
+          )}
+          <button onClick={() => { setSuccess(false); go("home"); }}
+                  className={`px-6 py-3 font-bold text-sm rounded-lg transition-colors ${createdListing ? "ring-1 ring-stone-700 text-stone-300 hover:text-stone-100" : "bg-amber-500 text-stone-950 hover:bg-amber-400"}`}>
+            {t.backToBrowse}
+          </button>
+        </div>
       </div>
     );
   }
@@ -4076,10 +4117,25 @@ function SellScreen({ t, lang, go, user }) {
         {/* ─── Delivery options ─── */}
         <DeliverySection lang={lang} t={t} itemPrice={Number(mode === "auction" ? startPrice : price) || 0} />
 
+        {/* Terms acceptance — marketplace rules confirmed at point of listing */}
+        <label className="flex items-start gap-3 bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-4 cursor-pointer">
+          <input type="checkbox" checked={tosAccepted} onChange={() => setTosAccepted(!tosAccepted)}
+                 className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+          <span className="text-[12px] text-stone-300 leading-relaxed">
+            {lang === "it" ? "Ho letto e accetto i " : "I have read and accept the "}
+            <button type="button" onClick={(e) => { e.preventDefault(); go("terms"); }} className="text-amber-400 underline font-bold">
+              {t.termsLegal}
+            </button>
+            {lang === "it"
+              ? ", in particolare le regole per i venditori, e confermo di essere il legittimo detentore di questo animale."
+              : ", in particular the seller rules, and confirm I am the lawful keeper of this animal."}
+          </span>
+        </label>
+
         {saveErr && (
           <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5 mt-2"><Info size={12} />{saveErr}</p>
         )}
-        <button onClick={handlePublish} disabled={saving}
+        <button onClick={handlePublish} disabled={saving || !tosAccepted}
                 className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4 inline-flex items-center justify-center gap-2">
           {saving && <Loader2 size={16} className="animate-spin" />}
           {saving ? (photos.length > 0 ? t.uploadingPhotos : t.publishing) : t.publishListing}
@@ -4149,7 +4205,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
       {mode === "fixed" ? (
         <div className="flex items-center gap-2">
           <span className="text-stone-400 text-sm shrink-0">€</span>
-          <input type="number" className="form-input flex-1" placeholder="150" value={price} onChange={e => setPrice(e.target.value)} />
+          <input type="number" min="0" className="form-input flex-1" placeholder="150" value={price} onChange={e => setPrice(e.target.value)} />
         </div>
       ) : (
         <div className="space-y-3">
@@ -4158,7 +4214,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
               <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.startPrice}</div>
               <div className="flex items-center gap-2">
                 <span className="text-stone-400 text-sm shrink-0">€</span>
-                <input type="number" className="form-input flex-1" placeholder="100" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
+                <input type="number" min="0" className="form-input flex-1" placeholder="100" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
               </div>
             </div>
             <div>
@@ -4167,7 +4223,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-stone-400 text-sm shrink-0">€</span>
-                <input type="number" className="form-input flex-1" placeholder="200" value={reserve} onChange={e => setReserve(e.target.value)} />
+                <input type="number" min="0" className="form-input flex-1" placeholder="200" value={reserve} onChange={e => setReserve(e.target.value)} />
               </div>
               {reserve && startPrice && Number(reserve) < Number(startPrice) && (
                 <p className="text-[10px] text-rose-400 font-bold mt-1.5 flex items-center gap-1"><Info size={11} />{t.reserveTooLow}</p>
@@ -4329,7 +4385,7 @@ function DeliverySection({ lang, t, itemPrice = 0 }) {
                 </div>
                 <div className="flex items-center gap-2 max-w-[160px]">
                   <span className="text-stone-400 text-sm shrink-0">€</span>
-                  <input type="number" value={shippingCost} onChange={e => setShippingCost(e.target.value)}
+                  <input type="number" min="0" value={shippingCost} onChange={e => setShippingCost(e.target.value)}
                          className="form-input flex-1" placeholder="45" />
                 </div>
                 {itemPrice > 0 && Number(shippingCost) > itemPrice * 0.5 && (
@@ -4419,7 +4475,7 @@ function ChatList({ t, go, user }) {
           <button key={thr.id} onClick={() => go("thread", thr)}
                   className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-stone-900/60 transition-colors text-left">
             <div className="relative shrink-0">
-              <img src={thr.listing?.image} alt=""
+              <img src={thr.listing?.image} alt="" loading="lazy"
                    onError={(e) => { e.target.onerror = null; e.target.src = fallback(t.realPhoto); }}
                    className="w-12 h-12 rounded-lg object-cover" />
               {thr.unread > 0 && (
@@ -4551,6 +4607,13 @@ function ChatThread({ chat, t, lang, go, user }) {
               }`}>
                 {m.body}
               </div>
+              {mine && (
+                <span className="text-[9px] text-stone-500 mt-0.5 px-1 flex items-center gap-1">
+                  {String(m.id).startsWith("tmp-")
+                    ? <>{t.msgSending}</>
+                    : <><Check size={10} className="text-stone-400" />{t.msgSent}</>}
+                </span>
+              )}
             </div>
           );
         })}
@@ -4805,7 +4868,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
         <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
         <div className="flex items-center gap-2 max-w-[160px]">
           <span className="text-stone-400 text-sm shrink-0">€</span>
-          <input type="number" className="form-input flex-1" value={price} onChange={e => setPrice(e.target.value)} placeholder="150" />
+          <input type="number" min="0" className="form-input flex-1" value={price} onChange={e => setPrice(e.target.value)} placeholder="150" />
         </div>
       </div>
 
@@ -4963,6 +5026,19 @@ function MyListingsScreen({ t, lang, go, user }) {
         </button>
       </header>
 
+      {/* Trust nudge — shortcut to verification for unverified sellers */}
+      {!user?.verified && (
+        <button onClick={() => go("legal")}
+                className="mx-5 md:mx-8 mt-4 w-[calc(100%-2.5rem)] md:w-[calc(100%-4rem)] flex items-center gap-3 bg-sky-500/10 ring-1 ring-sky-500/30 rounded-xl px-4 py-3 text-left hover:bg-sky-500/15 transition-colors">
+          <ShieldCheck size={20} className="text-sky-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-stone-100">{t.verifyBannerTitle}</div>
+            <div className="text-[11px] text-stone-400">{t.verifyBannerSub}</div>
+          </div>
+          <ChevronRight size={16} className="text-stone-500 shrink-0" />
+        </button>
+      )}
+
       {/* Status tabs */}
       <div className="px-5 md:px-8 pt-4 flex gap-1.5 overflow-x-auto hide-scrollbar">
         {tabs.map(([id, label]) => (
@@ -4994,7 +5070,7 @@ function MyListingsScreen({ t, lang, go, user }) {
           <div key={l.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
             <div className="flex items-center gap-3 p-2.5">
               <button onClick={() => go("detail", l)} className="w-14 h-14 rounded-lg overflow-hidden bg-stone-800 shrink-0">
-                <img src={l.image} alt={l.common}
+                <img src={l.image} alt={l.common} loading="lazy"
                      onError={(e) => { e.target.onerror = null; e.target.src = fallback(l.common); }}
                      className="w-full h-full object-cover" />
               </button>
@@ -5071,7 +5147,7 @@ function MyListingsScreen({ t, lang, go, user }) {
                   <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
                   <div className="flex items-center gap-2 max-w-[160px]">
                     <span className="text-stone-400 text-sm shrink-0">€</span>
-                    <input type="number" className="form-input flex-1" value={ePrice} onChange={e => setEPrice(e.target.value)} />
+                    <input type="number" min="0" className="form-input flex-1" value={ePrice} onChange={e => setEPrice(e.target.value)} />
                   </div>
                 </div>
                 <div>
@@ -6655,7 +6731,7 @@ function LeaveReviewCard({ sale, user, t, lang, onDone }) {
     <div className="bg-stone-900/60 ring-1 ring-amber-500/20 rounded-xl p-4">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-11 h-11 rounded-lg overflow-hidden bg-stone-800 shrink-0">
-          <img src={sale.listingImage} alt=""
+          <img src={sale.listingImage} alt="" loading="lazy"
                onError={(e) => { e.target.onerror = null; e.target.src = fallback(sale.listingCommon || ""); }}
                className="w-full h-full object-cover" />
         </div>
