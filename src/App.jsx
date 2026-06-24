@@ -144,7 +144,7 @@ const I18N = {
     proCapReached: "Hai raggiunto il limite di 5 annunci del piano gratuito. Passa a Pro per annunci illimitati — scrivici per attivarlo!",
     spWebsite: "Sito web", spWebsitePh: "https://iltuosito.it", proOnly: "Solo Pro", spWebsiteProNote: "Mostra un link al tuo sito sulla tua pagina pubblica (funzione Pro).",
     visitWebsite: "Visita il sito", onlineNow: "Online", translateIT: "Traduci in italiano",
-    yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
+    yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", manageListing: "Gestisci annuncio", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
     inventory: "Inventario animali", lineage: "Genetica & Pedigree", transport: "Eco-Taxi (Trasporti)",
     invIntro: "Gestisci la tua collezione: esemplari riproduttori, in vendita e venduti.",
     invBreeders: "Riproduttori", invForSale: "In vendita", invSold: "Venduti", invAdd: "Aggiungi esemplare",
@@ -186,12 +186,16 @@ const I18N = {
     privacySection: "Privacy e dati",
     dataExport: "Scarica i miei dati", dataExportDesc: "Esporta tutti i tuoi dati personali in formato JSON (GDPR Art. 20)",
     dataExportDone: "Esportazione avviata. Riceverai il file via email entro 30 giorni.",
-    kycTitle: "Verifica allevatore", kycVerified: "Verificato", kycPending: "In revisione", kycUnverified: "Non verificato",
-    kycIntro: "Ottieni la spunta blu caricando i documenti che attestano la tua attività di allevamento.",
+    kycTitle: "Verifica identità", kycVerified: "Verificato", kycPending: "In revisione", kycUnverified: "Non verificato",
+    kycIntro: "La spunta blu conferma che sei una persona reale. Basta un documento d'identità — non serve partita IVA o licenza commerciale.",
     kycVisura: "Visura camerale o P.IVA", kycAsl: "Numero registrazione ASL", kycDoc: "Documento d'identità",
+    kycRequired: "Obbligatorio", kycOptional: "Facoltativo · allevatori professionali",
+    kycDocHint: "Carta d'identità, passaporto o patente. Serve solo a confermare che sei una persona reale; non viene mostrato pubblicamente.",
+    kycOptionalHint: "Se sei un allevatore professionale puoi aggiungere questi documenti per maggiore credibilità. Non sono obbligatori.",
+    kycAslHint: "Solo Italia: registrazione presso l'Azienda Sanitaria Locale per gli allevatori commerciali. Lascia vuoto se non applicabile.",
     kycUpload: "Carica documento", kycUploaded: "Caricato", kycSubmit: "Invia per la verifica",
     kycSubmitted: "Documenti inviati. Ti avviseremo entro 48 ore.",
-    kycWhy: "Perché verificarsi?", kycWhyText: "Gli acquirenti si fidano di più degli allevatori verificati. La spunta blu appare su tutti i tuoi annunci e sul tuo profilo.",
+    kycWhy: "Perché verificarsi?", kycWhyText: "Gli acquirenti si fidano di più dei venditori verificati. La spunta blu appare su tutti i tuoi annunci e sul tuo profilo.",
     notifTitle: "Notifiche push", notifIntro: "Ricevi avvisi in tempo reale anche quando l'app è chiusa.",
     notifComingSoon: "Le notifiche push arriveranno presto. Per ora, apri l'app per vedere nuovi messaggi, offerte e promemoria delle fiere.",
     notifEnable: "Attiva notifiche", notifEnabled: "Notifiche attive", notifMessages: "Nuovi messaggi",
@@ -379,7 +383,7 @@ const I18N = {
     proCapReached: "You've reached the free plan's 5-listing limit. Upgrade to Pro for unlimited listings — message us to enable it!",
     spWebsite: "Website", spWebsitePh: "https://yoursite.com", proOnly: "Pro only", spWebsiteProNote: "Show a link to your site on your public page (Pro feature).",
     visitWebsite: "Visit website", onlineNow: "Online", translateIT: "Translate to Italian",
-    yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
+    yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", manageListing: "Manage listing", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
     inventory: "Animal inventory", lineage: "Genetics & Pedigree", transport: "Eco-Taxi (Transport)",
     invIntro: "Manage your collection: breeders, animals for sale, and sold animals.",
     invBreeders: "Breeders", invForSale: "For sale", invSold: "Sold", invAdd: "Add animal",
@@ -417,12 +421,16 @@ const I18N = {
     privacySection: "Privacy & data",
     dataExport: "Download my data", dataExportDesc: "Export all your personal data as JSON (GDPR Art. 20)",
     dataExportDone: "Export started. You'll receive the file by email within 30 days.",
-    kycTitle: "Breeder verification", kycVerified: "Verified", kycPending: "Under review", kycUnverified: "Not verified",
-    kycIntro: "Get the blue check by uploading documents proving your breeding activity.",
+    kycTitle: "Identity verification", kycVerified: "Verified", kycPending: "Under review", kycUnverified: "Not verified",
+    kycIntro: "The blue check confirms you're a real person. All it takes is an ID document — no VAT number or business licence needed.",
     kycVisura: "Business registration or VAT", kycAsl: "ASL registration number", kycDoc: "ID document",
+    kycRequired: "Required", kycOptional: "Optional · professional breeders",
+    kycDocHint: "ID card, passport or driving licence. Used only to confirm you're a real person; it's never shown publicly.",
+    kycOptionalHint: "If you're a professional breeder you can add these for extra credibility. They're not required.",
+    kycAslHint: "Italy only: registration with the local health authority (ASL) for commercial breeders. Leave blank if it doesn't apply.",
     kycUpload: "Upload document", kycUploaded: "Uploaded", kycSubmit: "Submit for review",
     kycSubmitted: "Documents submitted. We'll notify you within 48 hours.",
-    kycWhy: "Why verify?", kycWhyText: "Buyers trust verified breeders more. The blue check appears on all your listings and your profile.",
+    kycWhy: "Why verify?", kycWhyText: "Buyers trust verified sellers more. The blue check appears on all your listings and your profile.",
     notifTitle: "Push notifications", notifIntro: "Get real-time alerts even when the app is closed.",
     notifComingSoon: "Push notifications are coming soon. For now, open the app to see new messages, bids and expo reminders.",
     notifEnable: "Enable notifications", notifEnabled: "Notifications on", notifMessages: "New messages",
@@ -1295,8 +1303,9 @@ export default function HerpMarket() {
     setFavorites(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
   // Demo shortcut (DemoToggle) — fake local login for quick UI testing only.
+  // Must NOT grant verification: the blue check only reflects the real DB flag.
   const handleLogin = (name) => {
-    setUser({ name: name || "Anita Pioch", region: "Piemonte", verified: true });
+    setUser({ name: name || "Anita Pioch", region: "Piemonte", verified: false });
     const after = authModal?.after;
     setAuthModal(null);
     after && setTimeout(after, 100);
@@ -2708,6 +2717,8 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
   if (!listing) return null;
   const a = listing;
+  // Is this the logged-in user's own listing? Then show Edit, not Buy/Message.
+  const isMine = !!(user?.id && (a.sellerOwnerId === user.id || (user.name && a.seller === user.name)));
   // Delivery options come from the SELLER's choices on the listing:
   //  - a.shipping: does the seller ship this animal?
   //  - a.expoIds:  which expos will the seller hand-deliver at? (array)
@@ -2997,33 +3008,41 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         </Section>
       )}
 
-      {/* Sticky action bar — only shows the primary CTA when in "idle" state.
-          After that, all actions move into the TxStatusPanel above. */}
+      {/* Sticky action bar — Edit for my own listing; otherwise Message + CTA. */}
       <div className="fixed md:absolute bottom-16 md:bottom-0 inset-x-0 z-30 bg-stone-950/95 backdrop-blur-xl border-t border-stone-800 px-4 py-3">
         <div className="max-w-3xl mx-auto flex gap-2">
-          <button onClick={handleMessage}
-                  className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
-            <MessageCircle size={16} />{t.message}
-          </button>
-          {a.auction ? (
-            <button onClick={() => { const el = document.getElementById('auction-box'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
-                    className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
-              <ArrowUpDown size={16} />{t.placeBid}
+          {isMine ? (
+            <button onClick={() => go("mylistings")}
+                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+              <SettingsIcon size={16} />{t.manageListing}
             </button>
-          ) : txState === "idle" && (canShip || hasExpo) ? (
-            <button onClick={handleRequest}
-                    className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
-              {isExpoFlow ? <><Calendar size={16} />{t.txRequestExpo}</> : <><Truck size={16} />{t.buyAndShip}</>}
-            </button>
-          ) : txState === "idle" ? (
-            <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center bg-stone-800 text-stone-500">
-              <span className="text-xs">{lang === "it" ? "Solo via messaggio" : "Message only"}</span>
-            </div>
-          ) : null}
-          {!a.auction && txState !== "idle" && (
-            <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-stone-800 text-stone-400">
-              <span className="text-xs">{lang === "it" ? "Vedi stato sopra ↑" : "See status above ↑"}</span>
-            </div>
+          ) : (
+            <>
+              <button onClick={handleMessage}
+                      className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                <MessageCircle size={16} />{t.message}
+              </button>
+              {a.auction ? (
+                <button onClick={() => { const el = document.getElementById('auction-box'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+                        className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
+                  <ArrowUpDown size={16} />{t.placeBid}
+                </button>
+              ) : txState === "idle" && (canShip || hasExpo) ? (
+                <button onClick={handleRequest}
+                        className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-400 text-stone-950">
+                  {isExpoFlow ? <><Calendar size={16} />{t.txRequestExpo}</> : <><Truck size={16} />{t.buyAndShip}</>}
+                </button>
+              ) : txState === "idle" ? (
+                <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center bg-stone-800 text-stone-500">
+                  <span className="text-xs">{lang === "it" ? "Solo via messaggio" : "Message only"}</span>
+                </div>
+              ) : null}
+              {!a.auction && txState !== "idle" && (
+                <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-stone-800 text-stone-400">
+                  <span className="text-xs">{lang === "it" ? "Vedi stato sopra ↑" : "See status above ↑"}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -6237,6 +6256,15 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
             ) : (
               <>
                 <p className="text-sm text-stone-400 mt-2 mb-4">{t.kycIntro}</p>
+
+                {/* Required: identity document only — "prove you're a real person" */}
+                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">{t.kycRequired}</div>
+                <UploadRow label={t.kycDoc} done={!!uploads.docPath} busy={kycBusy === "doc"} onFile={(f) => handleKycFile("doc", f)} t={t} />
+                <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">{t.kycDocHint}</p>
+
+                {/* Optional: professional credentials for breeders who have them */}
+                <div className="mt-5 text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t.kycOptional}</div>
+                <p className="text-[11px] text-stone-500 mb-2.5 leading-relaxed">{t.kycOptionalHint}</p>
                 <div className="space-y-2.5">
                   <UploadRow label={t.kycVisura} done={!!uploads.visuraPath} busy={kycBusy === "visura"} onFile={(f) => handleKycFile("visura", f)} t={t} />
                   <div className="bg-stone-900 ring-1 ring-stone-800 rounded-lg px-3 py-2.5">
@@ -6244,12 +6272,13 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
                     <input value={uploads.asl} onChange={e => setUploads({ ...uploads, asl: e.target.value })}
                            placeholder="IT-XX-00000"
                            className="w-full bg-stone-950 ring-1 ring-stone-800 rounded-md px-3 py-2 text-sm text-stone-100 outline-none focus:ring-amber-500/60" />
+                    <p className="text-[10px] text-stone-600 mt-1.5 leading-relaxed">{t.kycAslHint}</p>
                   </div>
-                  <UploadRow label={t.kycDoc} done={!!uploads.docPath} busy={kycBusy === "doc"} onFile={(f) => handleKycFile("doc", f)} t={t} />
                 </div>
+
                 {kycErr && <p className="text-xs text-rose-400 mt-3">{kycErr}</p>}
                 <button onClick={submitKyc}
-                        disabled={(!uploads.visuraPath && !uploads.docPath && !uploads.asl) || kycBusy === "submit"}
+                        disabled={!uploads.docPath || kycBusy === "submit"}
                         className="w-full mt-4 py-3 rounded-lg text-sm font-bold bg-sky-500 hover:bg-sky-400 text-stone-950 transition-colors disabled:bg-stone-800 disabled:text-stone-500">
                   {kycBusy === "submit" ? t.processing : t.kycSubmit}
                 </button>

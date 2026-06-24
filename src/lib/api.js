@@ -38,6 +38,7 @@ export function mapListing(row) {
     updatedAt: row.updated_at || null,
     seller: row.sellers?.name || row.seller_name,
     sellerId: row.seller_id || row.sellers?.id || null,
+    sellerOwnerId: row.sellers?.owner_id || null,
     verified: row.sellers?.verified ?? false,
     rating: row.sellers?.rating ?? 0,
     reviews: row.sellers?.review_count ?? 0,
@@ -82,7 +83,7 @@ export function mapExpo(row) {
 // ── LISTINGS ────────────────────────────────────────────────────────────────
 export async function fetchListings(filter = {}) {
   let q = supabase.from('listings')
-    .select('*, sellers(name, verified, rating, review_count, country)')
+    .select('*, sellers(name, verified, rating, review_count, country, owner_id)')
     .eq('status', 'active');
 
   if (filter.category)  q = q.eq('category', filter.category);
@@ -114,7 +115,7 @@ export async function fetchListings(filter = {}) {
 
 export async function fetchListingsBySeller(sellerName) {
   const { data, error } = await supabase.from('listings')
-    .select('*, sellers!inner(name, verified, rating, review_count, country)')
+    .select('*, sellers!inner(name, verified, rating, review_count, country, owner_id)')
     .eq('sellers.name', sellerName).eq('status', 'active');
   if (error) throw error;
   return (data || []).map(mapListing);
