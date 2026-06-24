@@ -127,7 +127,7 @@ const I18N = {
     chatEmpty: "Nessun messaggio ancora. Scrivi per primo!",
     chatNoThreads: "Nessuna conversazione. Contatta un allevatore da un annuncio.",
     chatNoThread: "Impossibile aprire la conversazione per questo annuncio.",
-    chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora",
+    chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora", chatYou: "Tu",
     noReviewsYet: "Nessuna recensione",
     proCapReached: "Hai raggiunto il limite di 5 annunci del piano gratuito. Passa a Pro per annunci illimitati — scrivici per attivarlo!",
     spWebsite: "Sito web", spWebsitePh: "https://iltuosito.it", proOnly: "Solo Pro", spWebsiteProNote: "Mostra un link al tuo sito sulla tua pagina pubblica (funzione Pro).",
@@ -344,7 +344,7 @@ const I18N = {
     chatEmpty: "No messages yet. Be the first to write!",
     chatNoThreads: "No conversations yet. Contact a breeder from a listing.",
     chatNoThread: "Couldn't open the conversation for this listing.",
-    chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now",
+    chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now", chatYou: "You",
     noReviewsYet: "No reviews yet",
     proCapReached: "You've reached the free plan's 5-listing limit. Upgrade to Pro for unlimited listings — message us to enable it!",
     spWebsite: "Website", spWebsitePh: "https://yoursite.com", proOnly: "Pro only", spWebsiteProNote: "Show a link to your site on your public page (Pro feature).",
@@ -1104,7 +1104,10 @@ function SiteGate({ onUnlock }) {
 export default function HerpMarket() {
   const [view, setView] = useState("home");
   const [viewData, setViewData] = useState(null);
-  const [lang, setLang] = useState("it");
+  const [lang, setLangState] = useState(() => {
+    try { return localStorage.getItem("hm_lang") || "it"; } catch (e) { return "it"; }
+  });
+  const setLang = (l) => { setLangState(l); try { localStorage.setItem("hm_lang", l); } catch (e) {} };
   // Favorites persist locally so they survive a refresh. (Cross-device sync via
   // the wishlists table is a later nicety.)
   const [favorites, setFavorites] = useState(() => {
@@ -1187,6 +1190,9 @@ export default function HerpMarket() {
     if (fresh) scrollMemory.current[v] = 0; // intentional new view → start at top
     // Push current view onto history so "back" can return to it
     navHistory.current.push({ view, data: viewData });
+    // Mirror into the browser history so the device/browser Back button
+    // navigates within the app instead of leaving it.
+    try { window.history.pushState({ hmView: v }, ""); } catch (e) {}
     setView(v);
     setViewData(data);
     const saved = scrollMemory.current[v];
@@ -1207,6 +1213,24 @@ export default function HerpMarket() {
       window.scrollTo(0, typeof saved === "number" ? saved : 0);
     });
   };
+  // Bridge the browser/device Back button to the app's own history. When the
+  // user presses Back, the browser fires popstate; we consume our nav stack
+  // instead of letting the page leave the app.
+  const goBackRef = useRef(goBack);
+  goBackRef.current = goBack;
+  useEffect(() => {
+    // Seed one state entry so the first Back press has something to catch.
+    try { window.history.replaceState({ hmView: "home" }, ""); } catch (e) {}
+    const onPop = () => {
+      if (navHistory.current.length > 0) {
+        goBackRef.current();
+        // Re-arm a forward entry so subsequent Back presses keep working.
+        try { window.history.pushState({ hmView: "current" }, ""); } catch (e) {}
+      }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   // When the user taps Search from the nav, start with a clean slate.
   // Category tiles, "see all" links and similar entry points should call go("search") directly
   // to preserve the filter they just set.
@@ -4186,7 +4210,7 @@ function ChatList({ t, go, user }) {
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-baseline">
                 <div className="font-bold text-sm text-stone-100 truncate">
-                  {thr.iAmSeller ? t.chatBuyer : (thr.listing?.seller || t.chatSeller)}
+                  {thr.iAmSeller ? (thr.buyerName || t.chatBuyer) : (thr.listing?.seller || t.chatSeller)}
                 </div>
                 <div className="text-[10px] text-stone-500 font-medium shrink-0 ml-2">{relTime(thr.lastAt, t)}</div>
               </div>
@@ -4275,7 +4299,7 @@ function ChatThread({ chat, t, lang, go, user }) {
              onError={(e) => { e.target.onerror = null; e.target.src = fallback(t.realPhoto); }}
              className="w-10 h-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-sm text-stone-100 truncate">{target.seller}</div>
+          <div className="font-bold text-sm text-stone-100 truncate">{chat?.iAmSeller ? t.chatBuyer : (target.seller || t.chatSeller)}</div>
           <div className="text-[10px] text-stone-500 font-medium truncate font-display italic">{target.common}</div>
         </div>
         <button onClick={() => go("detail", target)}
@@ -4294,11 +4318,15 @@ function ChatThread({ chat, t, lang, go, user }) {
           <p className="text-center text-stone-600 text-xs py-10 italic">{t.chatEmpty}</p>
         ) : messages.map((m) => {
           const mine = m.sender_id === user?.id;
+          const senderName = mine ? t.chatYou : (chat?.iAmSeller ? (chat?.buyerName || t.chatBuyer) : (target.seller || t.chatSeller));
           return (
-            <div key={m.id} className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
-              mine ? "ml-auto bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"
-            }`}>
-              {m.body}
+            <div key={m.id} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
+              <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider mb-0.5 px-1">{senderName}</span>
+              <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
+                mine ? "bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"
+              }`}>
+                {m.body}
+              </div>
             </div>
           );
         })}

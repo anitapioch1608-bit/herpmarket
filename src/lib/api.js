@@ -313,7 +313,7 @@ export async function fetchMyThreads(userId) {
   const { data: mySellers } = await supabase.from('sellers').select('id').eq('owner_id', userId);
   const sellerIds = (mySellers || []).map(s => s.id);
   let q = supabase.from('threads')
-    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id)')
+    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id), buyer:buyer_id(id, name)')
     .order('created_at', { ascending: false });
   // buyer_id = me OR seller_id in my seller ids
   const orParts = [`buyer_id.eq.${userId}`];
@@ -330,6 +330,7 @@ export async function fetchMyThreads(userId) {
       sellerId: thr.seller_id,
       buyerId: thr.buyer_id,
       iAmSeller: sellerIds.includes(thr.seller_id),
+      buyerName: thr.buyer?.name || null,
       listing: thr.listings ? mapListing(thr.listings) : null,
       lastMsg: last ? last.body : "",
       lastAt: last ? last.created_at : thr.created_at,
