@@ -2969,11 +2969,11 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           onClick={() => go("seller", a.seller)}
           className="w-full bg-stone-900/60 border border-stone-800 rounded-xl p-4 flex items-center gap-3 hover:border-amber-500/40 hover:bg-stone-900 transition-all text-left group">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center font-display text-lg text-stone-50 font-bold">
-            {a.seller[0]}
+            {(a.seller || "?")[0]}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-stone-100 text-sm group-hover:text-amber-300 transition-colors">{a.seller}</span>
+              <span className="font-bold text-stone-100 text-sm group-hover:text-amber-300 transition-colors">{a.seller || "—"}</span>
               {a.verified && <ShieldCheck size={14} className="text-sky-400" />}
             </div>
             <div className="flex items-center gap-1 text-xs text-stone-400 mt-0.5">
@@ -3072,7 +3072,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                                 selected ? "bg-amber-500/15 ring-1 ring-amber-500/40" : "bg-stone-900/60 ring-1 ring-stone-800 hover:ring-stone-700"
                               }`}>
                         <div className={`rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br from-emerald-800 to-teal-700`}>
-                          <div className="text-[8px] uppercase tracking-widest text-white/80 font-bold leading-none">{ex.date.split(" ")[0]}</div>
+                          <div className="text-[8px] uppercase tracking-widest text-white/80 font-bold leading-none">{(ex.date || "").split(" ")[0]}</div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[12px] font-bold text-stone-100 leading-tight truncate">{ex.name}</div>
@@ -6137,7 +6137,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
       <div className="px-5 md:px-8 -mt-12 md:-mt-14 relative">
         <div className="flex items-end gap-4">
           <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-500 to-amber-800 ring-4 ring-stone-950 flex items-center justify-center font-display text-4xl text-stone-50 font-bold shadow-2xl">
-            {data.avatarUrl ? <img src={data.avatarUrl} alt={data.name} className="w-full h-full object-cover" /> : data.name[0]}
+            {data.avatarUrl ? <img src={data.avatarUrl} alt={data.name} className="w-full h-full object-cover" /> : (data.name || "?")[0]}
           </div>
           <div className="flex-1 pb-1 min-w-0">
             <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight flex items-center gap-2 leading-tight">
