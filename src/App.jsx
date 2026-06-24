@@ -1032,6 +1032,9 @@ const CHATS = [];  // demo chats removed — real threads load from Supabase
 
 /* ───── Utilities ───────────────────────────────────────────────── */
 const formatAge = (months, t) => {
+  // Birth date may be unknown (null) or unparseable — show a clean dash, not "null mesi".
+  if (months == null || isNaN(months)) return "—";
+  if (months < 1) return `< 1 ${t.months}`;
   if (months < 12) return `${months} ${t.months}`;
   const years = Math.floor(months / 12);
   return `${years} ${years === 1 ? t.year : t.years}`;
@@ -3726,13 +3729,24 @@ function SellScreen({ t, lang, go, user }) {
           {subcatId && (
             <FormBlock label={t.species} required done={!!speciesVal && speciesVal !== "__other"}>
               {speciesOptions.length > 0 ? (
-                <select className="form-input" value={speciesVal} onChange={e => setSpeciesVal(e.target.value)}>
-                  <option value="">{t.pickSpecies}</option>
-                  {speciesOptions.map(sp => (
-                    <option key={sp} value={sp}>{SPECIES_LABELS[sp]?.[lang] || sp} — {sp}</option>
-                  ))}
-                  <option value="__other">{lang === "it" ? "Altro / non in elenco…" : "Other / not listed…"}</option>
-                </select>
+                <>
+                  <select className="form-input"
+                          value={speciesOptions.includes(speciesVal) ? speciesVal : (speciesVal === "" ? "" : "__other")}
+                          onChange={e => setSpeciesVal(e.target.value)}>
+                    <option value="">{t.pickSpecies}</option>
+                    {speciesOptions.map(sp => (
+                      <option key={sp} value={sp}>{SPECIES_LABELS[sp]?.[lang] || sp} — {sp}</option>
+                    ))}
+                    <option value="__other">{lang === "it" ? "Altro / non in elenco…" : "Other / not listed…"}</option>
+                  </select>
+                  {/* When "Other" is chosen, let them type the scientific name. */}
+                  {speciesVal !== "" && !speciesOptions.includes(speciesVal) && (
+                    <input className="form-input mt-2" autoFocus
+                           placeholder={lang === "it" ? "Nome scientifico della specie" : "Species scientific name"}
+                           value={speciesVal === "__other" ? "" : speciesVal}
+                           onChange={e => setSpeciesVal(e.target.value)} />
+                  )}
+                </>
               ) : (
                 <input className="form-input" placeholder={lang === "it" ? "Nome scientifico della specie" : "Species scientific name"}
                        value={speciesVal === "__other" ? "" : speciesVal} onChange={e => setSpeciesVal(e.target.value)} />
@@ -6000,14 +6014,24 @@ function BreedingProjectsScreen({ t, go, lang }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   REVIEWS — feedback the seller received. Pulls from the demo seller's
-   reviews so the screen is populated for the test.
+   REVIEWS — feedback the seller received. Real reviews are unlocked after
+   a completed sale (buyer leaves a review). Until that flow is wired, this
+   honestly shows the empty state rather than demo data.
    ═════════════════════════════════════════════════════════════════ */
-function ReviewsScreen({ t, go, lang }) {
-  // Aggregate reviews from a representative demo seller
-  const seller = SELLERS["Piedmont Geckos"];
-  const reviews = seller?.reviews || [];
-  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) : 0;
+function ReviewsScreen({ t, go, lang, user }) {
+  const [reviews, setReviews] = useState(null);   // null = loading
+  useEffect(() => {
+    if (!user?.id) { setReviews([]); return; }
+    let on = true;
+    import("./lib/api")
+      .then(api => api.fetchMyReviews ? api.fetchMyReviews(user.id) : [])
+      .then(rows => { if (on) setReviews(rows || []); })
+      .catch(() => { if (on) setReviews([]); });
+    return () => { on = false; };
+  }, [user?.id]);
+
+  const list = reviews || [];
+  const avg = list.length ? (list.reduce((s, r) => s + r.rating, 0) / list.length) : 0;
 
   return (
     <div className="max-w-2xl mx-auto w-full pb-24">
@@ -6031,7 +6055,7 @@ function ReviewsScreen({ t, go, lang }) {
             </div>
           </div>
           <div className="flex-1 border-l border-stone-800 pl-5">
-            <div className="text-2xl font-display text-stone-100">{reviews.length}</div>
+            <div className="text-2xl font-display text-stone-100">{list.length}</div>
             <div className="text-[11px] text-stone-500">{t.reviewsTotal}</div>
           </div>
         </div>
@@ -6039,9 +6063,11 @@ function ReviewsScreen({ t, go, lang }) {
 
       {/* Review list */}
       <div className="px-5 md:px-8 pt-4 space-y-2.5">
-        {reviews.length === 0 ? (
+        {reviews === null ? (
+          <p className="text-center text-stone-500 text-sm py-16 italic">…</p>
+        ) : list.length === 0 ? (
           <p className="text-center text-stone-500 text-sm py-16 italic">{t.reviewsEmpty}</p>
-        ) : reviews.map((r, i) => (
+        ) : list.map((r, i) => (
           <div key={i} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
