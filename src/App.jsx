@@ -1598,14 +1598,66 @@ function SexIcon({ sex, t, withLabel = false, size = 12 }) {
 }
 
 /* The central listing card — dense, MorphMarket-style */
+/* Swipeable / clickable image carousel. Used on listing cards (compact) and
+   the detail page (full). Arrows + dots; tapping the image still bubbles up
+   (so a card tap opens the listing). Arrows/dots stopPropagation so they only
+   change the photo. Falls back to a single image gracefully. */
+function ImageCarousel({ images, alt, fallbackLabel, rounded = "", showCounter = false, imgClass = "" }) {
+  const pics = (images && images.length) ? images : [null];
+  const [idx, setIdx] = useState(0);
+  const touchX = useRef(null);
+  const multi = pics.length > 1;
+  const at = Math.min(idx, pics.length - 1);
+
+  const go = (d, e) => { e && e.stopPropagation(); setIdx(i => (i + d + pics.length) % pics.length); };
+  const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 40) { setIdx(i => (i + (dx < 0 ? 1 : -1) + pics.length) % pics.length); }
+    touchX.current = null;
+  };
+
+  return (
+    <div className={`relative w-full h-full ${rounded}`} onTouchStart={multi ? onTouchStart : undefined} onTouchEnd={multi ? onTouchEnd : undefined}>
+      <img src={pics[at]} alt={alt}
+           onError={(e) => { e.target.onerror = null; e.target.src = fallback(fallbackLabel || alt || ""); }}
+           className={imgClass || "w-full h-full object-cover"} />
+      {multi && (
+        <>
+          {/* Prev / next arrows */}
+          <button onClick={(e) => go(-1, e)}
+                  className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-stone-950/85 transition-opacity"
+                  aria-label="Previous photo"><ChevronLeft size={16} /></button>
+          <button onClick={(e) => go(1, e)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-stone-950/85 transition-opacity"
+                  aria-label="Next photo"><ChevronRight size={16} /></button>
+          {/* Dots */}
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+            {pics.map((_, i) => (
+              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+                      className={`rounded-full transition-all ${i === at ? "w-2 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"}`}
+                      aria-label={`Photo ${i + 1}`} />
+            ))}
+          </div>
+          {showCounter && (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-stone-950/70 backdrop-blur text-[10px] font-bold text-stone-100 px-2 py-0.5 rounded-full">
+              {at + 1}/{pics.length}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function ListingCard({ item, go, favorites, toggleFav, t }) {
   return (
     <div onClick={() => go("detail", item)}
          className="group bg-stone-900/60 border border-stone-800 rounded-xl overflow-hidden cursor-pointer hover:border-amber-500/40 hover:shadow-2xl hover:shadow-amber-500/5 transition-all flex flex-col">
       <div className="relative aspect-square bg-stone-800 overflow-hidden">
-        <img src={item.image} alt={item.common}
-             onError={(e) => { e.target.onerror = null; e.target.src = fallback(item.common || t.realPhoto); }}
-             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <ImageCarousel images={item.images} alt={item.common} fallbackLabel={item.common || t.realPhoto}
+                       imgClass="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         {/* Sex badge top-left */}
         <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50">
           <SexIcon sex={item.sex} t={t} size={11} />
@@ -2708,18 +2760,17 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   return (
     <div className="max-w-3xl mx-auto w-full pb-40 md:pb-32">
       {/* Hero image */}
-      <div className="relative aspect-square md:aspect-[16/10] bg-stone-800 overflow-hidden">
-        <img src={a.image} alt={a.common}
-             onError={(e) => { e.target.onerror = null; e.target.src = fallback(t.realPhoto); }}
-             className="w-full h-full object-cover" />
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-stone-950/80 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-stone-950 to-transparent" />
+      <div className="group relative aspect-square md:aspect-[16/10] bg-stone-800 overflow-hidden">
+        <ImageCarousel images={a.images} alt={a.common} fallbackLabel={t.realPhoto} showCounter
+                       imgClass="w-full h-full object-cover" />
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-stone-950/80 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-stone-950 to-transparent pointer-events-none" />
         <button onClick={goBack}
-                className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors">
+                className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
           <ChevronLeft size={20} />
         </button>
         <button onClick={(e) => toggleFav(a.id, e)}
-                className="absolute top-5 right-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full transition-colors">
+                className="absolute top-5 right-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full transition-colors z-10">
           <Heart size={20} className={favorites.includes(a.id) ? "fill-rose-500 text-rose-500" : "text-stone-100"} />
         </button>
       </div>
@@ -3616,7 +3667,7 @@ function SellScreen({ t, lang, go, user }) {
         citesListed: isCites,
         country, region, city: null,
         sire: null, dam: null, desc,
-        image: urls[0] || null,
+        image: urls[0] || null, images: urls,
         shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction,
       }, seller.id);
@@ -4992,7 +5043,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
         citesListed: isCites, country, region, city: null,
         sire: sire.trim() || null, dam: dam.trim() || null, desc,
-        image: urls[0] || null, shipping: false, euShipping: false, localPickup: true,
+        image: urls[0] || null, images: urls, shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction: null, status,
       }, seller.id);
       setSuccess(true);
