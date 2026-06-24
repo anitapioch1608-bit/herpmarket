@@ -5028,7 +5028,7 @@ function MyListingsScreen({ t, lang, go, user }) {
 
       {/* Trust nudge — shortcut to verification for unverified sellers */}
       {!user?.verified && (
-        <button onClick={() => go("legal")}
+        <button onClick={() => go("settings")}
                 className="mx-5 md:mx-8 mt-4 w-[calc(100%-2.5rem)] md:w-[calc(100%-4rem)] flex items-center gap-3 bg-sky-500/10 ring-1 ring-sky-500/30 rounded-xl px-4 py-3 text-left hover:bg-sky-500/15 transition-colors">
           <ShieldCheck size={20} className="text-sky-400 shrink-0" />
           <div className="flex-1 min-w-0">
