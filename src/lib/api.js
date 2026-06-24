@@ -11,6 +11,7 @@ export function mapListing(row) {
     id: row.id,
     species: row.species,
     common: row.common,
+    title: row.title || "",
     category: row.category,
     traits: row.traits || [],
     price: Number(row.price),
@@ -36,7 +37,8 @@ export function mapListing(row) {
     auction: row.auction || null,
     createdAt: row.created_at || null,
     updatedAt: row.updated_at || null,
-    seller: row.sellers?.name || row.seller_name,
+    seller: row.sellers?.store_name || row.sellers?.name || row.seller_name,
+    sellerRealName: row.sellers?.name || row.seller_name,
     sellerId: row.seller_id || row.sellers?.id || null,
     sellerOwnerId: row.sellers?.owner_id || null,
     verified: row.sellers?.verified ?? false,
@@ -51,6 +53,9 @@ export function mapSeller(row) {
   return {
     id: row.id,
     name: row.name,
+    storeName: row.store_name || "",
+    // Public-facing name: store brand if set, else the real name.
+    displayName: row.store_name || row.name,
     country: row.country || 'IT',
     region: row.region,
     city: row.city,
@@ -83,7 +88,7 @@ export function mapExpo(row) {
 // ── LISTINGS ────────────────────────────────────────────────────────────────
 export async function fetchListings(filter = {}) {
   let q = supabase.from('listings')
-    .select('*, sellers(name, verified, rating, review_count, country, owner_id)')
+    .select('*, sellers(name, store_name, verified, rating, review_count, country, owner_id)')
     .eq('status', 'active');
 
   if (filter.category)  q = q.eq('category', filter.category);
@@ -115,8 +120,9 @@ export async function fetchListings(filter = {}) {
 
 export async function fetchListingsBySeller(sellerName) {
   const { data, error } = await supabase.from('listings')
-    .select('*, sellers!inner(name, verified, rating, review_count, country, owner_id)')
-    .eq('sellers.name', sellerName).eq('status', 'active');
+    .select('*, sellers!inner(name, store_name, verified, rating, review_count, country, owner_id)')
+    .or(`name.eq.${sellerName},store_name.eq.${sellerName}`, { foreignTable: 'sellers' })
+    .eq('status', 'active');
   if (error) throw error;
   return (data || []).map(mapListing);
 }
@@ -124,7 +130,7 @@ export async function fetchListingsBySeller(sellerName) {
 export async function createListing(listing, sellerId) {
   const { data, error } = await supabase.from('listings').insert({
     seller_id: sellerId,
-    species: listing.species, common: listing.common, category: listing.category,
+    species: listing.species, common: listing.common, title: listing.title || null, category: listing.category,
     traits: listing.traits || [], price: listing.price, deposit: listing.deposit,
     sex: listing.sex, age_months: listing.ageMonths, weight: listing.weight,
     birth_date: listing.birthDate || null, cites_listed: !!listing.citesListed,
@@ -176,6 +182,7 @@ export async function updateListing(id, fields) {
   if (fields.price !== undefined) patch.price = fields.price;
   if (fields.desc != null) patch.description = fields.desc;
   if (fields.common != null) patch.common = fields.common;
+  if (fields.title !== undefined) patch.title = fields.title || null;
   if (fields.deposit !== undefined) patch.deposit = fields.deposit;
   if (fields.status != null) patch.status = fields.status;
   if (fields.expoIds != null) patch.expo_ids = fields.expoIds;
@@ -212,9 +219,24 @@ export async function fetchMySeller(userId) {
 }
 
 // ── MARK AS SOLD (seller-initiated cash / expo sales) ───────────────────────
+// Buyer details for a sold listing, pulled from its completed transaction —
+// so the CITES document shows the real buyer, not whoever is viewing it.
+export async function fetchListingSaleInfo(listingId) {
+  const { data, error } = await supabase.from('transactions')
+    .select('buyer_name, buyer_address, buyer_country, buyer:buyer_id(display_name), created_at, state')
+    .eq('listing_id', listingId)
+    .in('state', ['completed', 'paid', 'approved'])
+    .order('created_at', { ascending: false }).limit(1).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    buyerName: data.buyer_name || data.buyer?.display_name || null,
+    buyerAddress: data.buyer_address || null,
+    buyerCountry: data.buyer_country || null,
+  };
+}
+
 // Records a completed transaction and flips the listing to 'sold'.
-// opts: { sellerId, listingId, channel, buyerId?, buyerName?, buyerAddress?, amount?,
-//         buyerCountry?, sellerCountry?, citesListed? }
 export async function markListingSold(opts) {
   const row = {
     listing_id: opts.listingId,
@@ -360,6 +382,7 @@ export async function countMyListings(userId) {
 export async function updateMySeller(sellerId, fields) {
   const patch = {};
   if (fields.name != null) patch.name = fields.name;
+  if (fields.storeName !== undefined) patch.store_name = fields.storeName ? fields.storeName : null;
   if (fields.city != null) patch.city = fields.city;
   if (fields.bio != null) { patch.bio_it = fields.bio; patch.bio_en = fields.bio; }
   if (fields.specialties != null) patch.specialties = fields.specialties;
@@ -468,7 +491,8 @@ export async function getOrCreateSeller(user) {
 
 // ── SELLERS ─────────────────────────────────────────────────────────────────
 export async function fetchSeller(name) {
-  const { data, error } = await supabase.from('sellers').select('*').eq('name', name).single();
+  const { data, error } = await supabase.from('sellers').select('*')
+    .or(`name.eq.${name},store_name.eq.${name}`).limit(1).maybeSingle();
   if (error) throw error;
   return mapSeller(data);
 }
@@ -514,6 +538,14 @@ export async function updateTransactionState(txId, patch) {
 }
 
 // ── BIDS ────────────────────────────────────────────────────────────────────
+// Latest auction figures for one listing (used to refresh after a failed bid).
+export async function fetchAuction(listingId) {
+  const { data, error } = await supabase.from('listings')
+    .select('auction').eq('id', listingId).single();
+  if (error) throw error;
+  return data?.auction || null;
+}
+
 export async function placeBid(listingId, bidderId, amount) {
   // Re-read the current auction to guard against a higher bid landing first.
   const { data: l, error: readErr } = await supabase.from('listings')

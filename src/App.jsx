@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -101,8 +101,10 @@ const I18N = {
     cites: "Documenti CITES", citesNotice: "Documento di cessione richiesto per Allegato A/B",
     listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 3)", publishListing: "Pubblica annuncio",
     photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
-    needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…",
+    needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…", uploadingPhotos: "Caricamento foto…", uploadingHint: "Non chiudere l'app, può richiedere qualche secondo.",
     reserveTooLow: "Il prezzo di riserva non può essere inferiore al prezzo di partenza",
+    shippingHighWarn: "Il costo di spedizione sembra alto rispetto al prezzo. Sei sicuro?",
+    fieldRequired: "obbligatorio",
     needRegion: "Seleziona la regione", chooseRegion: "Seleziona regione…",
     needTitle: "Inserisci un titolo per l'annuncio", needCategory: "Seleziona una categoria",
     citesCheckLabel: "Specie CITES (Allegato A/B/C/D Reg. CE 338/97)",
@@ -133,6 +135,7 @@ const I18N = {
     spPhoto: "Foto del profilo", spUpload: "Carica foto", spCity: "Città", spBio: "Descrizione",
     spSpecialties: "Specializzazioni (separate da virgola)", spSpecialtiesPh: "es. Correlophus ciliatus, Python regius",
     spSave: "Salva modifiche", spSaved: "Modifiche salvate!", spNameTaken: "Questo nome è già in uso, scegline un altro.",
+    spStoreName: "Nome del negozio", spStoreNameHint: "Facoltativo. Se impostato, gli acquirenti vedranno e cercheranno questo nome invece del tuo nome reale.",
     spView: "Vedi la tua pagina pubblica",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…",
@@ -237,7 +240,7 @@ const I18N = {
     legalIntro: "Il mercato italiano dei rettili è regolato dal D.Lgs. 135/2022 e dal Reg. CE 338/97. Verifica sempre la categoria CITES prima di acquistare.",
     depositNotice: "L'acconto del 10% blocca l'esemplare fino al ritiro in fiera. Non rimborsabile.",
     realPhoto: "Foto dell'esemplare",
-    auction: "Asta", auctionLabel: "ASTA", startPrice: "Prezzo di partenza", currentBid: "Offerta attuale",
+    auction: "Asta", auctionLabel: "ASTA", auctionLive: "Asta in corso", startPrice: "Prezzo di partenza", currentBid: "Offerta attuale",
     placeBid: "Fai un'offerta", yourBid: "La tua offerta", bidCount: "offerte", bids: "offerte",
     reserveMet: "Riserva raggiunta", reserveNotMet: "Riserva non raggiunta",
     auctionEnds: "Termina tra", auctionEnded: "Asta conclusa", minimumBid: "Offerta minima",
@@ -340,8 +343,10 @@ const I18N = {
     cites: "CITES paperwork", citesNotice: "Transfer document required for Annex A/B",
     listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 3)", publishListing: "Publish listing",
     photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
-    needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…",
+    needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…", uploadingPhotos: "Uploading photos…", uploadingHint: "Don't close the app, this can take a few seconds.",
     reserveTooLow: "The reserve price can't be lower than the starting price",
+    shippingHighWarn: "Shipping seems high relative to the item price. Are you sure?",
+    fieldRequired: "required",
     needRegion: "Select the region", chooseRegion: "Select region…",
     needTitle: "Enter a listing title", needCategory: "Select a category",
     citesCheckLabel: "CITES species (Annex A/B/C/D, EU Reg. 338/97)",
@@ -372,6 +377,7 @@ const I18N = {
     spPhoto: "Profile photo", spUpload: "Upload photo", spCity: "City", spBio: "Description",
     spSpecialties: "Specialties (comma-separated)", spSpecialtiesPh: "e.g. Correlophus ciliatus, Python regius",
     spSave: "Save changes", spSaved: "Changes saved!", spNameTaken: "That name is already taken, choose another.",
+    spStoreName: "Store name", spStoreNameHint: "Optional. If set, buyers will see and search for this name instead of your real name.",
     spView: "View your public page",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…",
@@ -472,7 +478,7 @@ const I18N = {
     legalIntro: "The Italian reptile market is governed by D.Lgs. 135/2022 and EU Reg. 338/97. Always check the CITES annex before buying.",
     depositNotice: "A 10% deposit reserves the animal until expo pickup. Non-refundable.",
     realPhoto: "Animal photo",
-    auction: "Auction", auctionLabel: "AUCTION", startPrice: "Starting price", currentBid: "Current bid",
+    auction: "Auction", auctionLabel: "AUCTION", auctionLive: "Auction live", startPrice: "Starting price", currentBid: "Current bid",
     placeBid: "Place a bid", yourBid: "Your bid", bidCount: "bids", bids: "bids",
     reserveMet: "Reserve met", reserveNotMet: "Reserve not met",
     auctionEnds: "Ends in", auctionEnded: "Auction ended", minimumBid: "Minimum bid",
@@ -842,10 +848,28 @@ const SPECIES_LABELS = {
   "Armadillidium":             { it: "Isopode (Armadillidium)", en: "Pill woodlouse (isopod)" },
 };
 
-/* Return deduplicated trait list for a category (optionally narrowed to one species).
-   Each entry { name, cls }. Used by the trait-tag picker. */
+/* Generic, safe trait sets per category — used when a specific species has no
+   curated morph list. Avoids showing (e.g.) Hermann's morphs under a Russian
+   tortoise. Sellers can always free-type anything not listed. */
+const GENERIC_CATEGORY_TRAITS = {
+  geckos:     [{ name: "Wild Type", cls: "wild" }, { name: "Albino", cls: "recessive" }, { name: "Het (carrier)", cls: "het" }, { name: "Line-bred", cls: "line" }],
+  snakes:     [{ name: "Wild Type", cls: "wild" }, { name: "Albino", cls: "recessive" }, { name: "Hypo", cls: "recessive" }, { name: "Het (carrier)", cls: "het" }, { name: "Line-bred", cls: "line" }],
+  lizards:    [{ name: "Wild Type", cls: "wild" }, { name: "Hypo", cls: "recessive" }, { name: "Line-bred colour", cls: "line" }],
+  chameleons: [{ name: "Wild Type", cls: "wild" }, { name: "Locality", cls: "locality" }, { name: "Line-bred", cls: "line" }],
+  tortoises:  [{ name: "Wild Type", cls: "wild" }, { name: "Locality", cls: "locality" }, { name: "Albino", cls: "recessive" }, { name: "Ivory/High-yellow", cls: "line" }],
+  amphibians: [{ name: "Wild Type", cls: "wild" }, { name: "Albino", cls: "recessive" }, { name: "Leucistic", cls: "recessive" }, { name: "Line-bred", cls: "line" }],
+  inverts:    [{ name: "Normal", cls: "wild" }, { name: "Locality", cls: "locality" }, { name: "Line-bred colour", cls: "line" }],
+};
+
+/* Return the trait list for a species (preferred) or a category.
+   - Known species → its curated morphs.
+   - Unknown species (or none yet) → the category's GENERIC set, never another
+     species' morphs. Each entry { name, cls }. */
 function getTraitsForScope(categoryId, species) {
   if (species && SPECIES_TRAITS[species]) return SPECIES_TRAITS[species];
+  // A specific species was chosen but we have no curated list for it → generic.
+  if (species) return GENERIC_CATEGORY_TRAITS[categoryId] || [{ name: "Wild Type", cls: "wild" }];
+  // No species chosen → show the category union (for the search filter).
   const speciesList = CATEGORY_SPECIES[categoryId] || [];
   const seen = new Set();
   const out = [];
@@ -854,7 +878,8 @@ function getTraitsForScope(categoryId, species) {
       if (!seen.has(tr.name)) { seen.add(tr.name); out.push(tr); }
     });
   });
-  return out;
+  // If the category has no curated species at all (e.g. inverts), use generic.
+  return out.length ? out : (GENERIC_CATEGORY_TRAITS[categoryId] || []);
 }
 
 /* ───── Categories (counts driven by mock listings; placeholders here) ── */
@@ -1082,6 +1107,14 @@ const formatAge = (months, t) => {
   if (months < 12) return `${months} ${t.months}`;
   const years = Math.floor(months / 12);
   return `${years} ${years === 1 ? t.year : t.years}`;
+};
+// Birth/age display that respects the precision the breeder gave:
+//  - year only ("2025")      → "CB25" (captive-bred shorthand; no fake month count)
+//  - month ("2025-06") / full → computed age from ageMonths
+const formatBirth = (listing, t) => {
+  const bd = (listing?.birthDate || "").trim();
+  if (/^\d{4}$/.test(bd)) return `CB${bd.slice(2)}`;
+  return formatAge(listing?.ageMonths, t);
 };
 const formatPrice = (n) => `€${n.toLocaleString("it-IT")}`;
 const FREE_LISTING_LIMIT = 5;  // free sellers; Pro = unlimited
@@ -1444,9 +1477,6 @@ export default function HerpMarket() {
         <SetNewPasswordModal t={t} onDone={() => setRecovery(false)} />
       )}
 
-      {/* Demo state toggle — floating, dismissible. Lets you instantly flip auth for demos. */}
-      <DemoToggle user={user} onLogin={() => handleLogin("Anita Pioch")} onLogout={handleLogout} />
-
       {/* Privacy / cookie banner — shown until the user makes a choice. */}
       <CookieBanner t={t} lang={lang} go={go} />
 
@@ -1672,7 +1702,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
           <SexIcon sex={item.sex} t={t} size={11} />
         </div>
         {/* Heart top-right */}
-        <button onClick={(e) => toggleFav(item.id, e)}
+        <button onClick={(e) => toggleFav(item.id, e)} aria-label="Save to favourites"
                 className="absolute top-2 right-2 p-1.5 bg-stone-950/80 backdrop-blur-sm rounded-full ring-1 ring-stone-700/50 hover:ring-rose-500/50 transition-all">
           <Heart size={12} className={favorites.includes(item.id) ? "fill-rose-500 text-rose-500" : "text-stone-300"} />
         </button>
@@ -1698,8 +1728,18 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 
       <div className="p-2.5 flex-1 flex flex-col gap-1.5">
         <div>
-          <h4 className="text-[13px] font-bold text-stone-50 leading-tight truncate">{item.common}</h4>
-          <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>
+          {item.title ? (
+            <>
+              <h4 className="text-[13px] font-bold text-stone-50 leading-tight line-clamp-2">{item.title}</h4>
+              <p className="text-[10px] text-stone-400 truncate mt-0.5">{item.common}</p>
+              <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>
+            </>
+          ) : (
+            <>
+              <h4 className="text-[13px] font-bold text-stone-50 leading-tight truncate">{item.common}</h4>
+              <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>
+            </>
+          )}
         </div>
 
         {/* Trait chips */}
@@ -1732,7 +1772,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             ) : (
               <>
                 <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
-                <div className="text-[9px] text-stone-500 mt-1 truncate">{formatAge(item.ageMonths, t)} · {countryByCode(item.country).flag} {item.city}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{formatBirth(item, t)} · {countryByCode(item.country).flag} {item.city}</div>
               </>
             )}
           </div>
@@ -1747,7 +1787,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
 function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth, listingsData }) {
-  const userRegion = "Piemonte";
+  const userRegion = user?.region || "Piemonte";
   const LIST = listingsData || LISTINGS;
   const near = LIST.filter(l => l.region === userRegion);
   const all = LIST;
@@ -2040,7 +2080,7 @@ function AllExposModal({ onClose, go, t, lang }) {
 /* ═══════════════════════════════════════════════════════════════════
    SEARCH — filters drawer + grid (the real MorphMarket workhorse)
    ═════════════════════════════════════════════════════════════════ */
-function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState, listingsData }) {
+function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState, listingsData, user }) {
   const [showFilters, setShowFilters] = useState(initialState?.openFilters || false);
   const [showSort, setShowSort] = useState(false);
   // Snapshot of the filter when the sheet opens. If the user closes with X
@@ -2081,12 +2121,16 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
         l.seller.toLowerCase().includes(q) ||
         l.traits.some(tr => tr.name.toLowerCase().includes(q)));
     }
-    if (filter.sort === "priceAsc")  r = [...r].sort((a, b) => a.price - b.price);
-    if (filter.sort === "priceDesc") r = [...r].sort((a, b) => b.price - a.price);
-    if (filter.sort === "distance")  r = [...r].sort((a, b) => a.distanceKm - b.distanceKm);
+    if (filter.sort === "priceAsc")  r = [...r].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    if (filter.sort === "priceDesc") r = [...r].sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
+    if (filter.sort === "distance") {
+      // No coordinates in the data, so "nearest" = same region as the user first.
+      const myRegion = user?.region || "";
+      r = [...r].sort((a, b) => (a.region === myRegion ? 0 : 1) - (b.region === myRegion ? 0 : 1));
+    }
     if (filter.sort === "ratingDesc") r = [...r].sort((a, b) => b.rating - a.rating);
     return r;
-  }, [filter, listingsData]);
+  }, [filter, listingsData, user?.region]);
 
   const activeFilterCount = [
     filter.category, filter.subCategory, filter.sex, filter.region, filter.country, filter.seller,
@@ -2291,20 +2335,20 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
             {/* Price range */}
             <FilterGroup label={t.priceRange}>
               <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                <div className="flex items-center gap-1.5 flex-1">
+                  <span className="text-stone-400 text-sm shrink-0">€</span>
                   <input type="number" inputMode="numeric" placeholder={t.min}
                          value={filter.priceMin ?? ""}
                          onChange={e => setFilter({ ...filter, priceMin: e.target.value === "" ? null : Number(e.target.value) })}
-                         className="w-full bg-stone-900 border border-stone-800 rounded-lg pl-7 pr-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
+                         className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
                 </div>
                 <span className="text-stone-600">–</span>
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                <div className="flex items-center gap-1.5 flex-1">
+                  <span className="text-stone-400 text-sm shrink-0">€</span>
                   <input type="number" inputMode="numeric" placeholder={t.max}
                          value={filter.priceMax ?? ""}
                          onChange={e => setFilter({ ...filter, priceMax: e.target.value === "" ? null : Number(e.target.value) })}
-                         className="w-full bg-stone-900 border border-stone-800 rounded-lg pl-7 pr-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
+                         className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
                 </div>
               </div>
             </FilterGroup>
@@ -2321,16 +2365,14 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               </div>
             </FilterGroup>
 
-            {/* Country */}
+            {/* Country — dropdown (Italy first, then alphabetical) */}
             <FilterGroup label={t.countryLabel}>
-              <div className="flex flex-wrap gap-1.5">
-                {COUNTRIES.map(c => (
-                  <ToggleChip key={c.code} active={filter.country === c.code}
-                              onClick={() => setFilter({ ...filter, country: filter.country === c.code ? null : c.code })}>
-                    {c.flag} {c[lang]}
-                  </ToggleChip>
-                ))}
-              </div>
+              <select value={filter.country || ""} onChange={e => setFilter({ ...filter, country: e.target.value || null, region: null })}
+                      className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
+                <option value="">{t.anyCountry}</option>
+                {[...COUNTRIES].sort((a, b) => a.code === "IT" ? -1 : b.code === "IT" ? 1 : a[lang].localeCompare(b[lang], lang))
+                  .map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+              </select>
             </FilterGroup>
 
             {/* Region — adapts to the selected country; free of country shows IT regions */}
@@ -2476,13 +2518,18 @@ function BottomSheet({ title, onClose, children }) {
    The min next bid is currentBid + a small increment.
    ═════════════════════════════════════════════════════════════════ */
 
-// Returns a live-ticking countdown for a target ISO datetime
+// Returns a live-ticking countdown for a target ISO datetime.
+// Ticks every second in the final 5 minutes (so the timer is accurate near the
+// end and doesn't let a buyer bid on an already-closed auction), 30s otherwise.
 function useCountdown(endsAtISO) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000 * 30);
+    const end = new Date(endsAtISO).getTime();
+    const remaining = end - Date.now();
+    const fast = remaining > 0 && remaining < 5 * 60 * 1000;
+    const id = setInterval(() => setNow(Date.now()), fast ? 1000 : 1000 * 30);
     return () => clearInterval(id);
-  }, []);
+  }, [endsAtISO, now > new Date(endsAtISO).getTime() - 5 * 60 * 1000]);
   const end = new Date(endsAtISO).getTime();
   const diff = end - now;
   if (diff <= 0) return { ended: true, d: 0, h: 0, m: 0 };
@@ -2515,16 +2562,19 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth, onContactS
   // Live updates: when anyone bids, the listing row changes → refresh figures.
   useEffect(() => {
     if (!listingId) return;
-    let unsub = () => {};
+    let unsub = null;
+    let cancelled = false;
     (async () => {
       const api = await import("./lib/api");
+      if (cancelled) return;   // unmounted before subscribe resolved
       unsub = api.subscribeAuction(listingId, (a) => {
         setBid(a.currentBid);
         setBidCount(a.bidCount);
         setHighBidder(a.highBidder || null);
       });
+      if (cancelled && unsub) unsub();   // unmounted during await → clean up now
     })();
-    return () => unsub();
+    return () => { cancelled = true; if (unsub) unsub(); };
   }, [listingId]);
 
   const placeBid = async (amount) => {
@@ -2537,6 +2587,13 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth, onContactS
       setShowBidModal(false);
     } catch (e) {
       setBidErr(e?.code === "bid_too_low" ? t.outbid : (e?.message || "Error"));
+      // The bid likely failed because someone else bid first — silently pull the
+      // latest figures so the user sees the new current bid + minimum next bid.
+      try {
+        const api = await import("./lib/api");
+        const fresh = await api.fetchAuction(listingId);
+        if (fresh) { setBid(fresh.currentBid); setBidCount(fresh.bidCount); setHighBidder(fresh.highBidder || null); }
+      } catch (_) { /* best-effort */ }
     } finally { setBusy(false); }
   };
 
@@ -2647,11 +2704,11 @@ function AuctionBidModal({ minNext, currentBid, busy, onClose, onBid, t, lang })
         </div>
         <div className="text-[11px] text-stone-400 mb-2">{t.currentBid}: <span className="text-stone-200 font-bold">{formatPrice(currentBid)}</span></div>
         <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.yourBid}</label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-lg">€</span>
+        <div className="flex items-center gap-2">
+          <span className="text-stone-400 text-lg shrink-0">€</span>
           <input type="number" inputMode="numeric" value={value}
                  onChange={e => setValue(Number(e.target.value))}
-                 className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg pl-8 pr-3 py-3 text-lg font-bold text-stone-100 outline-none focus:ring-amber-500/60" />
+                 className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-lg font-bold text-stone-100 outline-none focus:ring-amber-500/60" />
         </div>
         {/* Quick-bump buttons */}
         <div className="flex gap-2 mt-3">
@@ -2714,6 +2771,14 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   const [buyerHandover, setBuyerHandover] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
+  const [saleInfo, setSaleInfo] = useState(null);   // buyer details from the completed sale
+  useEffect(() => {
+    if (!showDocument || !a?.id) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchListingSaleInfo ? api.fetchListingSaleInfo(a.id) : null)
+      .then(info => { if (on) setSaleInfo(info); }).catch(() => { if (on) setSaleInfo(null); });
+    return () => { on = false; };
+  }, [showDocument, a?.id]);
 
   if (!listing) return null;
   const a = listing;
@@ -2780,7 +2845,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                 className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
           <ChevronLeft size={20} />
         </button>
-        <button onClick={(e) => toggleFav(a.id, e)}
+        <button onClick={(e) => toggleFav(a.id, e)} aria-label="Save to favourites"
                 className="absolute top-5 right-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full transition-colors z-10">
           <Heart size={20} className={favorites.includes(a.id) ? "fill-rose-500 text-rose-500" : "text-stone-100"} />
         </button>
@@ -2788,8 +2853,18 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
       {/* Title block */}
       <div className="px-5 -mt-12 relative z-10">
-        <h1 className="font-display text-3xl md:text-4xl text-stone-50 tracking-tight leading-tight">{a.common}</h1>
-        <p className="font-display italic text-amber-500 text-sm md:text-base mt-1">{a.species}</p>
+        {a.title ? (
+          <>
+            <h1 className="font-display text-3xl md:text-4xl text-stone-50 tracking-tight leading-tight">{a.title}</h1>
+            <p className="text-stone-300 text-sm mt-1.5">{a.common}</p>
+            <p className="font-display italic text-amber-500 text-sm md:text-base">{a.species}</p>
+          </>
+        ) : (
+          <>
+            <h1 className="font-display text-3xl md:text-4xl text-stone-50 tracking-tight leading-tight">{a.common}</h1>
+            <p className="font-display italic text-amber-500 text-sm md:text-base mt-1">{a.species}</p>
+          </>
+        )}
         <div className="flex flex-wrap gap-1.5 mt-4">
           {a.traits.map((tr, i) => <TraitChip key={i} trait={tr} size="sm" />)}
         </div>
@@ -2807,7 +2882,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
       {/* Specs grid */}
       <div className="px-5 mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
         <Spec label={t.sex}>{sexLabel(a.sex, t)}</Spec>
-        <Spec label={t.age}>{formatAge(a.ageMonths, t)}</Spec>
+        <Spec label={t.age}>{formatBirth(a, t)}</Spec>
         {a.weight && <Spec label={t.weight}>{a.weight}</Spec>}
         <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag} {a.city}</Spec>
       </div>
@@ -3058,7 +3133,8 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         <DocumentModal
           listing={a}
           requiresCITES={requiresCITES}
-          buyerName={user?.name || "—"}
+          buyerName={saleInfo?.buyerName || user?.name || "—"}
+          buyerAddress={saleInfo?.buyerAddress || ""}
           onClose={() => setShowDocument(false)}
           t={t} lang={lang}
         />
@@ -3258,7 +3334,7 @@ function HandoverIndicator({ label, done, action, waiting }) {
    DOCUMENT MODAL — CITES transfer or origin-paper preview
    Generated only after handover is confirmed by both parties
    ═════════════════════════════════════════════════════════════════ */
-function DocumentModal({ listing, requiresCITES, buyerName, onClose, t, lang }) {
+function DocumentModal({ listing, requiresCITES, buyerName, buyerAddress = "", onClose, t, lang }) {
   const docTitle = requiresCITES ? t.docCitesTitle : t.docOriginTitle;
   const declaration = requiresCITES ? t.docDeclarationCites : t.docDeclarationOrigin;
   const today = new Date().toLocaleDateString(lang === "it" ? "it-IT" : "en-GB");
@@ -3267,19 +3343,29 @@ function DocumentModal({ listing, requiresCITES, buyerName, onClose, t, lang }) 
   const a = listing;
   const [generating, setGenerating] = useState(false);
 
-  // Load jsPDF from CDN on demand, then build a clean A4 document.
+  // Build the PDF. Prefers the bundled jspdf (works offline — important at expos
+  // with bad wifi); falls back to the CDN only if the package isn't installed.
   const downloadPdf = async () => {
     setGenerating(true);
     try {
-      if (!window.jspdf) {
-        await new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-          s.onload = resolve; s.onerror = reject;
-          document.head.appendChild(s);
-        });
+      let jsPDF;
+      try {
+        // Bundled: run `npm install jspdf` so this resolves locally and works offline.
+        // The /* @vite-ignore */ + variable keeps the build from failing if it's not installed yet.
+        const pkg = "jspdf";
+        ({ jsPDF } = await import(/* @vite-ignore */ pkg));
+      } catch {
+        // Fallback: load from CDN (needs a connection).
+        if (!window.jspdf) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+        jsPDF = window.jspdf.jsPDF;
       }
-      const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       const M = 20;            // margin
       const W = 210;           // A4 width
@@ -3565,6 +3651,11 @@ const CITES_SPECIES = new Set([
   "Brachypelma hamorii", "Tliltocatl albopilosus", "Poecilotheria", "Pandinus imperator",
 ]);
 
+// Case-insensitive CITES check — a manually typed "testudo hermanni" must still
+// trigger the legal warning, not just the exact-cased catalogue entry.
+const CITES_SPECIES_LOWER = new Set([...CITES_SPECIES].map(s => s.toLowerCase()));
+const isCitesSpecies = (name) => !!name && CITES_SPECIES_LOWER.has(name.trim().toLowerCase());
+
 function SellScreen({ t, lang, go, user }) {
   const [success, setSuccess] = useState(false);
   const [selectedTraits, setSelectedTraits] = useState([]);
@@ -3613,6 +3704,10 @@ function SellScreen({ t, lang, go, user }) {
       return prev.filter((_, i) => i !== idx);
     });
   };
+  // Revoke any remaining preview URLs when leaving the screen.
+  const photosRef = useRef(photos);
+  useEffect(() => { photosRef.current = photos; }, [photos]);
+  useEffect(() => () => { photosRef.current.forEach(p => URL.revokeObjectURL(p.url)); }, []);
   const monthsSince = (val) => {
     const s = String(val || "").trim();
     if (!s) return null;
@@ -3665,7 +3760,8 @@ function SellScreen({ t, lang, go, user }) {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
       });
-      const common = SPECIES_LABELS[speciesVal]?.it || title || speciesVal;
+      const common = SPECIES_LABELS[speciesVal]?.it || speciesVal;
+      const headline = title.trim();
       let auction = null;
       if (isAuction) {
         const days = Number(durationDays) || 5;
@@ -3679,10 +3775,10 @@ function SellScreen({ t, lang, go, user }) {
         };
       }
       await api.createListing({
-        species: speciesVal, common, category: catId,
+        species: speciesVal, common, title: headline, category: catId,
         traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
         sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
-        birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
+        birthDate: (born || "").trim() || null,
         citesListed: isCites,
         country, region, city: null,
         sire: null, dam: null, desc,
@@ -3717,12 +3813,12 @@ function SellScreen({ t, lang, go, user }) {
     return () => { on = false; };
   }, [user?.id]);
 
-  // Reset chosen traits when the category changes (trait list is category-specific).
-  useEffect(() => { setSelectedTraits([]); }, [catId]);
+  // Reset chosen traits when the category or species changes (list is species-specific now).
+  useEffect(() => { setSelectedTraits([]); }, [catId, speciesVal]);
 
   // Pre-tick CITES (and force a full birth date) when the chosen species is on our list.
   useEffect(() => {
-    const c = CITES_SPECIES.has(speciesVal);
+    const c = isCitesSpecies(speciesVal);
     setIsCites(c);
     if (c) setBornPrecision("day");
   }, [speciesVal]);
@@ -3732,49 +3828,9 @@ function SellScreen({ t, lang, go, user }) {
   // Traits/morphs vary hugely by animal, so offer a relevant set per category.
   // "line" = line-bred/colour trait, "recessive"/"incDom"/"dom" = inheritance,
   // "wild" = wild type. Best-effort hobby lists; breeders can also free-type.
-  const TRAITS_BY_CATEGORY = {
-    geckos: [
-      { name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" },
-      { name: "Pinstripe", cls: "line" }, { name: "Dalmatian", cls: "line" },
-      { name: "Flame", cls: "line" }, { name: "Axanthic", cls: "recessive" },
-      { name: "Cappuccino", cls: "incDom" }, { name: "Wild Type", cls: "wild" },
-    ],
-    snakes: [
-      { name: "Pastel", cls: "incDom" }, { name: "Banana", cls: "incDom" },
-      { name: "Albino", cls: "recessive" }, { name: "Pied", cls: "recessive" },
-      { name: "Clown", cls: "recessive" }, { name: "Spider", cls: "dominant" },
-      { name: "Mojave", cls: "incDom" }, { name: "Wild Type", cls: "wild" },
-    ],
-    lizards: [
-      { name: "Red", cls: "line" }, { name: "Citrus", cls: "line" },
-      { name: "Hypo", cls: "recessive" }, { name: "Translucent", cls: "recessive" },
-      { name: "Leatherback", cls: "incDom" }, { name: "Silkback", cls: "incDom" },
-      { name: "Witblits", cls: "recessive" }, { name: "Zero", cls: "recessive" },
-      { name: "Wild Type", cls: "wild" },
-    ],
-    chameleons: [
-      { name: "Nosy Be", cls: "line" }, { name: "Ambilobe", cls: "line" },
-      { name: "Ambanja", cls: "line" }, { name: "Sambava", cls: "line" },
-      { name: "Wild Type", cls: "wild" },
-    ],
-    tortoises: [
-      { name: "High Yellow", cls: "line" }, { name: "Ivory", cls: "recessive" },
-      { name: "Albino", cls: "recessive" }, { name: "Wild Type", cls: "wild" },
-    ],
-    amphibians: [
-      { name: "Albino", cls: "recessive" }, { name: "Leucistic", cls: "recessive" },
-      { name: "Melanoid", cls: "recessive" }, { name: "Copper", cls: "recessive" },
-      { name: "Wild Type", cls: "wild" },
-    ],
-    inverts: [
-      { name: "Normal", cls: "wild" }, { name: "Line-bred colour", cls: "line" },
-    ],
-  };
-  const GENERIC_TRAITS = [
-    { name: "Albino", cls: "recessive" }, { name: "Hypo", cls: "recessive" },
-    { name: "Line-bred", cls: "line" }, { name: "Wild Type", cls: "wild" },
-  ];
-  const exampleTraits = TRAITS_BY_CATEGORY[catId] || GENERIC_TRAITS;
+  // Species-aware traits: a chosen species shows its own morphs; otherwise the
+  // category's generic set. Same source the search filter uses, so they match.
+  const exampleTraits = getTraitsForScope(catId, speciesVal);
 
   if (success) {
     return (
@@ -4018,15 +4074,19 @@ function SellScreen({ t, lang, go, user }) {
         </FormBlock>
 
         {/* ─── Delivery options ─── */}
-        <DeliverySection lang={lang} t={t} />
+        <DeliverySection lang={lang} t={t} itemPrice={Number(mode === "auction" ? startPrice : price) || 0} />
 
         {saveErr && (
           <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5 mt-2"><Info size={12} />{saveErr}</p>
         )}
         <button onClick={handlePublish} disabled={saving}
-                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4">
-          {saving ? t.publishing : t.publishListing}
+                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4 inline-flex items-center justify-center gap-2">
+          {saving && <Loader2 size={16} className="animate-spin" />}
+          {saving ? (photos.length > 0 ? t.uploadingPhotos : t.publishing) : t.publishListing}
         </button>
+        {saving && photos.length > 0 && (
+          <p className="text-[11px] text-stone-500 text-center mt-2">{t.uploadingHint}</p>
+        )}
 
         <style>{`
           .form-input {
@@ -4048,13 +4108,15 @@ function SellScreen({ t, lang, go, user }) {
   );
 }
 
-function FormBlock({ label, children, done, required }) {
+function FormBlock({ label, children, done, required, t }) {
   return (
     <div>
       {label && (
         <div className="flex items-center gap-1.5 mb-2">
           <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">{label}</span>
-          {required && !done && <span className="text-rose-400 text-[11px] leading-none">*</span>}
+          {required && !done && (
+            <span className="text-stone-600 text-[9px] font-bold uppercase tracking-wider">· {t?.fieldRequired || "required"}</span>
+          )}
           {done && <CheckCircle size={12} className="text-emerald-400" />}
         </div>
       )}
@@ -4085,28 +4147,31 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
       </div>
 
       {mode === "fixed" ? (
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-          <input type="number" className="form-input pl-7" placeholder="150" value={price} onChange={e => setPrice(e.target.value)} />
+        <div className="flex items-center gap-2">
+          <span className="text-stone-400 text-sm shrink-0">€</span>
+          <input type="number" className="form-input flex-1" placeholder="150" value={price} onChange={e => setPrice(e.target.value)} />
         </div>
       ) : (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.startPrice}</div>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-                <input type="number" className="form-input pl-7" placeholder="100" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
+              <div className="flex items-center gap-2">
+                <span className="text-stone-400 text-sm shrink-0">€</span>
+                <input type="number" className="form-input flex-1" placeholder="100" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
               </div>
             </div>
             <div>
               <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
                 <Lock size={10} />{lang === "it" ? "Riserva" : "Reserve"}
               </div>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-                <input type="number" className="form-input pl-7" placeholder="200" value={reserve} onChange={e => setReserve(e.target.value)} />
+              <div className="flex items-center gap-2">
+                <span className="text-stone-400 text-sm shrink-0">€</span>
+                <input type="number" className="form-input flex-1" placeholder="200" value={reserve} onChange={e => setReserve(e.target.value)} />
               </div>
+              {reserve && startPrice && Number(reserve) < Number(startPrice) && (
+                <p className="text-[10px] text-rose-400 font-bold mt-1.5 flex items-center gap-1"><Info size={11} />{t.reserveTooLow}</p>
+              )}
             </div>
           </div>
           <div>
@@ -4136,7 +4201,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
    Expo pickup is positioned as HerpMarket's signature feature: amber accent,
    highlighted card, deposit explanation; all upcoming expos available
    as multi-select chips with date right on the chip.                       */
-function DeliverySection({ lang, t }) {
+function DeliverySection({ lang, t, itemPrice = 0 }) {
   const [localPickup, setLocalPickup] = useState(true);
   const [expoPickup, setExpoPickup] = useState(false);
   const [shipping, setShipping] = useState(false);
@@ -4198,7 +4263,8 @@ function DeliverySection({ lang, t }) {
                   const dd = expo.dateISO.slice(8, 10);
                   const mm = monthShort[parseInt(expo.dateISO.slice(5, 7), 10) - 1];
                   return (
-                    <button key={expo.id} type="button"
+                    <button key={expo.id} type="button" aria-label={expo.name}
+                            aria-pressed={isSel}
                             onClick={() => toggleExpo(expo.id)}
                             className={`text-left rounded-lg ring-1 px-2.5 py-2 flex items-center gap-2.5 transition-all ${
                               isSel ? "bg-amber-500/15 ring-amber-500/40" : "bg-stone-900/60 ring-stone-800 hover:ring-stone-700"
@@ -4261,11 +4327,16 @@ function DeliverySection({ lang, t }) {
                 <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
                   {lang === "it" ? "Costo spedizione nazionale" : "Domestic shipping cost"}
                 </div>
-                <div className="relative max-w-[160px]">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+                <div className="flex items-center gap-2 max-w-[160px]">
+                  <span className="text-stone-400 text-sm shrink-0">€</span>
                   <input type="number" value={shippingCost} onChange={e => setShippingCost(e.target.value)}
-                         className="form-input pl-7" placeholder="45" />
+                         className="form-input flex-1" placeholder="45" />
                 </div>
+                {itemPrice > 0 && Number(shippingCost) > itemPrice * 0.5 && (
+                  <p className="text-[11px] text-amber-400 font-bold mt-2 flex items-center gap-1.5">
+                    <Info size={12} className="shrink-0" />{t.shippingHighWarn}
+                  </p>
+                )}
               </div>
               <label className="flex items-center gap-2.5 cursor-pointer">
                 <input type="checkbox" checked={internationalShipping} onChange={() => setInternationalShipping(!internationalShipping)}
@@ -4407,14 +4478,17 @@ function ChatThread({ chat, t, lang, go, user }) {
   // Live updates: append new messages as they arrive.
   useEffect(() => {
     if (!threadId) return;
-    let unsub = () => {};
+    let unsub = null;
+    let cancelled = false;
     (async () => {
       const api = await import("./lib/api");
+      if (cancelled) return;
       unsub = api.subscribeMessages(threadId, (m) => {
         setMessages(prev => prev.some(x => x.id === m.id) ? prev : [...prev, m]);
       });
+      if (cancelled && unsub) unsub();
     })();
-    return () => unsub();
+    return () => { cancelled = true; if (unsub) unsub(); };
   }, [threadId]);
 
   // Auto-scroll to newest.
@@ -4434,7 +4508,9 @@ function ChatThread({ chat, t, lang, go, user }) {
     } catch (e) {
       setErr(e?.message || "Error");
       setMessages(prev => prev.filter(m => m.id !== optimistic.id)); // roll back
-      setInput(body);
+      // Only restore the failed text if the user hasn't started typing again,
+      // so we never overwrite a new message in progress.
+      setInput(prev => prev ? prev : body);
     }
   };
 
@@ -4727,9 +4803,9 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
 
       <div>
         <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
-        <div className="relative max-w-[160px]">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-          <input type="number" className="form-input pl-7" value={price} onChange={e => setPrice(e.target.value)} placeholder="150" />
+        <div className="flex items-center gap-2 max-w-[160px]">
+          <span className="text-stone-400 text-sm shrink-0">€</span>
+          <input type="number" className="form-input flex-1" value={price} onChange={e => setPrice(e.target.value)} placeholder="150" />
         </div>
       </div>
 
@@ -4746,7 +4822,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
             const dd = expo.dateISO.slice(8, 10);
             const mm = monthShort[parseInt(expo.dateISO.slice(5, 7), 10) - 1];
             return (
-              <button key={expo.id} type="button" onClick={() => toggleExpo(expo.id)}
+              <button key={expo.id} type="button" aria-label={expo.name} aria-pressed={sel} onClick={() => toggleExpo(expo.id)}
                       className={`text-left rounded-lg ring-1 px-2.5 py-1.5 flex items-center gap-2 transition-all ${sel ? "bg-amber-500/15 ring-amber-500/40" : "bg-stone-900/60 ring-stone-800"}`}>
                 <span className="text-[10px] font-bold text-stone-400 shrink-0 min-w-[34px]">{mm} {dd}</span>
                 <span className={`text-[11px] truncate flex-1 ${sel ? "text-amber-100" : "text-stone-300"}`}>{expo.name}</span>
@@ -4938,10 +5014,16 @@ function MyListingsScreen({ t, lang, go, user }) {
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
                       {t.markSold}
                     </button>
-                    <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
-                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
-                      {t.mlEdit}
-                    </button>
+                    {l.auction ? (
+                      <span className="text-[10px] font-bold px-3 py-1.5 rounded-md bg-amber-500/10 ring-1 ring-amber-500/30 text-amber-300 text-center inline-flex items-center justify-center gap-1">
+                        <ArrowUpDown size={11} />{t.auctionLive}
+                      </span>
+                    ) : (
+                      <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                              className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
+                        {t.mlEdit}
+                      </button>
+                    )}
                     <button onClick={() => { setRemoveFor(removeFor?.id === l.id ? null : l); setEditId(null); setSoldFor(null); }}
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
                       {t.mlDelete}
@@ -4987,9 +5069,9 @@ function MyListingsScreen({ t, lang, go, user }) {
               <div className="border-t border-stone-800 p-3 space-y-2.5 bg-stone-950/40">
                 <div>
                   <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
-                  <div className="relative max-w-[160px]">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
-                    <input type="number" className="form-input pl-7" value={ePrice} onChange={e => setEPrice(e.target.value)} />
+                  <div className="flex items-center gap-2 max-w-[160px]">
+                    <span className="text-stone-400 text-sm shrink-0">€</span>
+                    <input type="number" className="form-input flex-1" value={ePrice} onChange={e => setEPrice(e.target.value)} />
                   </div>
                 </div>
                 <div>
@@ -5088,25 +5170,17 @@ function AddAnimalScreen({ t, lang, go, user }) {
     return () => { on = false; };
   }, [user?.id]);
 
-  useEffect(() => { setSelectedTraits([]); }, [catId]);
+  useEffect(() => { setSelectedTraits([]); }, [catId, speciesVal]);
   useEffect(() => {
-    const c = CITES_SPECIES.has(speciesVal);
+    const c = isCitesSpecies(speciesVal);
     setIsCites(c);
     if (c) setBornPrecision("day");
   }, [speciesVal]);
 
   const subcats = catId ? subcatsFor(catId) : [];
   const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
-  const TRAITS_BY_CATEGORY = {
-    geckos: [{ name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" }, { name: "Pinstripe", cls: "line" }, { name: "Dalmatian", cls: "line" }, { name: "Flame", cls: "line" }, { name: "Axanthic", cls: "recessive" }, { name: "Cappuccino", cls: "incDom" }, { name: "Wild Type", cls: "wild" }],
-    snakes: [{ name: "Pastel", cls: "incDom" }, { name: "Banana", cls: "incDom" }, { name: "Albino", cls: "recessive" }, { name: "Pied", cls: "recessive" }, { name: "Clown", cls: "recessive" }, { name: "Spider", cls: "dominant" }, { name: "Mojave", cls: "incDom" }, { name: "Wild Type", cls: "wild" }],
-    lizards: [{ name: "Red", cls: "line" }, { name: "Citrus", cls: "line" }, { name: "Hypo", cls: "recessive" }, { name: "Translucent", cls: "recessive" }, { name: "Leatherback", cls: "incDom" }, { name: "Wild Type", cls: "wild" }],
-    chameleons: [{ name: "Nosy Be", cls: "line" }, { name: "Ambilobe", cls: "line" }, { name: "Ambanja", cls: "line" }, { name: "Wild Type", cls: "wild" }],
-    tortoises: [{ name: "High Yellow", cls: "line" }, { name: "Ivory", cls: "recessive" }, { name: "Albino", cls: "recessive" }, { name: "Wild Type", cls: "wild" }],
-    amphibians: [{ name: "Albino", cls: "recessive" }, { name: "Leucistic", cls: "recessive" }, { name: "Wild Type", cls: "wild" }],
-    inverts: [{ name: "Normal", cls: "wild" }, { name: "Line-bred colour", cls: "line" }],
-  };
-  const exampleTraits = TRAITS_BY_CATEGORY[catId] || [{ name: "Wild Type", cls: "wild" }];
+  // Species-aware traits — same shared source as the sell form and search filter.
+  const exampleTraits = getTraitsForScope(catId, speciesVal);
   const addCustomTrait = () => {
     const v = customTrait.trim();
     if (v && !selectedTraits.includes(v)) setSelectedTraits(prev => [...prev, v]);
@@ -5116,6 +5190,17 @@ function AddAnimalScreen({ t, lang, go, user }) {
     const imgs = Array.from(fileList || []).filter(f => f.type.startsWith("image/"));
     setPhotos(prev => [...prev, ...imgs.slice(0, MAX_PHOTOS - prev.length).map(f => ({ file: f, url: URL.createObjectURL(f) }))]);
   };
+  const removePhoto = (i) => {
+    setPhotos(prev => {
+      const p = prev[i];
+      if (p) URL.revokeObjectURL(p.url);   // free browser memory
+      return prev.filter((_, x) => x !== i);
+    });
+  };
+  // Revoke any remaining preview URLs when leaving the screen.
+  const photosRef = useRef(photos);
+  useEffect(() => { photosRef.current = photos; }, [photos]);
+  useEffect(() => () => { photosRef.current.forEach(p => URL.revokeObjectURL(p.url)); }, []);
   const monthsSince = (val) => {
     const s = String(val || "").trim();
     if (!s) return null;
@@ -5142,12 +5227,12 @@ function AddAnimalScreen({ t, lang, go, user }) {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
       });
-      const common = SPECIES_LABELS[speciesVal]?.[lang] || name || speciesVal;
+      const common = SPECIES_LABELS[speciesVal]?.[lang] || speciesVal;
       await api.createListing({
-        species: speciesVal, common, category: catId,
+        species: speciesVal, common, title: name.trim(), category: catId,
         traits, price: null, deposit: null,
         sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
-        birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
+        birthDate: (born || "").trim() || null,
         citesListed: isCites, country, region, city: null,
         sire: sire.trim() || null, dam: dam.trim() || null, desc,
         image: urls[0] || null, images: urls, shipping: false, euShipping: false, localPickup: true,
@@ -5204,7 +5289,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
             {photos.map((p, i) => (
               <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden ring-1 ring-stone-700">
                 <img src={p.url} alt="" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => setPhotos(photos.filter((_, x) => x !== i))}
+                <button type="button" onClick={() => removePhoto(i)}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-stone-950/80 text-stone-200 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"><X size={14} /></button>
               </div>
             ))}
@@ -5344,8 +5429,9 @@ function AddAnimalScreen({ t, lang, go, user }) {
 
         {saveErr && <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5"><Info size={12} />{saveErr}</p>}
         <button onClick={save} disabled={saving}
-                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors">
-          {saving ? t.publishing : t.addAnimalSave}
+                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors inline-flex items-center justify-center gap-2">
+          {saving && <Loader2 size={16} className="animate-spin" />}
+          {saving ? (photos.length > 0 ? t.uploadingPhotos : t.publishing) : t.addAnimalSave}
         </button>
       </div>
     </div>
@@ -5356,6 +5442,7 @@ function EditStoreScreen({ t, lang, go, user }) {
   const [seller, setSeller] = useState(null);   // mapped seller (with id)
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");
+  const [storeName, setStoreName] = useState("");
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [specs, setSpecs] = useState("");
@@ -5384,6 +5471,7 @@ function EditStoreScreen({ t, lang, go, user }) {
         if (on && s) {
           setSeller(s);
           setName(s.name || "");
+          setStoreName(s.storeName || "");
           setCity(s.city || "");
           setBio(s.bioIt || "");
           setSpecs((s.specialties || []).join(", "));
@@ -5416,6 +5504,7 @@ function EditStoreScreen({ t, lang, go, user }) {
       }
       const fields = {
         name: name.trim() || seller.name,
+        storeName: storeName.trim(),
         city: city.trim(),
         bio: bio.trim(),
         specialties: specs.split(",").map(s => s.trim()).filter(Boolean),
@@ -5464,6 +5553,12 @@ function EditStoreScreen({ t, lang, go, user }) {
 
             <FormBlock label={t.nameLabel}>
               <input className="form-input" value={name} onChange={e => setName(e.target.value)} />
+            </FormBlock>
+
+            <FormBlock label={t.spStoreName}>
+              <input className="form-input" value={storeName} onChange={e => setStoreName(e.target.value)}
+                     placeholder={lang === "it" ? "es. GeckosAndChameleons (facoltativo)" : "e.g. GeckosAndChameleons (optional)"} />
+              <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">{t.spStoreNameHint}</p>
             </FormBlock>
 
             <FormBlock label={t.spCity}>
