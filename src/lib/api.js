@@ -131,6 +131,7 @@ export async function createListing(listing, sellerId) {
     image_url: listing.image, shipping: !!listing.shipping,
     eu_shipping: !!listing.euShipping, local_pickup: listing.localPickup !== false,
     expo_ids: listing.expoIds || [], auction: listing.auction || null,
+    status: listing.status || 'active',
   }).select().single();
   if (error) throw error;
   return mapListing(data);
@@ -181,6 +182,16 @@ export async function updateListing(id, fields) {
 export async function deleteListing(id) {
   const { error } = await supabase.from('listings').delete().eq('id', id);
   if (error) throw error;
+}
+
+// Move an animal between collection statuses: active | sold | held | breeder.
+// Used when removing a listing from sale (→ held/breeder) without deleting it.
+export async function updateListingStatus(id, status) {
+  const { data, error } = await supabase.from('listings')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id).select('*, sellers(*)').single();
+  if (error) throw error;
+  return mapListing(data);
 }
 
 // ── MY STORE (seller profile editing) ───────────────────────────────────────

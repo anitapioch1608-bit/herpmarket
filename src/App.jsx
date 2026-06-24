@@ -117,6 +117,18 @@ const I18N = {
     soldBuyerName: "Nome e cognome acquirente", soldBuyerAddress: "Indirizzo (per i documenti CITES)",
     soldCitesNote: "Specie CITES: nome e indirizzo dell'acquirente sono necessari per la dichiarazione di cessione.",
     confirmSold: "Conferma vendita",
+    colActive: "In vendita", colSold: "Venduti", colHeld: "Tenuti", colBreeder: "Riproduttori",
+    addAnimal: "Aggiungi animale", addAnimalTitle: "Aggiungi alla collezione",
+    addAnimalIntro: "Aggiungi un animale alla tua collezione (non in vendita). Potrai metterlo in vendita in seguito.",
+    animalStatus: "Stato", statusHeld: "Tenuto", statusBreeder: "Riproduttore",
+    addAnimalSave: "Aggiungi alla collezione", animalAdded: "Animale aggiunto alla collezione!",
+    removeListingTitle: "Rimuovere dalla vendita?",
+    removeListingIntro: "Cosa vuoi fare con questo animale?",
+    removeToHeld: "Tieni (non in vendita)", removeToBreeder: "Sposta nei riproduttori",
+    removeToSold: "Segna come venduto", removeDelete: "Elimina definitivamente",
+    colEmptyActive: "Nessun animale in vendita.", colEmptySold: "Nessun animale venduto.",
+    colEmptyHeld: "Nessun animale tenuto.", colEmptyBreeder: "Nessun riproduttore.",
+    relist: "Rimetti in vendita",
     spTitle: "Il mio negozio", spIntro: "Personalizza la tua pagina allevatore: foto, descrizione e dettagli.",
     spPhoto: "Foto del profilo", spUpload: "Carica foto", spCity: "Città", spBio: "Descrizione",
     spSpecialties: "Specializzazioni (separate da virgola)", spSpecialtiesPh: "es. Correlophus ciliatus, Python regius",
@@ -334,6 +346,18 @@ const I18N = {
     soldBuyerName: "Buyer's full name", soldBuyerAddress: "Address (for CITES documents)",
     soldCitesNote: "CITES species: the buyer's name and address are needed for the transfer declaration.",
     confirmSold: "Confirm sale",
+    colActive: "For sale", colSold: "Sold", colHeld: "Held back", colBreeder: "Breeders",
+    addAnimal: "Add animal", addAnimalTitle: "Add to collection",
+    addAnimalIntro: "Add an animal to your collection (not for sale). You can list it for sale later.",
+    animalStatus: "Status", statusHeld: "Held back", statusBreeder: "Breeder",
+    addAnimalSave: "Add to collection", animalAdded: "Animal added to your collection!",
+    removeListingTitle: "Remove from sale?",
+    removeListingIntro: "What do you want to do with this animal?",
+    removeToHeld: "Keep (not for sale)", removeToBreeder: "Move to breeders",
+    removeToSold: "Mark as sold", removeDelete: "Delete permanently",
+    colEmptyActive: "No animals for sale.", colEmptySold: "No sold animals.",
+    colEmptyHeld: "No held-back animals.", colEmptyBreeder: "No breeders.",
+    relist: "List for sale again",
     spTitle: "My store", spIntro: "Customise your breeder page: photo, description and details.",
     spPhoto: "Profile photo", spUpload: "Upload photo", spCity: "City", spBio: "Description",
     spSpecialties: "Specialties (comma-separated)", spSpecialtiesPh: "e.g. Correlophus ciliatus, Python regius",
@@ -1292,6 +1316,7 @@ export default function HerpMarket() {
       case "thread":    return user ? <ChatThread chat={viewData} {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "mylistings": return user ? <MyListingsScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
+      case "addanimal": return user ? <AddAnimalScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "editstore": return user ? <EditStoreScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
       case "legal":     return <Legal {...props} />;
@@ -1310,7 +1335,7 @@ export default function HerpMarket() {
     }
   };
 
-  const profileViews = ["profile", "mylistings", "editstore", "wishlist", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
+  const profileViews = ["profile", "mylistings", "addanimal", "editstore", "wishlist", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   // Private pre-launch gate: block the whole site until the access password is entered.
   if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
@@ -4387,7 +4412,6 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
           <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub={String((favorites || []).length)} onClick={() => go("wishlist")} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t.myListings} onClick={() => go("mylistings")} />
           <ProfileRow icon={<Camera size={18} />} label={t.spTitle} onClick={() => go("editstore")} />
-          <ProfileRow icon={<ListOrdered size={18} />} label={t.inventory} onClick={() => go("inventory")} />
           <ProfileRow icon={<GitBranch size={18} />} label={t.geneticsBreeding} badge="SOON" onClick={() => go("breeding")} />
           <ProfileRow icon={<Star size={18} />} label={t.reviews} onClick={() => go("reviews")} />
         </ProfileGroup>
@@ -4570,13 +4594,24 @@ function MarkSoldPanel({ listing, t, lang, busy, onCancel, onConfirm, user }) {
 
 function MyListingsScreen({ t, lang, go, user }) {
   const [items, setItems] = useState(null);   // null = loading
+  const [tab, setTab] = useState("active");   // active | sold | held | breeder
   const [editId, setEditId] = useState(null);
   const [ePrice, setEPrice] = useState("");
   const [eDesc, setEDesc] = useState("");
-  const [confirmDel, setConfirmDel] = useState(null);
+  const [removeFor, setRemoveFor] = useState(null);  // listing whose "remove from sale" panel is open
   const [soldFor, setSoldFor] = useState(null);   // listing being marked sold (opens modal)
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  const changeStatus = async (id, status) => {
+    setBusy(true); setErr("");
+    try {
+      const api = await import("./lib/api");
+      await api.updateListingStatus(id, status);
+      setRemoveFor(null); load();
+    } catch (e) { setErr(e?.message || "Error"); }
+    finally { setBusy(false); }
+  };
 
   const doMarkSold = async (listing, payload) => {
     setBusy(true); setErr("");
@@ -4591,7 +4626,7 @@ function MyListingsScreen({ t, lang, go, user }) {
         amount: listing.price,
         ...payload,
       });
-      setSoldFor(null); load();
+      setSoldFor(null); setRemoveFor(null); load();
     } catch (e) { setErr(e?.message || "Error"); }
     finally { setBusy(false); }
   };
@@ -4628,6 +4663,25 @@ function MyListingsScreen({ t, lang, go, user }) {
     finally { setBusy(false); }
   };
 
+  // Categorise every animal by collection status. Legacy 'reserved'/'hidden'
+  // count as active (still for-sale-ish), so nothing disappears.
+  const bucket = (l) => l.status === "sold" ? "sold"
+                      : l.status === "held" ? "held"
+                      : l.status === "breeder" ? "breeder"
+                      : "active";
+  const all = items || [];
+  const counts = {
+    active: all.filter(l => bucket(l) === "active").length,
+    sold: all.filter(l => bucket(l) === "sold").length,
+    held: all.filter(l => bucket(l) === "held").length,
+    breeder: all.filter(l => bucket(l) === "breeder").length,
+  };
+  const shown = all.filter(l => bucket(l) === tab);
+  const emptyMsg = { active: t.colEmptyActive, sold: t.colEmptySold, held: t.colEmptyHeld, breeder: t.colEmptyBreeder }[tab];
+  const tabs = [
+    ["active", t.colActive], ["sold", t.colSold], ["held", t.colHeld], ["breeder", t.colBreeder],
+  ];
+
   return (
     <div className="max-w-2xl mx-auto w-full pb-24">
       <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
@@ -4636,7 +4690,23 @@ function MyListingsScreen({ t, lang, go, user }) {
           <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.myListings}</h1>
           <p className="text-[11px] text-stone-500 mt-0.5">{t.mlIntro}</p>
         </div>
+        <button onClick={() => go("addanimal")}
+                className="shrink-0 inline-flex items-center gap-1.5 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
+          <PlusCircle size={14} />{t.addAnimal}
+        </button>
       </header>
+
+      {/* Status tabs */}
+      <div className="px-5 md:px-8 pt-4 flex gap-1.5 overflow-x-auto hide-scrollbar">
+        {tabs.map(([id, label]) => (
+          <button key={id} onClick={() => { setTab(id); setEditId(null); setRemoveFor(null); setSoldFor(null); }}
+                  className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors ${
+                    tab === id ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-400 hover:text-stone-200"
+                  }`}>
+            {label} <span className="opacity-70">({counts[id]})</span>
+          </button>
+        ))}
+      </div>
 
       <div className="px-5 md:px-8 pt-4 space-y-2.5">
         {err && (
@@ -4644,16 +4714,16 @@ function MyListingsScreen({ t, lang, go, user }) {
         )}
         {items === null ? (
           <p className="text-center text-stone-500 text-sm py-16 italic">…</p>
-        ) : items.length === 0 ? (
+        ) : shown.length === 0 ? (
           <div className="text-center py-16 text-stone-500">
             <PackageCheck size={32} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-display italic">{t.mlEmpty}</p>
-            <button onClick={() => go("sell")}
+            <p className="text-sm font-display italic">{emptyMsg}</p>
+            <button onClick={() => go(tab === "active" ? "sell" : "addanimal")}
                     className="mt-5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
-              {t.sellCta}
+              {tab === "active" ? t.sellCta : t.addAnimal}
             </button>
           </div>
-        ) : items.map(l => (
+        ) : shown.map(l => (
           <div key={l.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
             <div className="flex items-center gap-3 p-2.5">
               <button onClick={() => go("detail", l)} className="w-14 h-14 rounded-lg overflow-hidden bg-stone-800 shrink-0">
@@ -4662,36 +4732,51 @@ function MyListingsScreen({ t, lang, go, user }) {
                      className="w-full h-full object-cover" />
               </button>
               <button onClick={() => go("detail", l)} className="flex-1 min-w-0 text-left">
-                <div className="font-bold text-stone-100 text-sm truncate flex items-center gap-2">
-                  {l.common}
-                  {l.status === "sold" && <span className="text-[9px] font-black uppercase tracking-widest bg-stone-700 text-stone-300 px-1.5 py-0.5 rounded">{t.soldBadge}</span>}
-                </div>
+                <div className="font-bold text-stone-100 text-sm truncate">{l.common}</div>
                 <div className="text-[11px] text-stone-500 italic truncate">{l.species}</div>
-                <div className="text-[11px] text-amber-400 font-bold mt-0.5">{formatPrice(l.price)}</div>
+                {l.price != null && bucket(l) !== "held" && bucket(l) !== "breeder" && (
+                  <div className="text-[11px] text-amber-400 font-bold mt-0.5">{formatPrice(l.price)}</div>
+                )}
               </button>
-              {l.status === "sold" ? (
-                <div className="flex flex-col gap-1.5 shrink-0">
-                  <button onClick={() => { setConfirmDel(confirmDel === l.id ? null : l.id); setEditId(null); }}
-                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
-                    {t.mlDelete}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-1.5 shrink-0">
-                  <button onClick={() => { setSoldFor(soldFor?.id === l.id ? null : l); setEditId(null); setConfirmDel(null); }}
-                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
-                    {t.markSold}
-                  </button>
-                  <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
-                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
-                    {t.mlEdit}
-                  </button>
-                  <button onClick={() => { setConfirmDel(confirmDel === l.id ? null : l.id); setEditId(null); }}
-                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
-                    {t.mlDelete}
-                  </button>
-                </div>
-              )}
+
+              {/* Actions depend on which bucket the animal is in */}
+              <div className="flex flex-col gap-1.5 shrink-0">
+                {bucket(l) === "active" && (
+                  <>
+                    <button onClick={() => { setSoldFor(soldFor?.id === l.id ? null : l); setEditId(null); setRemoveFor(null); }}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
+                      {t.markSold}
+                    </button>
+                    <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
+                      {t.mlEdit}
+                    </button>
+                    <button onClick={() => { setRemoveFor(removeFor?.id === l.id ? null : l); setEditId(null); setSoldFor(null); }}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                      {t.mlDelete}
+                    </button>
+                  </>
+                )}
+                {(bucket(l) === "held" || bucket(l) === "breeder") && (
+                  <>
+                    <button onClick={() => changeStatus(l.id, "active")} disabled={busy}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-amber-500/15 ring-1 ring-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition-colors">
+                      {t.relist}
+                    </button>
+                    <button onClick={() => changeStatus(l.id, bucket(l) === "held" ? "breeder" : "held")} disabled={busy}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
+                      {bucket(l) === "held" ? t.statusBreeder : t.statusHeld}
+                    </button>
+                    <button onClick={() => { setRemoveFor(removeFor?.id === l.id ? null : l); }}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                      {t.mlDelete}
+                    </button>
+                  </>
+                )}
+                {bucket(l) === "sold" && (
+                  <span className="text-[9px] font-black uppercase tracking-widest bg-stone-700 text-stone-300 px-2 py-1 rounded text-center">{t.soldBadge}</span>
+                )}
+              </div>
             </div>
 
             {/* Mark-as-sold panel */}
@@ -4721,18 +4806,33 @@ function MyListingsScreen({ t, lang, go, user }) {
               </div>
             )}
 
-            {/* Delete confirm panel */}
-            {confirmDel === l.id && (
-              <div className="border-t border-stone-800 p-3 bg-rose-500/5">
-                <p className="text-[11px] text-stone-300 mb-2">{t.mlConfirmDelete}</p>
-                <div className="flex gap-2">
-                  <button onClick={() => doDelete(l.id)} disabled={busy}
-                          className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-rose-500 hover:bg-rose-400 disabled:bg-stone-700 text-white transition-colors">
-                    {busy ? t.processing : t.confirmDelete}
+            {/* Remove-from-sale panel — choose what happens to the animal */}
+            {removeFor?.id === l.id && (
+              <div className="border-t border-stone-800 p-3.5 bg-rose-500/5 space-y-2.5">
+                <div className="text-[11px] font-bold text-stone-200">{t.removeListingTitle}</div>
+                <p className="text-[11px] text-stone-400">{t.removeListingIntro}</p>
+                <div className="space-y-1.5">
+                  <button onClick={() => changeStatus(l.id, "held")} disabled={busy}
+                          className="w-full py-2 rounded-lg text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
+                    {t.removeToHeld}
                   </button>
-                  <button onClick={() => setConfirmDel(null)}
-                          className="flex-1 py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
-                    {t.keepAccount}
+                  <button onClick={() => changeStatus(l.id, "breeder")} disabled={busy}
+                          className="w-full py-2 rounded-lg text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
+                    {t.removeToBreeder}
+                  </button>
+                  {bucket(l) === "active" && (
+                    <button onClick={() => { setSoldFor(l); setRemoveFor(null); }} disabled={busy}
+                            className="w-full py-2 rounded-lg text-[11px] font-bold bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
+                      {t.removeToSold}
+                    </button>
+                  )}
+                  <button onClick={() => doDelete(l.id)} disabled={busy}
+                          className="w-full py-2 rounded-lg text-[11px] font-bold bg-rose-500 hover:bg-rose-400 disabled:bg-stone-700 text-white transition-colors">
+                    {busy ? t.processing : t.removeDelete}
+                  </button>
+                  <button onClick={() => setRemoveFor(null)}
+                          className="w-full py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+                    {t.deleteCancel}
                   </button>
                 </div>
               </div>
@@ -4749,6 +4849,312 @@ function MyListingsScreen({ t, lang, go, user }) {
    profile photo, display name, city, bio, specialties.
    Creates the seller row on first visit if it doesn't exist yet.
    ═════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   ADD ANIMAL — add a non-sale animal to the collection (held / breeder).
+   A trimmed sell form: species, sex, birth, weight, traits, CITES,
+   parentage, photos + which collection status. No price/auction/delivery.
+   Reuses createListing with status = held | breeder and price = null.
+   ═════════════════════════════════════════════════════════════════ */
+function AddAnimalScreen({ t, lang, go, user }) {
+  const [success, setSuccess] = useState(false);
+  const [status, setStatus] = useState("breeder");   // held | breeder
+  const [catId, setCatId] = useState("");
+  const [subcatId, setSubcatId] = useState("");
+  const [speciesVal, setSpeciesVal] = useState("");
+  const [name, setName] = useState("");
+  const [sex, setSex] = useState("M");
+  const [born, setBorn] = useState("");
+  const [bornPrecision, setBornPrecision] = useState("month");
+  const [weight, setWeight] = useState("");
+  const [isCites, setIsCites] = useState(false);
+  const [sire, setSire] = useState("");
+  const [dam, setDam] = useState("");
+  const [desc, setDesc] = useState("");
+  const [selectedTraits, setSelectedTraits] = useState([]);
+  const [customTrait, setCustomTrait] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const [country, setCountry] = useState("IT");
+  const [region, setRegion] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveErr, setSaveErr] = useState("");
+  const fileRef = useRef(null);
+  const MAX_PHOTOS = 3;
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchMySeller(user.id)).then(s => {
+      if (!on || !s) return;
+      if (s.country) setCountry(s.country);
+      if (s.region) setRegion(s.region);
+    }).catch(() => {});
+    return () => { on = false; };
+  }, [user?.id]);
+
+  useEffect(() => { setSelectedTraits([]); }, [catId]);
+  useEffect(() => {
+    const c = CITES_SPECIES.has(speciesVal);
+    setIsCites(c);
+    if (c) setBornPrecision("day");
+  }, [speciesVal]);
+
+  const subcats = catId ? subcatsFor(catId) : [];
+  const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
+  const TRAITS_BY_CATEGORY = {
+    geckos: [{ name: "Lilly White", cls: "incDom" }, { name: "Harlequin", cls: "line" }, { name: "Pinstripe", cls: "line" }, { name: "Dalmatian", cls: "line" }, { name: "Flame", cls: "line" }, { name: "Axanthic", cls: "recessive" }, { name: "Cappuccino", cls: "incDom" }, { name: "Wild Type", cls: "wild" }],
+    snakes: [{ name: "Pastel", cls: "incDom" }, { name: "Banana", cls: "incDom" }, { name: "Albino", cls: "recessive" }, { name: "Pied", cls: "recessive" }, { name: "Clown", cls: "recessive" }, { name: "Spider", cls: "dominant" }, { name: "Mojave", cls: "incDom" }, { name: "Wild Type", cls: "wild" }],
+    lizards: [{ name: "Red", cls: "line" }, { name: "Citrus", cls: "line" }, { name: "Hypo", cls: "recessive" }, { name: "Translucent", cls: "recessive" }, { name: "Leatherback", cls: "incDom" }, { name: "Wild Type", cls: "wild" }],
+    chameleons: [{ name: "Nosy Be", cls: "line" }, { name: "Ambilobe", cls: "line" }, { name: "Ambanja", cls: "line" }, { name: "Wild Type", cls: "wild" }],
+    tortoises: [{ name: "High Yellow", cls: "line" }, { name: "Ivory", cls: "recessive" }, { name: "Albino", cls: "recessive" }, { name: "Wild Type", cls: "wild" }],
+    amphibians: [{ name: "Albino", cls: "recessive" }, { name: "Leucistic", cls: "recessive" }, { name: "Wild Type", cls: "wild" }],
+    inverts: [{ name: "Normal", cls: "wild" }, { name: "Line-bred colour", cls: "line" }],
+  };
+  const exampleTraits = TRAITS_BY_CATEGORY[catId] || [{ name: "Wild Type", cls: "wild" }];
+  const addCustomTrait = () => {
+    const v = customTrait.trim();
+    if (v && !selectedTraits.includes(v)) setSelectedTraits(prev => [...prev, v]);
+    setCustomTrait("");
+  };
+  const addFiles = (fileList) => {
+    const imgs = Array.from(fileList || []).filter(f => f.type.startsWith("image/"));
+    setPhotos(prev => [...prev, ...imgs.slice(0, MAX_PHOTOS - prev.length).map(f => ({ file: f, url: URL.createObjectURL(f) }))]);
+  };
+  const monthsSince = (val) => {
+    const s = String(val || "").trim();
+    if (!s) return null;
+    let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s) || /^(\d{4})-(\d{1,2})$/.exec(s);
+    let yy, mm;
+    if (m) { yy = +m[1]; mm = +m[2]; }
+    else if ((m = /^(\d{4})$/.exec(s))) { yy = +m[1]; mm = 1; }
+    else return null;
+    if (mm < 1 || mm > 12) return null;
+    const now = new Date();
+    return Math.max(0, (now.getFullYear() - yy) * 12 + (now.getMonth() + 1 - mm));
+  };
+
+  const save = async () => {
+    setSaveErr("");
+    if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
+    if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
+    setSaving(true);
+    try {
+      const api = await import("./lib/api");
+      const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
+      const urls = photos.length ? await api.uploadListingPhotos(photos.map(p => p.file), user.id) : [];
+      const traits = selectedTraits.map(n => {
+        const e = exampleTraits.find(x => x.name === n);
+        return { name: n, cls: e?.cls || "line" };
+      });
+      const common = SPECIES_LABELS[speciesVal]?.[lang] || name || speciesVal;
+      await api.createListing({
+        species: speciesVal, common, category: catId,
+        traits, price: null, deposit: null,
+        sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
+        birthDate: /^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim()) ? born.trim() : null,
+        citesListed: isCites, country, region, city: null,
+        sire: sire.trim() || null, dam: dam.trim() || null, desc,
+        image: urls[0] || null, shipping: false, euShipping: false, localPickup: true,
+        expoIds: [], auction: null, status,
+      }, seller.id);
+      setSuccess(true);
+    } catch (err) { setSaveErr(err?.message || "Error"); }
+    finally { setSaving(false); }
+  };
+
+  if (success) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full px-6 text-center">
+        <div className="w-16 h-16 bg-emerald-500/15 ring-1 ring-emerald-500/30 rounded-full flex items-center justify-center text-emerald-400 mb-5">
+          <CheckCircle size={32} />
+        </div>
+        <h2 className="font-display text-2xl text-stone-50">{t.animalAdded}</h2>
+        <button onClick={() => go("mylistings")}
+                className="mt-6 px-6 py-3 bg-amber-500 text-stone-950 font-bold text-sm rounded-lg hover:bg-amber-400 transition-colors">
+          {t.myListings}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("mylistings")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.addAnimalTitle}</h1>
+          <p className="text-[11px] text-stone-500 mt-0.5">{t.addAnimalIntro}</p>
+        </div>
+      </header>
+
+      <div className="p-5 md:p-8 space-y-6">
+        {/* Status: held or breeder */}
+        <FormBlock label={t.animalStatus}>
+          <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1">
+            {[["breeder", t.statusBreeder], ["held", t.statusHeld]].map(([k, label]) => (
+              <button key={k} type="button" onClick={() => setStatus(k)}
+                      className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${status === k ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </FormBlock>
+
+        {/* Photos */}
+        <FormBlock>
+          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
+                 onChange={e => { addFiles(e.target.files); e.target.value = ""; }} />
+          <div className="flex flex-wrap gap-3">
+            {photos.map((p, i) => (
+              <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden ring-1 ring-stone-700">
+                <img src={p.url} alt="" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => setPhotos(photos.filter((_, x) => x !== i))}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-stone-950/80 text-stone-200 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"><X size={14} /></button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button type="button" onClick={() => fileRef.current?.click()}
+                      className="w-24 h-24 border-2 border-dashed border-stone-700 hover:border-amber-500/60 rounded-xl flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-400 transition-colors">
+                <Camera size={22} /><span className="text-[10px] font-bold">{photos.length}/{MAX_PHOTOS}</span>
+              </button>
+            )}
+          </div>
+        </FormBlock>
+
+        <FormBlock label={t.nameLabel}>
+          <input className="form-input" value={name} onChange={e => setName(e.target.value)}
+                 placeholder={lang === "it" ? "Nome o codice dell'esemplare (facoltativo)" : "Animal name or code (optional)"} />
+        </FormBlock>
+
+        {/* Species cascade */}
+        <FormBlock label={t.category} required done={!!catId}>
+          <select className="form-input" value={catId} onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
+            <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
+            {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
+          </select>
+        </FormBlock>
+        {catId && (
+          <FormBlock label={lang === "it" ? "Sottocategoria" : "Subcategory"}>
+            <select className="form-input" value={subcatId} onChange={e => { setSubcatId(e.target.value); setSpeciesVal(""); }}>
+              <option value="">{lang === "it" ? "Scegli sottocategoria" : "Choose subcategory"}</option>
+              {subcats.map(sc => <option key={sc.id} value={sc.id}>{sc[lang]}</option>)}
+            </select>
+          </FormBlock>
+        )}
+        {subcatId && (
+          <FormBlock label={t.species} required done={!!speciesVal && speciesVal !== "__other"}>
+            {speciesOptions.length > 0 ? (
+              <>
+                <select className="form-input"
+                        value={speciesOptions.includes(speciesVal) ? speciesVal : (speciesVal === "" ? "" : "__other")}
+                        onChange={e => setSpeciesVal(e.target.value)}>
+                  <option value="">{t.pickSpecies}</option>
+                  {speciesOptions.map(sp => <option key={sp} value={sp}>{SPECIES_LABELS[sp]?.[lang] || sp} — {sp}</option>)}
+                  <option value="__other">{lang === "it" ? "Altro / non in elenco…" : "Other / not listed…"}</option>
+                </select>
+                {speciesVal !== "" && !speciesOptions.includes(speciesVal) && (
+                  <input className="form-input mt-2" autoFocus
+                         placeholder={lang === "it" ? "Nome scientifico della specie" : "Species scientific name"}
+                         value={speciesVal === "__other" ? "" : speciesVal} onChange={e => setSpeciesVal(e.target.value)} />
+                )}
+              </>
+            ) : (
+              <input className="form-input" placeholder={lang === "it" ? "Nome scientifico della specie" : "Species scientific name"}
+                     value={speciesVal === "__other" ? "" : speciesVal} onChange={e => setSpeciesVal(e.target.value)} />
+            )}
+          </FormBlock>
+        )}
+
+        <FormBlock label={t.sex}>
+          <select className="form-input" value={sex} onChange={e => setSex(e.target.value)}>
+            <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="U">{t.unsexed}</option>
+          </select>
+        </FormBlock>
+
+        {/* Traits */}
+        <FormBlock label={t.traits}>
+          <div className="flex flex-wrap gap-1.5">
+            {[...exampleTraits, ...selectedTraits.filter(n => !exampleTraits.some(e => e.name === n)).map(n => ({ name: n, cls: "line" }))].map((tr, i) => {
+              const on = selectedTraits.includes(tr.name);
+              return (
+                <button key={tr.name + i} type="button"
+                        onClick={() => setSelectedTraits(on ? selectedTraits.filter(s => s !== tr.name) : [...selectedTraits, tr.name])}>
+                  <span className={on ? "" : "opacity-40"}><TraitChip trait={tr} size="sm" /></span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex gap-2 mt-2.5">
+            <input value={customTrait} onChange={e => setCustomTrait(e.target.value)}
+                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomTrait(); } }}
+                   placeholder={lang === "it" ? "Aggiungi un'altra morph…" : "Add another morph…"} className="form-input flex-1" />
+            <button type="button" onClick={addCustomTrait}
+                    className="px-4 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors shrink-0">
+              {lang === "it" ? "Aggiungi" : "Add"}
+            </button>
+          </div>
+        </FormBlock>
+
+        {/* Parentage — feeds the breeding/genetics page */}
+        <div className="grid grid-cols-2 gap-3">
+          <FormBlock label={t.sire}>
+            <input className="form-input" value={sire} onChange={e => setSire(e.target.value)} placeholder={lang === "it" ? "Padre (facoltativo)" : "Sire (optional)"} />
+          </FormBlock>
+          <FormBlock label={t.dam}>
+            <input className="form-input" value={dam} onChange={e => setDam(e.target.value)} placeholder={lang === "it" ? "Madre (facoltativo)" : "Dam (optional)"} />
+          </FormBlock>
+        </div>
+
+        {/* Birth date with precision */}
+        <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
+          <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
+            {[["day", lang === "it" ? "Data esatta" : "Exact date"], ["month", lang === "it" ? "Mese e anno" : "Month & year"], ["year", lang === "it" ? "Solo anno" : "Year only"]].map(([key, label]) => {
+              const locked = isCites && key !== "day";
+              return (
+                <button type="button" key={key} disabled={locked} onClick={() => { setBornPrecision(key); setBorn(""); }}
+                        className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${bornPrecision === key ? "bg-amber-500 text-stone-950" : locked ? "text-stone-700 cursor-not-allowed" : "text-stone-400 hover:text-stone-200"}`}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {bornPrecision === "day" && <input type="date" className="form-input" value={born} onChange={e => setBorn(e.target.value)} max={new Date().toISOString().slice(0, 10)} style={{ colorScheme: "dark" }} />}
+          {bornPrecision === "month" && <input type="month" className="form-input" value={born} onChange={e => setBorn(e.target.value)} max={new Date().toISOString().slice(0, 7)} style={{ colorScheme: "dark" }} />}
+          {bornPrecision === "year" && <input type="number" className="form-input" value={born} onChange={e => setBorn(e.target.value)} min="1980" max={new Date().getFullYear()} placeholder={String(new Date().getFullYear())} />}
+        </FormBlock>
+
+        <FormBlock label={t.weight}>
+          <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)} placeholder={lang === "it" ? "es. 38g (facoltativo)" : "e.g. 38g (optional)"} />
+        </FormBlock>
+
+        {/* CITES */}
+        <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" checked={isCites} onChange={() => { const v = !isCites; setIsCites(v); if (v) { setBornPrecision("day"); setBorn(""); } }}
+                   className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <FileText size={15} className={isCites ? "text-amber-400" : "text-stone-400"} />
+                <span className="font-bold text-stone-100 text-sm">{t.citesCheckLabel}</span>
+              </div>
+              <p className="text-[11px] text-stone-400 leading-relaxed">{t.citesCheckHint}</p>
+            </div>
+          </label>
+        </div>
+
+        <FormBlock label={t.description}>
+          <textarea rows="3" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
+        </FormBlock>
+
+        {saveErr && <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5"><Info size={12} />{saveErr}</p>}
+        <button onClick={save} disabled={saving}
+                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors">
+          {saving ? t.publishing : t.addAnimalSave}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function EditStoreScreen({ t, lang, go, user }) {
   const [seller, setSeller] = useState(null);   // mapped seller (with id)
   const [loaded, setLoaded] = useState(false);
