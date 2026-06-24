@@ -193,6 +193,7 @@ const I18N = {
     kycSubmitted: "Documenti inviati. Ti avviseremo entro 48 ore.",
     kycWhy: "Perché verificarsi?", kycWhyText: "Gli acquirenti si fidano di più degli allevatori verificati. La spunta blu appare su tutti i tuoi annunci e sul tuo profilo.",
     notifTitle: "Notifiche push", notifIntro: "Ricevi avvisi in tempo reale anche quando l'app è chiusa.",
+    notifComingSoon: "Le notifiche push arriveranno presto. Per ora, apri l'app per vedere nuovi messaggi, offerte e promemoria delle fiere.",
     notifEnable: "Attiva notifiche", notifEnabled: "Notifiche attive", notifMessages: "Nuovi messaggi",
     notifReservations: "Approvazione prenotazioni", notifPriceDrops: "Cali di prezzo nei preferiti", notifExpo: "Promemoria fiere",
     accountSection: "Account", notifSection: "Notifiche", verificationSection: "Verifica",
@@ -240,6 +241,11 @@ const I18N = {
     days: "g", hours: "h", minutes: "min", buyNow: "Compra subito",
     bidTooLow: "L'offerta deve superare l'offerta attuale",
     auctionInfo: "In un'asta, fai un'offerta superiore a quella attuale. Se sei il miglior offerente alla scadenza e la riserva è raggiunta, vinci l'esemplare.",
+    auctionWon: "🎉 Hai vinto l'asta! Contatta il venditore per completare l'acquisto.",
+    auctionEndedWinner: "Asta conclusa. L'esemplare è stato aggiudicato al miglior offerente.",
+    auctionEndedNoReserve: "Asta conclusa: prezzo di riserva non raggiunto. Il venditore non è obbligato a vendere.",
+    auctionEndedNoBids: "Asta conclusa senza offerte.",
+    auctionContactToComplete: "Contatta il venditore",
     crossBorderTitle: "Vendita transfrontaliera",
     crossBorderEu: "Questo esemplare proviene da un altro Paese UE. Per il trasporto è richiesta la registrazione TRACES e, per le specie CITES Allegato A/B, la documentazione di movimento intra-UE.",
     crossBorderCh: "Attenzione: questo Paese non fa parte dell'UE. Il movimento di animali vivi da/verso l'UE attraversa una frontiera doganale e richiede controlli veterinari di confine e permessi di importazione/esportazione. Verifica i requisiti prima di procedere.",
@@ -418,6 +424,7 @@ const I18N = {
     kycSubmitted: "Documents submitted. We'll notify you within 48 hours.",
     kycWhy: "Why verify?", kycWhyText: "Buyers trust verified breeders more. The blue check appears on all your listings and your profile.",
     notifTitle: "Push notifications", notifIntro: "Get real-time alerts even when the app is closed.",
+    notifComingSoon: "Push notifications are coming soon. For now, open the app to see new messages, bids and expo reminders.",
     notifEnable: "Enable notifications", notifEnabled: "Notifications on", notifMessages: "New messages",
     notifReservations: "Reservation approvals", notifPriceDrops: "Wishlist price drops", notifExpo: "Expo reminders",
     accountSection: "Account", notifSection: "Notifications", verificationSection: "Verification",
@@ -465,6 +472,11 @@ const I18N = {
     days: "d", hours: "h", minutes: "min", buyNow: "Buy now",
     bidTooLow: "Bid must exceed the current bid",
     auctionInfo: "In an auction, place a bid above the current one. If you're the highest bidder when it ends and the reserve is met, you win the animal.",
+    auctionWon: "🎉 You won the auction! Contact the seller to complete the purchase.",
+    auctionEndedWinner: "Auction ended. The animal went to the highest bidder.",
+    auctionEndedNoReserve: "Auction ended: reserve price not met. The seller is not obliged to sell.",
+    auctionEndedNoBids: "Auction ended with no bids.",
+    auctionContactToComplete: "Contact the seller",
     crossBorderTitle: "Cross-border sale",
     crossBorderEu: "This animal is located in another EU country. Transport requires TRACES registration and, for CITES Annex A/B species, intra-EU movement documentation.",
     crossBorderCh: "Note: this country is not part of the EU. Moving live animals to/from the EU crosses a customs border and requires border veterinary checks and import/export permits. Check the requirements before proceeding.",
@@ -1320,7 +1332,6 @@ export default function HerpMarket() {
       case "editstore": return user ? <EditStoreScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
       case "legal":     return <Legal {...props} />;
-      case "inventory": return <InventoryScreen {...props} />;
       case "breeding":  return <BreedingProjectsScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
       case "reviews":   return <ReviewsScreen {...props} />;
@@ -2427,7 +2438,7 @@ function bidIncrement(amount) {
   return 50;
 }
 
-function AuctionBox({ auction, listingId, t, lang, user, requireAuth }) {
+function AuctionBox({ auction, listingId, t, lang, user, requireAuth, onContactSeller }) {
   const [bid, setBid] = useState(auction.currentBid);
   const [bidCount, setBidCount] = useState(auction.bidCount);
   const [highBidder, setHighBidder] = useState(auction.highBidder || null);
@@ -2503,13 +2514,32 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth }) {
         </div>
       </div>
 
-      {/* My status */}
+      {/* My status (live, while running) */}
       {myStatus && !cd.ended && (
         <div className={`mt-3 text-[11px] font-bold rounded-lg px-3 py-2 ${
           myStatus === "winning" ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20"
                                  : "bg-rose-500/10 text-rose-300 ring-1 ring-rose-500/20"
         }`}>
           {myStatus === "winning" ? `✓ ${t.winning}` : t.outbid}
+        </div>
+      )}
+
+      {/* Auction outcome when the timer has ended */}
+      {cd.ended && (
+        <div className={`mt-3 text-[11px] font-bold rounded-lg px-3 py-2.5 ${
+          !reserveMet ? "bg-stone-800/60 text-stone-400 ring-1 ring-stone-700"
+          : myStatus === "winning" ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20"
+          : "bg-stone-800/60 text-stone-300 ring-1 ring-stone-700"
+        }`}>
+          {!reserveMet ? (
+            <span>{t.auctionEndedNoReserve}</span>
+          ) : myStatus === "winning" ? (
+            <span>{t.auctionWon}</span>
+          ) : bidCount > 0 ? (
+            <span>{t.auctionEndedWinner}</span>
+          ) : (
+            <span>{t.auctionEndedNoBids}</span>
+          )}
         </div>
       )}
 
@@ -2521,6 +2551,14 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth }) {
                 disabled={busy}
                 className="w-full mt-4 bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors">
           {t.placeBid} · {t.minimumBid} {formatPrice(minNext)}
+        </button>
+      )}
+
+      {/* Won → prompt the winner to contact the seller to complete the sale */}
+      {cd.ended && reserveMet && myStatus === "winning" && (
+        <button onClick={() => { if (requireAuth(t.message, () => onContactSeller && onContactSeller())) (onContactSeller && onContactSeller()); }}
+                className="w-full mt-4 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold py-3 rounded-lg text-sm transition-colors inline-flex items-center justify-center gap-1.5">
+          <MessageCircle size={16} />{t.auctionContactToComplete}
         </button>
       )}
 
@@ -2694,7 +2732,8 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           {a.traits.map((tr, i) => <TraitChip key={i} trait={tr} size="sm" />)}
         </div>
         {a.auction ? (
-          <AuctionBox auction={a.auction} listingId={a.id} t={t} lang={lang} user={user} requireAuth={requireAuth} />
+          <AuctionBox auction={a.auction} listingId={a.id} t={t} lang={lang} user={user} requireAuth={requireAuth}
+                      onContactSeller={() => go("thread", { listing: a })} />
         ) : (
           <div className="mt-5 flex items-baseline gap-3">
             <span className="font-display font-bold text-4xl text-stone-50">{formatPrice(a.price)}</span>
@@ -5739,6 +5778,20 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   const attendedExpos = data.expoIds.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
   const bio = lang === "it" ? data.bioIt : data.bioEn;
 
+  // Load live reviews once we know the seller's row id (real breeders).
+  const [liveReviews, setLiveReviews] = useState(null);
+  const resolvedSellerId = data.id || liveSeller?.id;
+  useEffect(() => {
+    if (!resolvedSellerId) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchSellerReviews(resolvedSellerId))
+      .then(rows => { if (on) setLiveReviews(rows); })
+      .catch(() => { if (on) setLiveReviews([]); });
+    return () => { on = false; };
+  }, [resolvedSellerId]);
+  // Prefer live reviews; fall back to any demo reviews on the seller object.
+  const reviewsToShow = liveReviews != null ? liveReviews : (data.reviews || []);
+
   return (
     <div className="max-w-5xl mx-auto w-full pb-24 md:pb-10">
       {/* Header / banner */}
@@ -5809,14 +5862,14 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
         )}
 
         {tab === "reviews" && (
-          data.reviews.length > 0 ? (
+          reviewsToShow.length > 0 ? (
             <div className="space-y-3 max-w-2xl">
-              {data.reviews.map((rev, i) => (
+              {reviewsToShow.map((rev, i) => (
                 <div key={i} className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-stone-300 font-bold text-xs">
-                        {rev.buyer[0]}
+                        {(rev.buyer || "—")[0]}
                       </div>
                       <div>
                         <div className="text-sm font-bold text-stone-100">{rev.buyer}</div>
@@ -5830,7 +5883,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
                       ))}
                     </div>
                   </div>
-                  <p className="text-sm text-stone-300 mt-3 leading-relaxed">{rev.text}</p>
+                  {rev.text && <p className="text-sm text-stone-300 mt-3 leading-relaxed">{rev.text}</p>}
                 </div>
               ))}
             </div>
@@ -6070,40 +6123,20 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
           </div>
         </section>
 
-        {/* Notifications */}
+        {/* Notifications — not yet live; honest "coming soon" so testers aren't misled */}
         <section>
           <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.notifSection}</h2>
           <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
             <div className="flex items-start gap-3">
-              <Bell size={20} className={notifEnabled ? "text-amber-400" : "text-stone-500"} />
+              <Bell size={20} className="text-stone-500" />
               <div className="flex-1">
-                <h3 className="font-bold text-stone-100">{t.notifTitle}</h3>
-                <p className="text-sm text-stone-400 mt-1">{t.notifIntro}</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-stone-100">{t.notifTitle}</h3>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 rounded">{t.breedingSoon}</span>
+                </div>
+                <p className="text-sm text-stone-400 mt-1">{t.notifComingSoon}</p>
               </div>
             </div>
-            {!notifEnabled ? (
-              <button onClick={enableNotifications}
-                      className="w-full mt-4 py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors">
-                {t.notifEnable}
-              </button>
-            ) : (
-              <div className="mt-4 space-y-1">
-                <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold mb-2">
-                  <CheckCircle size={13} />{t.notifEnabled}
-                </div>
-                {[
-                  ["messages", t.notifMessages], ["reservations", t.notifReservations],
-                  ["priceDrops", t.notifPriceDrops], ["expo", t.notifExpo],
-                ].map(([key, label]) => (
-                  <label key={key} className="flex items-center justify-between py-2 cursor-pointer">
-                    <span className="text-sm text-stone-300">{label}</span>
-                    <input type="checkbox" checked={notifPrefs[key]}
-                           onChange={() => setNotifPrefs({ ...notifPrefs, [key]: !notifPrefs[key] })}
-                           className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
-                  </label>
-                ))}
-              </div>
-            )}
           </div>
         </section>
 
@@ -6246,96 +6279,6 @@ function UploadRow({ label, done, onFile, t, busy }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   INVENTORY — a breeder's collection, grouped by status.
-   Demo data; in production these come from the seller's own listings +
-   a `collection` table (breeders/held-back animals that aren't for sale).
-   ═════════════════════════════════════════════════════════════════ */
-const INVENTORY_DEMO = [
-  { id: "b1", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Lilly White het Axanthic", sex: "M", status: "breeder", img: IMG.crested },
-  { id: "b2", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Red Harlequin", sex: "F", status: "breeder", img: IMG.crested },
-  { id: "b3", species: "Python regius", common: "Pitone reale", morph: "Banana Pastel", sex: "M", status: "breeder", img: IMG.ball },
-  { id: "s1", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Lilly White Harlequin", sex: "F", status: "sale", img: IMG.crested },
-  { id: "s2", species: "Heterodon nasicus", common: "Hognose", morph: "Albino Conda", sex: "M", status: "sale", img: IMG.hognose },
-  { id: "h1", species: "Correlophus ciliatus", common: "Geco crestato", morph: "Phantom", sex: "U", status: "held", img: IMG.crested },
-  { id: "x1", species: "Python regius", common: "Pitone reale", morph: "Clown", sex: "F", status: "sold", img: IMG.ball },
-  { id: "x2", species: "Eublepharis macularius", common: "Geco leopardino", morph: "Tremper Albino", sex: "M", status: "sold", img: IMG.leopard },
-];
-
-function InventoryScreen({ t, go, lang }) {
-  const [tab, setTab] = useState("breeder");
-  const tabs = [
-    { id: "breeder", label: t.invBreeders },
-    { id: "sale", label: t.invForSale },
-    { id: "held", label: t.invStatusHeld },
-    { id: "sold", label: t.invSold },
-  ];
-  const items = INVENTORY_DEMO.filter(i => i.status === tab);
-  const statusColor = {
-    breeder: "text-sky-300 bg-sky-500/10 ring-sky-500/20",
-    sale: "text-amber-300 bg-amber-500/10 ring-amber-500/20",
-    held: "text-stone-300 bg-stone-500/10 ring-stone-500/20",
-    sold: "text-emerald-300 bg-emerald-500/10 ring-emerald-500/20",
-  };
-  const statusLabel = { breeder: t.invStatusBreeder, sale: t.invStatusSale, held: t.invStatusHeld, sold: t.invStatusSold };
-
-  return (
-    <div className="max-w-3xl mx-auto w-full pb-24">
-      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
-        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
-        <div className="flex-1">
-          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.inventory}</h1>
-          <p className="text-[11px] text-stone-500 mt-0.5">{t.invIntro}</p>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <div className="px-5 md:px-8 pt-4 flex gap-1.5 overflow-x-auto hide-scrollbar">
-        {tabs.map(tb => {
-          const count = INVENTORY_DEMO.filter(i => i.status === tb.id).length;
-          return (
-            <button key={tb.id} onClick={() => setTab(tb.id)}
-                    className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors ${
-                      tab === tb.id ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-400 hover:text-stone-200"
-                    }`}>
-              {tb.label} <span className="opacity-70">({count})</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* List */}
-      <div className="px-5 md:px-8 pt-4 space-y-2">
-        {items.length === 0 ? (
-          <p className="text-center text-stone-500 text-sm py-16 italic">{t.invEmpty}</p>
-        ) : items.map(i => (
-          <div key={i.id} className="flex items-center gap-3 bg-stone-900/50 ring-1 ring-stone-800 rounded-xl p-2.5">
-            <div className="w-14 h-14 rounded-lg overflow-hidden bg-stone-800 shrink-0">
-              <img src={i.img} alt={i.common} onError={(e) => { e.target.onerror = null; e.target.src = fallback(i.common); }}
-                   className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-stone-100 text-sm truncate">{i.morph}</div>
-              <div className="text-[11px] text-stone-500 italic truncate">{i.species} · {sexLabel(i.sex, t)}</div>
-            </div>
-            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded ring-1 shrink-0 ${statusColor[i.status]}`}>
-              {statusLabel[i.status]}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Add button */}
-      <div className="px-5 md:px-8 pt-5">
-        <button onClick={() => go("sell")}
-                className="w-full py-3 rounded-lg text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors flex items-center justify-center gap-2">
-          <PlusCircle size={16} />{t.invAdd}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════
    BREEDING PROJECTS — coming-soon page with a real preview of the
    planned visual planner (replaces the Excel sheets breeders use).
    ═════════════════════════════════════════════════════════════════ */
@@ -6424,17 +6367,74 @@ function BreedingProjectsScreen({ t, go, lang }) {
    a completed sale (buyer leaves a review). Until that flow is wired, this
    honestly shows the empty state rather than demo data.
    ═════════════════════════════════════════════════════════════════ */
+/* A card for a completed purchase the buyer hasn't reviewed yet: star picker
+   + optional comment → writes to the reviews table (RLS-guarded). */
+function LeaveReviewCard({ sale, user, t, lang, onDone }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const submit = async () => {
+    if (!rating || busy) return;
+    setBusy(true); setErr("");
+    try {
+      const api = await import("./lib/api");
+      await api.submitReview({
+        sellerId: sale.sellerId, buyerId: user.id,
+        transactionId: sale.transactionId, rating, comment: comment.trim(),
+      });
+      onDone();
+    } catch (e) { setErr(e?.message || "Error"); setBusy(false); }
+  };
+
+  return (
+    <div className="bg-stone-900/60 ring-1 ring-amber-500/20 rounded-xl p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-11 h-11 rounded-lg overflow-hidden bg-stone-800 shrink-0">
+          <img src={sale.listingImage} alt=""
+               onError={(e) => { e.target.onerror = null; e.target.src = fallback(sale.listingCommon || ""); }}
+               className="w-full h-full object-cover" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm font-bold text-stone-100 truncate">{sale.sellerName}</div>
+          <div className="text-[11px] text-stone-500 truncate italic">{sale.listingCommon}</div>
+        </div>
+      </div>
+      <div className="flex gap-1 mb-3">
+        {[1, 2, 3, 4, 5].map(n => (
+          <button key={n} type="button" onClick={() => setRating(n)}>
+            <Star size={24} className={n <= rating ? "fill-amber-400 text-amber-400" : "text-stone-700 hover:text-stone-500"} />
+          </button>
+        ))}
+      </div>
+      <textarea rows="2" value={comment} onChange={e => setComment(e.target.value)}
+                placeholder={lang === "it" ? "Scrivi una recensione (facoltativo)…" : "Write a review (optional)…"}
+                className="form-input resize-none mb-2" />
+      {err && <p className="text-[11px] text-rose-400 font-bold mb-2">{err}</p>}
+      <button onClick={submit} disabled={!rating || busy}
+              className="w-full py-2.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors">
+        {busy ? t.processing : (lang === "it" ? "Invia recensione" : "Submit review")}
+      </button>
+    </div>
+  );
+}
+
 function ReviewsScreen({ t, go, lang, user }) {
-  const [reviews, setReviews] = useState(null);   // null = loading
+  const [reviews, setReviews] = useState(null);   // reviews received (as seller)
+  const [toReview, setToReview] = useState([]);   // completed purchases I can review
+  const [reload, setReload] = useState(0);
   useEffect(() => {
     if (!user?.id) { setReviews([]); return; }
     let on = true;
-    import("./lib/api")
-      .then(api => api.fetchMyReviews ? api.fetchMyReviews(user.id) : [])
-      .then(rows => { if (on) setReviews(rows || []); })
-      .catch(() => { if (on) setReviews([]); });
+    import("./lib/api").then(api => {
+      (api.fetchMyReviews ? api.fetchMyReviews(user.id) : Promise.resolve([]))
+        .then(rows => { if (on) setReviews(rows || []); }).catch(() => { if (on) setReviews([]); });
+      (api.fetchReviewableSales ? api.fetchReviewableSales(user.id) : Promise.resolve([]))
+        .then(rows => { if (on) setToReview(rows || []); }).catch(() => { if (on) setToReview([]); });
+    });
     return () => { on = false; };
-  }, [user?.id]);
+  }, [user?.id, reload]);
 
   const list = reviews || [];
   const avg = list.length ? (list.reduce((s, r) => s + r.rating, 0) / list.length) : 0;
@@ -6448,6 +6448,21 @@ function ReviewsScreen({ t, go, lang, user }) {
           <p className="text-[11px] text-stone-500 mt-0.5">{t.reviewsIntro}</p>
         </div>
       </header>
+
+      {/* Sales you can review (completed purchases without a review yet) */}
+      {toReview.length > 0 && (
+        <div className="px-5 md:px-8 pt-5">
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
+            {lang === "it" ? "Lascia una recensione" : "Leave a review"}
+          </div>
+          <div className="space-y-2.5">
+            {toReview.map(sale => (
+              <LeaveReviewCard key={sale.transactionId} sale={sale} user={user} t={t} lang={lang}
+                               onDone={() => setReload(x => x + 1)} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Rating summary */}
       <div className="px-5 md:px-8 pt-5">

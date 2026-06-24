@@ -243,6 +243,67 @@ export async function fetchListingInquirers(listingId) {
   return Object.entries(seen).map(([id, name]) => ({ id, name }));
 }
 
+// ── REVIEWS ─────────────────────────────────────────────────────────────────
+// Reviews are public-read; a buyer may insert one only for their own completed
+// transaction (enforced by RLS + a unique(transaction_id) constraint).
+
+// All reviews received by a seller (by seller row id), newest first.
+export async function fetchSellerReviews(sellerId) {
+  const { data, error } = await supabase.from('reviews')
+    .select('*, buyer:buyer_id(name)')
+    .eq('seller_id', sellerId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(r => ({
+    rating: r.rating, text: r.comment || "",
+    buyer: r.buyer?.name || "—",
+    date: new Date(r.created_at).toLocaleDateString(),
+  }));
+}
+
+// Reviews received by the logged-in seller (resolves their seller row first).
+export async function fetchMyReviews(userId) {
+  const { data: seller } = await supabase.from('sellers')
+    .select('id').eq('owner_id', userId).maybeSingle();
+  if (!seller) return [];
+  return fetchSellerReviews(seller.id);
+}
+
+// Completed purchases by this buyer that don't yet have a review — these are
+// the sales the buyer can still review. Returns listing + seller info for the UI.
+export async function fetchReviewableSales(userId) {
+  const { data, error } = await supabase.from('transactions')
+    .select('id, seller_id, listing:listing_id(common, species, image_url), seller:seller_id(name), reviews(id)')
+    .eq('buyer_id', userId).eq('state', 'completed');
+  if (error) throw error;
+  return (data || [])
+    .filter(tx => !tx.reviews || tx.reviews.length === 0)   // not yet reviewed
+    .map(tx => ({
+      transactionId: tx.id, sellerId: tx.seller_id,
+      sellerName: tx.seller?.name || "—",
+      listingCommon: tx.listing?.common || "",
+      listingImage: tx.listing?.image_url || null,
+    }));
+}
+
+// Submit a review for a completed sale. RLS guarantees buyer + completed-tx.
+export async function submitReview({ sellerId, buyerId, transactionId, rating, comment }) {
+  const { error } = await supabase.from('reviews').insert({
+    seller_id: sellerId, buyer_id: buyerId, transaction_id: transactionId,
+    rating, comment: comment || null,
+  });
+  if (error) throw error;
+  // Refresh the seller's denormalised rating + count (best-effort).
+  try {
+    const { data: rows } = await supabase.from('reviews').select('rating').eq('seller_id', sellerId);
+    if (rows && rows.length) {
+      const avg = rows.reduce((s, r) => s + r.rating, 0) / rows.length;
+      await supabase.from('sellers').update({ rating: Math.round(avg * 10) / 10, review_count: rows.length }).eq('id', sellerId);
+    }
+  } catch (e) { /* non-fatal */ }
+  return true;
+}
+
 // ── KYC / VERIFICATION (seller side) ────────────────────────────────────────
 // Upload a verification document to the PRIVATE kyc-docs bucket, under a folder
 // named after the user id (the storage policy enforces this). Returns the path.
