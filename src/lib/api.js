@@ -28,6 +28,7 @@ export function mapListing(row) {
     dam: row.dam,
     desc: row.description,
     image: row.image_url,
+    images: (row.images && row.images.length) ? row.images : (row.image_url ? [row.image_url] : []),
     shipping: row.shipping,
     euShipping: row.eu_shipping,
     localPickup: row.local_pickup,
@@ -128,7 +129,8 @@ export async function createListing(listing, sellerId) {
     birth_date: listing.birthDate || null, cites_listed: !!listing.citesListed,
     country: listing.country, region: listing.region, city: listing.city,
     sire: listing.sire, dam: listing.dam, description: listing.desc,
-    image_url: listing.image, shipping: !!listing.shipping,
+    image_url: listing.image, images: listing.images || (listing.image ? [listing.image] : []),
+    shipping: !!listing.shipping,
     eu_shipping: !!listing.euShipping, local_pickup: listing.localPickup !== false,
     expo_ids: listing.expoIds || [], auction: listing.auction || null,
     status: listing.status || 'active',
@@ -170,9 +172,15 @@ export async function fetchMyListings(userId) {
 
 export async function updateListing(id, fields) {
   const patch = { updated_at: new Date().toISOString() };
-  if (fields.price != null) patch.price = fields.price;
+  if (fields.price !== undefined) patch.price = fields.price;
   if (fields.desc != null) patch.description = fields.desc;
   if (fields.common != null) patch.common = fields.common;
+  if (fields.deposit !== undefined) patch.deposit = fields.deposit;
+  if (fields.status != null) patch.status = fields.status;
+  if (fields.expoIds != null) patch.expo_ids = fields.expoIds;
+  if (fields.shipping != null) patch.shipping = fields.shipping;
+  if (fields.localPickup != null) patch.local_pickup = fields.localPickup;
+  if (fields.auction !== undefined) patch.auction = fields.auction;
   const { data, error } = await supabase.from('listings')
     .update(patch).eq('id', id).select('*, sellers(*)').single();
   if (error) throw error;
@@ -234,12 +242,12 @@ export async function markListingSold(opts) {
 // People who messaged the seller about a listing — candidates for "sold to user".
 export async function fetchListingInquirers(listingId) {
   const { data, error } = await supabase.from('threads')
-    .select('buyer_id, profiles:buyer_id(id, name)')
+    .select('buyer_id, profiles:buyer_id(id, display_name)')
     .eq('listing_id', listingId);
   if (error) throw error;
   // de-dup by buyer
   const seen = {};
-  (data || []).forEach(t => { if (t.buyer_id && !seen[t.buyer_id]) seen[t.buyer_id] = t.profiles?.name || t.buyer_id; });
+  (data || []).forEach(t => { if (t.buyer_id && !seen[t.buyer_id]) seen[t.buyer_id] = t.profiles?.display_name || t.buyer_id; });
   return Object.entries(seen).map(([id, name]) => ({ id, name }));
 }
 
@@ -250,13 +258,13 @@ export async function fetchListingInquirers(listingId) {
 // All reviews received by a seller (by seller row id), newest first.
 export async function fetchSellerReviews(sellerId) {
   const { data, error } = await supabase.from('reviews')
-    .select('*, buyer:buyer_id(name)')
+    .select('*, buyer:buyer_id(display_name)')
     .eq('seller_id', sellerId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data || []).map(r => ({
     rating: r.rating, text: r.comment || "",
-    buyer: r.buyer?.name || "—",
+    buyer: r.buyer?.display_name || "—",
     date: new Date(r.created_at).toLocaleDateString(),
   }));
 }
@@ -385,7 +393,7 @@ export async function fetchMyThreads(userId) {
   const { data: mySellers } = await supabase.from('sellers').select('id').eq('owner_id', userId);
   const sellerIds = (mySellers || []).map(s => s.id);
   let q = supabase.from('threads')
-    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id), buyer:buyer_id(id, name)')
+    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id), buyer:buyer_id(id, display_name)')
     .order('created_at', { ascending: false });
   // buyer_id = me OR seller_id in my seller ids
   const orParts = [`buyer_id.eq.${userId}`];
@@ -402,7 +410,7 @@ export async function fetchMyThreads(userId) {
       sellerId: thr.seller_id,
       buyerId: thr.buyer_id,
       iAmSeller: sellerIds.includes(thr.seller_id),
-      buyerName: thr.buyer?.name || null,
+      buyerName: thr.buyer?.display_name || null,
       listing: thr.listings ? mapListing(thr.listings) : null,
       lastMsg: last ? last.body : "",
       lastAt: last ? last.created_at : thr.created_at,

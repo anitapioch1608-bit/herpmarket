@@ -128,7 +128,7 @@ const I18N = {
     removeToSold: "Segna come venduto", removeDelete: "Elimina definitivamente",
     colEmptyActive: "Nessun animale in vendita.", colEmptySold: "Nessun animale venduto.",
     colEmptyHeld: "Nessun animale tenuto.", colEmptyBreeder: "Nessun riproduttore.",
-    relist: "Rimetti in vendita",
+    relist: "Metti in vendita", relistTitle: "Metti in vendita", relistConfirm: "Pubblica in vendita",
     spTitle: "Il mio negozio", spIntro: "Personalizza la tua pagina allevatore: foto, descrizione e dettagli.",
     spPhoto: "Foto del profilo", spUpload: "Carica foto", spCity: "Città", spBio: "Descrizione",
     spSpecialties: "Specializzazioni (separate da virgola)", spSpecialtiesPh: "es. Correlophus ciliatus, Python regius",
@@ -363,7 +363,7 @@ const I18N = {
     removeToSold: "Mark as sold", removeDelete: "Delete permanently",
     colEmptyActive: "No animals for sale.", colEmptySold: "No sold animals.",
     colEmptyHeld: "No held-back animals.", colEmptyBreeder: "No breeders.",
-    relist: "List for sale again",
+    relist: "List for sale", relistTitle: "List for sale", relistConfirm: "Publish for sale",
     spTitle: "My store", spIntro: "Customise your breeder page: photo, description and details.",
     spPhoto: "Profile photo", spUpload: "Upload photo", spCity: "City", spBio: "Description",
     spSpecialties: "Specialties (comma-separated)", spSpecialtiesPh: "e.g. Correlophus ciliatus, Python regius",
@@ -4682,6 +4682,77 @@ function MarkSoldPanel({ listing, t, lang, busy, onCancel, onConfirm, user }) {
   );
 }
 
+/* Panel to move a held/breeder animal to "for sale": add price + delivery.
+   Reuses updateListing with status=active. Keeps it light — no auction here
+   (that's a full sell-form thing); just price, expo pickups and shipping. */
+function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
+  const [price, setPrice] = useState(listing.price ? String(listing.price) : "");
+  const [shipping, setShipping] = useState(!!listing.shipping);
+  const [expoIds, setExpoIds] = useState(listing.expoIds || []);
+  const [err, setErr] = useState("");
+  const upcoming = getUpcomingExpos();
+  const monthShort = lang === "it"
+    ? ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"]
+    : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const toggleExpo = (id) => setExpoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  const submit = () => {
+    const p = Number(price);
+    if (!p || p <= 0) { setErr(t.needPrice); return; }
+    onConfirm({ price: p, deposit: Math.round(p * 0.1), shipping, localPickup: true, expoIds, status: "active" });
+  };
+
+  return (
+    <div className="border-t border-stone-800 p-3.5 bg-amber-500/5 space-y-3">
+      <div className="text-[11px] font-bold text-stone-200">{t.relistTitle}</div>
+
+      <div>
+        <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
+        <div className="relative max-w-[160px]">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">€</span>
+          <input type="number" className="form-input pl-7" value={price} onChange={e => setPrice(e.target.value)} placeholder="150" />
+        </div>
+      </div>
+
+      <label className="flex items-center justify-between bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-2.5 cursor-pointer">
+        <span className="text-xs text-stone-200 font-medium flex items-center gap-2"><Truck size={14} className="text-stone-400" />{t.deliveryShip}</span>
+        <input type="checkbox" checked={shipping} onChange={() => setShipping(!shipping)} className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
+      </label>
+
+      <div>
+        <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.availableAtExpos}</div>
+        <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto hide-scrollbar">
+          {upcoming.map(expo => {
+            const sel = expoIds.includes(expo.id);
+            const dd = expo.dateISO.slice(8, 10);
+            const mm = monthShort[parseInt(expo.dateISO.slice(5, 7), 10) - 1];
+            return (
+              <button key={expo.id} type="button" onClick={() => toggleExpo(expo.id)}
+                      className={`text-left rounded-lg ring-1 px-2.5 py-1.5 flex items-center gap-2 transition-all ${sel ? "bg-amber-500/15 ring-amber-500/40" : "bg-stone-900/60 ring-stone-800"}`}>
+                <span className="text-[10px] font-bold text-stone-400 shrink-0 min-w-[34px]">{mm} {dd}</span>
+                <span className={`text-[11px] truncate flex-1 ${sel ? "text-amber-100" : "text-stone-300"}`}>{expo.name}</span>
+                {sel && <Check size={13} className="text-amber-400 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {err && <p className="text-[11px] text-rose-400 font-bold">{err}</p>}
+      <div className="flex gap-2">
+        <button onClick={submit} disabled={busy}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors">
+          {busy ? t.processing : t.relistConfirm}
+        </button>
+        <button onClick={onCancel}
+                className="flex-1 py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+          {t.deleteCancel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MyListingsScreen({ t, lang, go, user }) {
   const [items, setItems] = useState(null);   // null = loading
   const [tab, setTab] = useState("active");   // active | sold | held | breeder
@@ -4689,9 +4760,20 @@ function MyListingsScreen({ t, lang, go, user }) {
   const [ePrice, setEPrice] = useState("");
   const [eDesc, setEDesc] = useState("");
   const [removeFor, setRemoveFor] = useState(null);  // listing whose "remove from sale" panel is open
+  const [relistFor, setRelistFor] = useState(null);  // held/breeder animal being listed for sale
   const [soldFor, setSoldFor] = useState(null);   // listing being marked sold (opens modal)
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  const doRelist = async (id, fields) => {
+    setBusy(true); setErr("");
+    try {
+      const api = await import("./lib/api");
+      await api.updateListing(id, fields);
+      setRelistFor(null); load();
+    } catch (e) { setErr(e?.message || "Error"); }
+    finally { setBusy(false); }
+  };
 
   const changeStatus = async (id, status) => {
     setBusy(true); setErr("");
@@ -4849,7 +4931,7 @@ function MyListingsScreen({ t, lang, go, user }) {
                 )}
                 {(bucket(l) === "held" || bucket(l) === "breeder") && (
                   <>
-                    <button onClick={() => changeStatus(l.id, "active")} disabled={busy}
+                    <button onClick={() => { setRelistFor(relistFor?.id === l.id ? null : l); setRemoveFor(null); }} disabled={busy}
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-amber-500/15 ring-1 ring-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition-colors">
                       {t.relist}
                     </button>
@@ -4873,6 +4955,12 @@ function MyListingsScreen({ t, lang, go, user }) {
             {soldFor?.id === l.id && (
               <MarkSoldPanel listing={l} t={t} lang={lang} busy={busy} onCancel={() => setSoldFor(null)}
                              onConfirm={(payload) => doMarkSold(l, payload)} user={user} />
+            )}
+
+            {/* List-for-sale panel (held/breeder → active) */}
+            {relistFor?.id === l.id && (
+              <RelistPanel listing={l} t={t} lang={lang} busy={busy} onCancel={() => setRelistFor(null)}
+                           onConfirm={(fields) => doRelist(l.id, fields)} />
             )}
 
             {/* Inline edit panel */}
