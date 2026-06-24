@@ -1118,7 +1118,7 @@ const formatBirth = (listing, t) => {
   if (/^\d{4}$/.test(bd)) return `CB${bd.slice(2)}`;
   return formatAge(listing?.ageMonths, t);
 };
-const formatPrice = (n) => `€${n.toLocaleString("it-IT")}`;
+const formatPrice = (n) => (n == null || isNaN(n)) ? "—" : `€${Number(n).toLocaleString("it-IT")}`;
 const FREE_LISTING_LIMIT = 5;  // free sellers; Pro = unlimited
 // Compact relative time for chat list ("now", "5m", "3h", "2d", or a date).
 const relTime = (iso, t) => {
