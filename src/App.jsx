@@ -144,7 +144,7 @@ const I18N = {
     chatNoThread: "Impossibile aprire la conversazione per questo annuncio.",
     chatBuyer: "Acquirente", chatSeller: "Allevatore", tNow: "ora", chatYou: "Tu",
     noReviewsYet: "Nessuna recensione",
-    proCapReached: "Hai raggiunto il limite di 5 annunci del piano gratuito. Passa a Pro per annunci illimitati — scrivici per attivarlo!",
+    proCapReached: "Hai raggiunto il limite di 3 annunci attivi del piano gratuito. Passa a Pro per annunci illimitati — scrivici per attivarlo!",
     spWebsite: "Sito web", spWebsitePh: "https://iltuosito.it", proOnly: "Solo Pro", spWebsiteProNote: "Mostra un link al tuo sito sulla tua pagina pubblica (funzione Pro).",
     visitWebsite: "Visita il sito", onlineNow: "Online", translateIT: "Traduci in italiano",
     yourAccount: "Il tuo account", wishlist: "Preferiti", myListings: "I miei annunci", manageListing: "Gestisci annuncio", documents: "Archivio documenti", reviews: "Recensioni", settings: "Impostazioni", legalGuide: "Guida legale", logout: "Esci",
@@ -387,7 +387,7 @@ const I18N = {
     chatNoThread: "Couldn't open the conversation for this listing.",
     chatBuyer: "Buyer", chatSeller: "Breeder", tNow: "now", chatYou: "You",
     noReviewsYet: "No reviews yet",
-    proCapReached: "You've reached the free plan's 5-listing limit. Upgrade to Pro for unlimited listings — message us to enable it!",
+    proCapReached: "You've reached the free plan's 3 active-listing limit. Upgrade to Pro for unlimited listings — message us to enable it!",
     spWebsite: "Website", spWebsitePh: "https://yoursite.com", proOnly: "Pro only", spWebsiteProNote: "Show a link to your site on your public page (Pro feature).",
     visitWebsite: "Visit website", onlineNow: "Online", translateIT: "Translate to Italian",
     yourAccount: "Your account", wishlist: "Saved", myListings: "My listings", manageListing: "Manage listing", documents: "Documents", reviews: "Reviews", settings: "Settings", legalGuide: "Legal guide", logout: "Sign out",
@@ -1119,7 +1119,7 @@ const formatBirth = (listing, t) => {
   return formatAge(listing?.ageMonths, t);
 };
 const formatPrice = (n) => (n == null || isNaN(n)) ? "—" : `€${Number(n).toLocaleString("it-IT")}`;
-const FREE_LISTING_LIMIT = 5;  // free sellers; Pro = unlimited
+const FREE_LISTING_LIMIT = 3;  // free sellers; Pro = unlimited (active listings only)
 // Compact relative time for chat list ("now", "5m", "3h", "2d", or a date).
 const relTime = (iso, t) => {
   if (!iso) return "";
@@ -1150,6 +1150,58 @@ const fallback = (label) =>
 // Set VITE_SITE_PASSWORD in .env.local and in Vercel. If left empty, the gate
 // is disabled (so local dev isn't blocked when no password is configured).
 const SITE_PW = import.meta.env.VITE_SITE_PASSWORD || "";
+
+/* ───── Stale-deploy recovery ──────────────────────────────────────
+   The app loads code lazily via import("./lib/api"). After a new deploy,
+   Vercel renames the built chunks (new hash in the filename). A device still
+   running the OLD page shell will try to fetch a chunk filename that no longer
+   exists → "Failed to fetch dynamically imported module". That's not a code
+   bug — it just means the user is on a stale version. The fix is to reload once
+   so they pick up the fresh HTML + new chunk names.
+
+   We watch for that specific error globally (covers all import() call sites,
+   both .then() and await styles, without touching each one) and reload a single
+   time, guarded by sessionStorage so we can never loop. */
+// Load the API module, recovering from a stale-deploy chunk error by reloading
+// once. Use this at user-facing entry points (login, publish) where a swallowed
+// error would otherwise show a confusing red message instead of self-healing.
+async function loadApi() {
+  try {
+    return await import("./lib/api");
+  } catch (err) {
+    if (isStaleChunkError(err) && reloadOnceForStaleChunk()) {
+      // Reload is underway; return a never-resolving promise so callers don't
+      // proceed to show an error in the brief moment before the page reloads.
+      return new Promise(() => {});
+    }
+    throw err;
+  }
+}
+
+function isStaleChunkError(err) {
+  const msg = (err && (err.message || String(err))) || "";
+  return /dynamically imported module|Importing a module script failed|Failed to fetch dynamically|error loading dynamically imported module|Loading chunk \d+ failed|ChunkLoadError/i.test(msg);
+}
+function reloadOnceForStaleChunk() {
+  try {
+    const KEY = "hm_chunk_reloaded_at";
+    const last = Number(sessionStorage.getItem(KEY) || 0);
+    // Only reload if we haven't already done so in the last 10s (prevents loops).
+    if (Date.now() - last < 10000) return false;
+    sessionStorage.setItem(KEY, String(Date.now()));
+    window.location.reload();
+    return true;
+  } catch { return false; }
+}
+if (typeof window !== "undefined" && !window.__hmChunkGuard) {
+  window.__hmChunkGuard = true;
+  window.addEventListener("unhandledrejection", (e) => {
+    if (isStaleChunkError(e?.reason)) { e.preventDefault?.(); reloadOnceForStaleChunk(); }
+  });
+  window.addEventListener("error", (e) => {
+    if (isStaleChunkError(e?.error || e?.message)) reloadOnceForStaleChunk();
+  });
+}
 
 function SiteGate({ onUnlock }) {
   const [pw, setPw] = useState("");
@@ -1227,7 +1279,7 @@ export default function HerpMarket() {
   // or if the fetch fails, so the app never looks empty.
   const [liveListings, setLiveListings] = useState(null);
   useEffect(() => {
-    import('./lib/api').then(({ fetchListings }) => {
+    loadApi().then(({ fetchListings }) => {
       fetchListings({})
         .then(rows => { setLiveListings(rows || []); })
         .catch(err => { console.warn('[HerpMarket] Supabase fetch failed:', err); setLiveListings([]); });
@@ -1252,7 +1304,7 @@ export default function HerpMarket() {
   };
   useEffect(() => {
     let unsub;
-    import('./lib/api').then(api => {
+    loadApi().then(api => {
       api.getSession().then(s => applySession(api, s)).catch(() => {});
       unsub = api.onAuthChange((event, session) => {
         if (event === "PASSWORD_RECOVERY") setRecovery(true);
@@ -1372,7 +1424,7 @@ export default function HerpMarket() {
     after && setTimeout(after, 150);
   };
   const handleLogout = () => {
-    import('./lib/api').then(api => api.signOut()).catch(() => {});
+    loadApi().then(api => api.signOut()).catch(() => {});
     setUser(null);
     go("home");
   };
@@ -2603,7 +2655,7 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth, onContactS
     let unsub = null;
     let cancelled = false;
     (async () => {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       if (cancelled) return;   // unmounted before subscribe resolved
       unsub = api.subscribeAuction(listingId, (a) => {
         setBid(a.currentBid);
@@ -2619,7 +2671,7 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth, onContactS
     if (!listingId || busy) return;
     setBusy(true); setBidErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       const a = await api.placeBid(listingId, user.id, amount);
       setBid(a.currentBid); setBidCount(a.bidCount); setHighBidder(a.highBidder || user.id);
       setShowBidModal(false);
@@ -2628,7 +2680,7 @@ function AuctionBox({ auction, listingId, t, lang, user, requireAuth, onContactS
       // The bid likely failed because someone else bid first — silently pull the
       // latest figures so the user sees the new current bid + minimum next bid.
       try {
-        const api = await import("./lib/api");
+        const api = await loadApi();
         const fresh = await api.fetchAuction(listingId);
         if (fresh) { setBid(fresh.currentBid); setBidCount(fresh.bidCount); setHighBidder(fresh.highBidder || null); }
       } catch (_) { /* best-effort */ }
@@ -2821,7 +2873,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   useEffect(() => {
     if (!showDocument || !listing?.id) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchListingSaleInfo ? api.fetchListingSaleInfo(listing.id) : null)
+    loadApi().then(api => api.fetchListingSaleInfo ? api.fetchListingSaleInfo(listing.id) : null)
       .then(info => { if (on) setSaleInfo(info); }).catch(() => { if (on) setSaleInfo(null); });
     return () => { on = false; };
   }, [showDocument, listing?.id]);
@@ -3807,7 +3859,7 @@ function SellScreen({ t, lang, go, user }) {
     if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
       // Free-tier cap: 5 listings. Pro sellers are unlimited.
       const mySeller = await api.fetchMySeller(user.id);
@@ -3870,7 +3922,7 @@ function SellScreen({ t, lang, go, user }) {
   useEffect(() => {
     if (!user?.id) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchMySeller(user.id)).then(s => {
+    loadApi().then(api => api.fetchMySeller(user.id)).then(s => {
       if (!on || !s) return;
       if (s.country) setCountry(s.country);
       if (s.region) setRegion(s.region);
@@ -4483,7 +4535,7 @@ function ChatList({ t, go, user }) {
   useEffect(() => {
     if (!user?.id) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchMyThreads(user.id))
+    loadApi().then(api => api.fetchMyThreads(user.id))
       .then(rows => { if (on) setThreads(rows); })
       .catch(e => { if (on) { setErr(e?.message || "Error"); setThreads([]); } });
     return () => { on = false; };
@@ -4546,7 +4598,7 @@ function ChatThread({ chat, t, lang, go, user }) {
     let on = true;
     (async () => {
       try {
-        const api = await import("./lib/api");
+        const api = await loadApi();
         let tid = threadId;
         if (!tid) {
           // Need the seller_id of this listing to open a thread.
@@ -4569,7 +4621,7 @@ function ChatThread({ chat, t, lang, go, user }) {
     let unsub = null;
     let cancelled = false;
     (async () => {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       if (cancelled) return;
       unsub = api.subscribeMessages(threadId, (m) => {
         setMessages(prev => prev.some(x => x.id === m.id) ? prev : [...prev, m]);
@@ -4590,7 +4642,7 @@ function ChatThread({ chat, t, lang, go, user }) {
     const optimistic = { id: `tmp-${Date.now()}`, sender_id: user.id, body, created_at: new Date().toISOString() };
     setMessages(prev => [...prev, optimistic]);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       const saved = await api.sendMessage(threadId, user.id, body);
       setMessages(prev => prev.map(m => m.id === optimistic.id ? saved : m));
     } catch (e) {
@@ -4735,7 +4787,7 @@ function DeleteAccountButton({ t, user, go }) {
     if (busy) return;
     setBusy(true);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.requestAccountDeletion(user.id);
     } catch (e) { /* listener will still sign out */ }
     setBusy(false);
@@ -4810,7 +4862,7 @@ function MarkSoldPanel({ listing, t, lang, busy, onCancel, onConfirm, user }) {
 
   useEffect(() => {
     let on = true;
-    import("./lib/api").then(api => api.fetchListingInquirers(listing.id))
+    loadApi().then(api => api.fetchListingInquirers(listing.id))
       .then(list => { if (on) setInquirers(list); }).catch(() => {});
     return () => { on = false; };
   }, [listing.id]);
@@ -4958,7 +5010,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const doRelist = async (id, fields) => {
     setBusy(true); setErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.updateListing(id, fields);
       setRelistFor(null); load();
     } catch (e) { setErr(e?.message || "Error"); }
@@ -4968,7 +5020,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const changeStatus = async (id, status) => {
     setBusy(true); setErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.updateListingStatus(id, status);
       setRemoveFor(null); load();
     } catch (e) { setErr(e?.message || "Error"); }
@@ -4978,7 +5030,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const doMarkSold = async (listing, payload) => {
     setBusy(true); setErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       const seller = await api.fetchMySeller(user.id);
       await api.markListingSold({
         sellerId: seller.id,
@@ -4994,7 +5046,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   };
 
   const load = () => {
-    import("./lib/api")
+    loadApi()
       .then(api => api.fetchMyListings(user.id))
       .then(setItems)
       .catch(e => { setErr(e?.message || "Error"); setItems([]); });
@@ -5009,7 +5061,7 @@ function MyListingsScreen({ t, lang, go, user }) {
     if (!ePrice || Number(ePrice) <= 0) { setErr(t.needPrice); return; }
     setBusy(true); setErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.updateListing(id, { price: Number(ePrice), desc: eDesc });
       setEditId(null); load();
     } catch (e) { setErr(e?.message || "Error"); }
@@ -5018,7 +5070,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const doDelete = async (id) => {
     setBusy(true); setErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.deleteListing(id);
       setConfirmDel(null); load();
     } catch (e) { setErr(e?.message || "Error"); }
@@ -5270,7 +5322,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
   useEffect(() => {
     if (!user?.id) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchMySeller(user.id)).then(s => {
+    loadApi().then(api => api.fetchMySeller(user.id)).then(s => {
       if (!on || !s) return;
       if (s.country) setCountry(s.country);
       if (s.region) setRegion(s.region);
@@ -5328,7 +5380,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
     if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
       const urls = photos.length ? await api.uploadListingPhotos(photos.map(p => p.file), user.id) : [];
       const traits = selectedTraits.map(n => {
@@ -5568,7 +5620,7 @@ function EditStoreScreen({ t, lang, go, user }) {
     let on = true;
     (async () => {
       try {
-        const api = await import("./lib/api");
+        const api = await loadApi();
         let s = await api.fetchMySeller(user.id);
         if (!s) {
           // First visit before any listing: create the store row now.
@@ -5604,7 +5656,7 @@ function EditStoreScreen({ t, lang, go, user }) {
     if (!seller?.id || busy) return;
     setBusy(true); setErr(""); setSaved(false);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       let avatarUrl = null;
       if (avatarFile) {
         const urls = await api.uploadListingPhotos([avatarFile], user.id);
@@ -5793,7 +5845,7 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
     if (mode === "signup" && (!consentTos || !consentPrivacy)) { setError(t.consentRequired); return; }
     setError(""); setInfo(""); setLoading(true);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       if (mode === "forgot") {
         await api.resetPasswordForEmail(email);
         setInfo(t.resetEmailSent);
@@ -5947,7 +5999,7 @@ function SetNewPasswordModal({ t, onDone }) {
     if (!pw || loading) return;
     setError(""); setLoading(true);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.updatePassword(pw);
       setInfo(t.passwordUpdated);
       await api.signOut();
@@ -6115,7 +6167,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   useEffect(() => {
     if (!sellerName || SELLERS[sellerName]) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchSeller(sellerName))
+    loadApi().then(api => api.fetchSeller(sellerName))
       .then(s => { if (on && s) setLiveSeller(s); })
       .catch(() => {});
     return () => { on = false; };
@@ -6127,7 +6179,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   useEffect(() => {
     if (!reviewSellerId) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchSellerReviews(reviewSellerId))
+    loadApi().then(api => api.fetchSellerReviews(reviewSellerId))
       .then(rows => { if (on) setLiveReviews(rows); })
       .catch(() => { if (on) setLiveReviews([]); });
     return () => { on = false; };
@@ -6374,7 +6426,7 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
   useEffect(() => {
     if (!user?.id) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchMyKyc(user.id)).then(k => {
+    loadApi().then(api => api.fetchMyKyc(user.id)).then(k => {
       if (!on || !k) return;
       setKycStatus(k.verified ? "verified" : (k.kyc_status || "unverified"));
     }).catch(() => {});
@@ -6384,7 +6436,7 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
   const handleKycFile = async (kind, file) => {
     setKycErr(""); setKycBusy(kind);
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       const path = await api.uploadKycDoc(user.id, kind, file);
       setUploads(u => ({ ...u, [kind === "visura" ? "visuraPath" : "docPath"]: path }));
     } catch (e) { setKycErr(e?.message || "Upload failed"); }
@@ -6394,7 +6446,7 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
   const submitKyc = async () => {
     setKycErr(""); setKycBusy("submit");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.submitKyc(user.id, { visuraPath: uploads.visuraPath, docPath: uploads.docPath, asl: uploads.asl });
       setKycStatus("pending");
     } catch (e) { setKycErr(e?.message || "Submit failed"); }
@@ -6753,7 +6805,7 @@ function LeaveReviewCard({ sale, user, t, lang, onDone }) {
     if (!rating || busy) return;
     setBusy(true); setErr("");
     try {
-      const api = await import("./lib/api");
+      const api = await loadApi();
       await api.submitReview({
         sellerId: sale.sellerId, buyerId: user.id,
         transactionId: sale.transactionId, rating, comment: comment.trim(),
@@ -6801,7 +6853,7 @@ function ReviewsScreen({ t, go, lang, user }) {
   useEffect(() => {
     if (!user?.id) { setReviews([]); return; }
     let on = true;
-    import("./lib/api").then(api => {
+    loadApi().then(api => {
       (api.fetchMyReviews ? api.fetchMyReviews(user.id) : Promise.resolve([]))
         .then(rows => { if (on) setReviews(rows || []); }).catch(() => { if (on) setReviews([]); });
       (api.fetchReviewableSales ? api.fetchReviewableSales(user.id) : Promise.resolve([]))

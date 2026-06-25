@@ -373,8 +373,12 @@ export async function countMyListings(userId) {
   const { data: seller } = await supabase.from('sellers')
     .select('id').eq('owner_id', userId).maybeSingle();
   if (!seller) return 0;
+  // Only ACTIVE listings count toward the free-plan cap. Sold, held-back and
+  // breeder animals don't occupy a slot (selling something frees it up again).
   const { count, error } = await supabase.from('listings')
-    .select('id', { count: 'exact', head: true }).eq('seller_id', seller.id);
+    .select('id', { count: 'exact', head: true })
+    .eq('seller_id', seller.id)
+    .eq('status', 'active');
   if (error) throw error;
   return count || 0;
 }
