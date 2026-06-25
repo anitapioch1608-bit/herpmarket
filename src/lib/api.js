@@ -647,3 +647,29 @@ export async function requestAccountDeletion(userId) {
   await supabase.auth.signOut();
   return true;
 }
+
+// Submit a plan / Founding Breeder request. Inserts a row into signup_requests
+// (RLS allows insert-only for everyone) so the request reaches the operator
+// WITHOUT opening the user's email app. Returns true on success.
+// `kind`: 'founding' | 'pro' | 'premium'. Extra fields are best-effort.
+export async function submitSignupRequest({ kind, plan = null, billing = null, message = null } = {}) {
+  // Capture who's asking, if logged in.
+  let user_id = null, email = null, name = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      user_id = user.id;
+      email = user.email || null;
+      // Best-effort display name from profile.
+      const { data: prof } = await supabase.from('profiles')
+        .select('display_name').eq('id', user.id).maybeSingle();
+      name = prof?.display_name || null;
+    }
+  } catch { /* logged-out visitor — that's fine, insert anyway */ }
+
+  const { error } = await supabase.from('signup_requests').insert({
+    kind, plan, billing, user_id, email, name, message,
+  });
+  if (error) throw error;
+  return true;
+}

@@ -4199,7 +4199,7 @@ function SellScreen({ t, lang, go, user }) {
         </FormBlock>
 
         {/* ─── Delivery options ─── */}
-        <DeliverySection lang={lang} t={t} itemPrice={Number(mode === "auction" ? startPrice : price) || 0} />
+        <DeliverySection lang={lang} t={t} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0} />
 
         {/* Terms acceptance — marketplace rules confirmed at point of listing */}
         <label className="flex items-start gap-3 bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-4 cursor-pointer">
@@ -5866,6 +5866,10 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
     }
   };
 
+  // Pressing Enter in a field submits the form (the inputs aren't inside a
+  // <form>, so we wire it manually). submit() already guards on canSubmit.
+  const onEnter = (e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } };
+
   const openDoc = (route) => {
     setModal(null);
     setTimeout(() => go(route), 50);
@@ -5908,13 +5912,13 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
           )}
           <div>
             <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.emailPlaceholder}</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={onEnter} placeholder="email@example.com"
                    className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
           </div>
           {mode !== "forgot" && (
           <div>
             <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.passwordPlaceholder}</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={onEnter} placeholder="••••••••"
                    className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
           </div>
           )}
@@ -7691,32 +7695,35 @@ function PrivacyPolicy({ t, go, lang }) {
    Activate links to it once you actually have plans to sell.
    ═════════════════════════════════════════════════════════════════ */
 function PlansScreen({ t, go, lang, user }) {
-  const [billing, setBilling] = useState("yearly");   // "monthly" | "yearly"
+  const [billing, setBilling] = useState("monthly");   // default monthly — lower sticker price; savings still shown on yearly
   const isYr = billing === "yearly";
 
-  // ─── Founding Breeder program (manual scarcity) ───────────────────
-  // Limited launch offer: the first N professional breeders get lifetime
-  // Premium free. The counter is intentionally a hardcoded number you update
-  // by hand as spots fill — edit FOUNDING_SPOTS_TAKEN every few days.
-  // NB: keep this honest. These are professionals you'll deal with directly;
-  // a number that never moves reads as fake. Bump it as real requests arrive.
+  // ─── Founding Breeder program ─────────────────────────────────────
+  // Limited launch offer: early professional breeders get lifetime Premium
+  // free. No fake counter — we just say spots are limited. Requests are saved
+  // to Supabase (no email app opens); you review them in the dashboard.
   const FOUNDING_SPOTS_TOTAL = 20;
-  const FOUNDING_SPOTS_TAKEN = 8;   // ← update this manually as spots fill
-  const foundingRemaining = Math.max(0, FOUNDING_SPOTS_TOTAL - FOUNDING_SPOTS_TAKEN);
-  const foundingOpen = foundingRemaining > 0;
 
-  // Prefilled email to claim a Founding Breeder spot.
-  const foundingHref = (() => {
-    const acct = user?.email || user?.name || (lang === "it" ? "[il mio account]" : "[my account]");
-    const subject = lang === "it" ? "Richiesta posto Founding Breeder" : "Founding Breeder spot request";
-    const body = lang === "it"
-      ? `Ciao HerpMarket,\n\nVorrei richiedere uno dei posti del programma Founding Breeder (Premium a vita gratuito).\n\nAccount: ${acct}\nLink al mio allevamento / sito (se presente): \n\nGrazie!`
-      : `Hi HerpMarket,\n\nI'd like to claim one of the Founding Breeder spots (free lifetime Premium).\n\nAccount: ${acct}\nLink to my breeding / website (if any): \n\nThanks!`;
-    return `mailto:support@herpmarket.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  })();
+  // Tracks the in-flight / completed state of a request button, keyed by id
+  // ("founding" | "pro" | "premium"). Values: "idle" | "sending" | "done" | "error".
+  const [reqState, setReqState] = useState({});
+  const setReq = (id, v) => setReqState(s => ({ ...s, [id]: v }));
 
-  // Tier definitions. Prices in EUR. `email` builds a prefilled upgrade request
-  // to you — no payment is taken yet; you enable the account manually.
+  // Send a request to the operator via Supabase instead of opening email.
+  const sendRequest = async (id, { plan = null, billing: bill = null, message = null } = {}) => {
+    if (reqState[id] === "sending" || reqState[id] === "done") return;
+    setReq(id, "sending");
+    try {
+      const api = await loadApi();
+      await api.submitSignupRequest({ kind: id === "founding" ? "founding" : id, plan, billing: bill, message });
+      setReq(id, "done");
+    } catch (e) {
+      setReq(id, "error");
+    }
+  };
+
+  // Tier definitions. Prices in EUR. Requests are saved to Supabase; no payment
+  // is taken yet — you enable the account manually.
   const tiers = [
     {
       id: "free",
@@ -7765,28 +7772,27 @@ function PlansScreen({ t, go, lang, user }) {
   };
   // Monthly-equivalent hint for the yearly price (shows the saving).
   const savingHint = (tier) => {
-    if (tier.monthly === 0 || !isYr) return null;
-    const perMonth = (tier.yearly / 12).toFixed(2).replace(".", lang === "it" ? "," : ".");
+    if (tier.monthly === 0) return null;
     const fullYear = tier.monthly * 12;
     const saved = fullYear - tier.yearly;
+    if (isYr) {
+      const perMonth = (tier.yearly / 12).toFixed(2).replace(".", lang === "it" ? "," : ".");
+      return lang === "it"
+        ? `≈ €${perMonth}/mese · risparmi €${saved}`
+        : `≈ €${perMonth}/mo · save €${saved}`;
+    }
+    // On monthly view, nudge toward yearly by showing what they'd save.
     return lang === "it"
-      ? `≈ €${perMonth}/mese · risparmi €${saved}`
-      : `≈ €${perMonth}/mo · save €${saved}`;
+      ? `Risparmia €${saved} con il piano annuale`
+      : `Save €${saved} with yearly`;
   };
 
   // Build the prefilled mailto for an upgrade request.
-  const upgradeHref = (tier) => {
-    const plan = tier.name;
+  // Build a human-readable plan label for a tier request, e.g. "Pro (yearly)".
+  const planLabel = (tier) => {
     const cycle = isYr ? (lang === "it" ? "annuale" : "yearly") : (lang === "it" ? "mensile" : "monthly");
     const price = isYr ? `€${tier.yearly}` : `€${tier.monthly}`;
-    const acct = user?.email || user?.name || (lang === "it" ? "[il mio account]" : "[my account]");
-    const subject = lang === "it"
-      ? `Richiesta upgrade ${plan} (${cycle})`
-      : `${plan} upgrade request (${cycle})`;
-    const body = lang === "it"
-      ? `Ciao HerpMarket,\n\nVorrei passare al piano ${plan} (${cycle}, ${price}).\n\nAccount: ${acct}\n\nGrazie!`
-      : `Hi HerpMarket,\n\nI'd like to upgrade to the ${plan} plan (${cycle}, ${price}).\n\nAccount: ${acct}\n\nThanks!`;
-    return `mailto:support@herpmarket.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    return `${tier.name} (${cycle}, ${price})`;
   };
 
   return (
@@ -7814,37 +7820,34 @@ function PlansScreen({ t, go, lang, user }) {
               : <>We are in private Beta. To celebrate our official launch at the <span className="font-bold text-amber-300">Verona Expo</span>, the first <span className="font-bold text-amber-300">{FOUNDING_SPOTS_TOTAL} professional breeders</span> to join get a <span className="font-bold text-amber-300">Lifetime Premium account, FREE</span>.</>}
           </p>
 
-          {/* Spots remaining — progress bar + count */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-[11px] font-bold mb-1.5">
-              <span className="text-amber-300">
-                {foundingOpen
-                  ? (lang === "it" ? `${foundingRemaining}/${FOUNDING_SPOTS_TOTAL} posti rimasti` : `${foundingRemaining}/${FOUNDING_SPOTS_TOTAL} spots remaining`)
-                  : (lang === "it" ? "Tutti i posti esauriti" : "All spots claimed")}
-              </span>
-              <span className="text-stone-500">{FOUNDING_SPOTS_TAKEN}/{FOUNDING_SPOTS_TOTAL}</span>
+          {reqState.founding === "done" ? (
+            <div className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 font-bold text-sm py-3 rounded-lg">
+              <CheckCircle size={16} />
+              {lang === "it" ? "HerpMarket è stato avvisato ✓" : "HerpMarket has been notified ✓"}
             </div>
-            <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all"
-                   style={{ width: `${(FOUNDING_SPOTS_TAKEN / FOUNDING_SPOTS_TOTAL) * 100}%` }} />
-            </div>
-          </div>
-
-          {foundingOpen ? (
-            <a href={foundingHref}
-               className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
-              <Mail size={15} />
-              {lang === "it" ? "Richiedi il mio posto" : "Claim my spot"}
-            </a>
           ) : (
-            <div className="mt-4 w-full text-center bg-stone-800 text-stone-500 font-bold text-sm py-3 rounded-lg">
-              {lang === "it" ? "Posti esauriti — iscriviti per la lista d'attesa" : "Spots filled — email us for the waitlist"}
-            </div>
+            <button
+              onClick={() => sendRequest("founding", { plan: "Founding Breeder (lifetime Premium)" })}
+              disabled={reqState.founding === "sending"}
+              className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
+              {reqState.founding === "sending"
+                ? <><Loader2 size={15} className="animate-spin" />{lang === "it" ? "Invio…" : "Sending…"}</>
+                : <>{lang === "it" ? "Richiedi il mio posto" : "Claim my spot"}</>}
+            </button>
+          )}
+          {reqState.founding === "error" && (
+            <p className="text-[11px] text-red-400 font-bold mt-2">
+              {lang === "it" ? "Qualcosa è andato storto. Riprova." : "Something went wrong. Please try again."}
+            </p>
           )}
           <p className="text-[11px] text-stone-500 leading-relaxed mt-2.5">
-            {lang === "it"
-              ? "Tocca «Richiedi il mio posto»: si apre un'email già compilata. Inviacela per richiedere il tuo posto Founding Breeder e attiveremo manualmente il tuo account."
-              : "Tapping \"Claim my spot\" opens a pre-filled email. Send it to claim your Founding Breeder spot and we'll manually upgrade your account."}
+            {reqState.founding === "done"
+              ? (lang === "it"
+                  ? "Abbiamo ricevuto la tua richiesta. Ti contatteremo per attivare il tuo posto Founding Breeder."
+                  : "We've received your request. We'll be in touch to activate your Founding Breeder spot.")
+              : (lang === "it"
+                  ? "Tocca «Richiedi il mio posto» e veniamo avvisati subito — nessuna email da scrivere. Ti ricontatteremo per attivare l'account."
+                  : "Tap \"Claim my spot\" and we're notified right away — no email to write. We'll get back to you to activate your account.")}
           </p>
         </div>
 
@@ -7918,15 +7921,25 @@ function PlansScreen({ t, go, lang, user }) {
                 </ul>
 
                 {tier.cta ? (
-                  <a href={upgradeHref(tier)}
-                     className={`w-full text-center font-bold text-sm py-3 rounded-lg transition-colors inline-flex items-center justify-center gap-1.5 ${
-                       tier.highlight
-                         ? "bg-amber-500 hover:bg-amber-400 text-stone-950"
-                         : "bg-sky-500 hover:bg-sky-400 text-stone-950"
-                     }`}>
-                    <Mail size={15} />
-                    {lang === "it" ? "Richiedi" : "Request"} {tier.name}
-                  </a>
+                  reqState[tier.id] === "done" ? (
+                    <div className="w-full text-center font-bold text-sm py-3 rounded-lg bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 inline-flex items-center justify-center gap-1.5">
+                      <CheckCircle size={15} />
+                      {lang === "it" ? "Avvisato ✓" : "Notified ✓"}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => sendRequest(tier.id, { plan: planLabel(tier), billing })}
+                      disabled={reqState[tier.id] === "sending"}
+                      className={`w-full text-center font-bold text-sm py-3 rounded-lg transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-60 ${
+                        tier.highlight
+                          ? "bg-amber-500 hover:bg-amber-400 text-stone-950"
+                          : "bg-sky-500 hover:bg-sky-400 text-stone-950"
+                      }`}>
+                      {reqState[tier.id] === "sending"
+                        ? <><Loader2 size={15} className="animate-spin" />{lang === "it" ? "Invio…" : "Sending…"}</>
+                        : <>{lang === "it" ? "Richiedi" : "Request"} {tier.name}</>}
+                    </button>
+                  )
                 ) : (
                   <div className="w-full text-center font-bold text-sm py-3 rounded-lg bg-stone-800 text-stone-500">
                     {lang === "it" ? "Piano attuale" : "Current plan"}
@@ -7942,8 +7955,8 @@ function PlansScreen({ t, go, lang, user }) {
           <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
           <p className="text-[12px] text-stone-400 leading-relaxed">
             {lang === "it"
-              ? "Per ora HerpMarket è gratuito e i pagamenti online non sono attivi. Se ti serve più capacità, tocca «Richiedi»: si apre un'email già compilata. Inviacela e attiveremo il tuo piano manualmente. I pagamenti automatici arriveranno più avanti."
-              : "For now HerpMarket is free and online payments aren't live. If you need more capacity, tap \"Request\" — it opens a pre-filled email. Send it and we'll enable your plan manually. Automated checkout is coming later."}
+              ? "Per ora HerpMarket è gratuito e i pagamenti online non sono attivi. Se ti serve più capacità, tocca «Richiedi»: veniamo avvisati subito (nessuna email da scrivere) e attiveremo il tuo piano manualmente. I pagamenti automatici arriveranno più avanti."
+              : "For now HerpMarket is free and online payments aren't live. If you need more capacity, tap \"Request\" — we're notified right away (no email to write) and we'll enable your plan manually. Automated checkout is coming later."}
           </p>
         </div>
       </div>
