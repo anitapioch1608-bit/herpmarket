@@ -2791,31 +2791,44 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   const [showCheckout, setShowCheckout] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
   const [saleInfo, setSaleInfo] = useState(null);   // buyer details from the completed sale
+  // Buyer's chosen delivery method. Initialised to safe defaults; a useEffect
+  // below picks ship/expo once the listing's options are known. These useState
+  // calls MUST sit above the early return so the hook order never changes.
+  const [deliveryMode, setDeliveryMode] = useState("ship");
+  const [selectedExpoId, setSelectedExpoId] = useState(null);
+
+  // NOTE: every hook (useState/useEffect) must run before any early return,
+  // and must reference `listing` (the prop) — never the post-return `a` alias.
   useEffect(() => {
-    if (!showDocument || !a?.id) return;
+    if (!showDocument || !listing?.id) return;
     let on = true;
-    import("./lib/api").then(api => api.fetchListingSaleInfo ? api.fetchListingSaleInfo(a.id) : null)
+    import("./lib/api").then(api => api.fetchListingSaleInfo ? api.fetchListingSaleInfo(listing.id) : null)
       .then(info => { if (on) setSaleInfo(info); }).catch(() => { if (on) setSaleInfo(null); });
     return () => { on = false; };
-  }, [showDocument, a?.id]);
+  }, [showDocument, listing?.id]);
+
+  // Derive this listing's delivery options (used to set sensible defaults).
+  const _expoIdList = listing ? (listing.expoIds && listing.expoIds.length ? listing.expoIds : (listing.expoId ? [listing.expoId] : [])) : [];
+  const _listingExpos = _expoIdList.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
+  const _canShip = !!listing?.shipping;
+  const _hasExpo = _listingExpos.length > 0;
+  // Once the listing is known, default to ship if offered, else first expo.
+  useEffect(() => {
+    if (!listing) return;
+    setDeliveryMode(_canShip ? "ship" : (_hasExpo ? "expo" : "ship"));
+    setSelectedExpoId(_listingExpos[0]?.id || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing?.id]);
 
   if (!listing) return null;
   const a = listing;
   // Is this the logged-in user's own listing? Then show Edit, not Buy/Message.
   const isMine = !!(user?.id && (a.sellerOwnerId === user.id || (user.name && a.seller === user.name)));
-  // Delivery options come from the SELLER's choices on the listing:
-  //  - a.shipping: does the seller ship this animal?
-  //  - a.expoIds:  which expos will the seller hand-deliver at? (array)
-  // Legacy listings may only have a single expoId — fold it in.
-  const expoIdList = a.expoIds && a.expoIds.length ? a.expoIds : (a.expoId ? [a.expoId] : []);
-  const listingExpos = expoIdList.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
-  const canShip = !!a.shipping;
-  const hasExpo = listingExpos.length > 0;
-
-  // Buyer chooses how they want to receive the animal.
-  // Default to whichever is available (ship preferred if offered).
-  const [deliveryMode, setDeliveryMode] = useState(canShip ? "ship" : (hasExpo ? "expo" : "ship"));
-  const [selectedExpoId, setSelectedExpoId] = useState(listingExpos[0]?.id || null);
+  // Delivery options come from the SELLER's choices on the listing.
+  const expoIdList = _expoIdList;
+  const listingExpos = _listingExpos;
+  const canShip = _canShip;
+  const hasExpo = _hasExpo;
 
   const isExpoFlow = deliveryMode === "expo";
   const paymentAmount = isExpoFlow ? a.deposit : a.price;
@@ -6079,6 +6092,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   // Live seller row from Supabase — used when the name isn't in the demo SELLERS
   // table (i.e. every real breeder account). Demo entries keep their rich data.
   const [liveSeller, setLiveSeller] = useState(null);
+  const [liveReviews, setLiveReviews] = useState(null);
   useEffect(() => {
     if (!sellerName || SELLERS[sellerName]) return;
     let on = true;
@@ -6087,6 +6101,18 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
       .catch(() => {});
     return () => { on = false; };
   }, [sellerName]);
+  // Load live reviews once we know the seller's row id (real breeders). Resolve
+  // the id from the demo table or the live row — both available before the early
+  // return, so this hook never sits after a conditional return.
+  const reviewSellerId = (SELLERS[sellerName]?.id) || liveSeller?.id || null;
+  useEffect(() => {
+    if (!reviewSellerId) return;
+    let on = true;
+    import("./lib/api").then(api => api.fetchSellerReviews(reviewSellerId))
+      .then(rows => { if (on) setLiveReviews(rows); })
+      .catch(() => { if (on) setLiveReviews([]); });
+    return () => { on = false; };
+  }, [reviewSellerId]);
   if (!sellerName) return null;
 
   const seller = SELLERS[sellerName] || liveSeller;
@@ -6108,17 +6134,6 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   const attendedExpos = data.expoIds.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
   const bio = lang === "it" ? data.bioIt : data.bioEn;
 
-  // Load live reviews once we know the seller's row id (real breeders).
-  const [liveReviews, setLiveReviews] = useState(null);
-  const resolvedSellerId = data.id || liveSeller?.id;
-  useEffect(() => {
-    if (!resolvedSellerId) return;
-    let on = true;
-    import("./lib/api").then(api => api.fetchSellerReviews(resolvedSellerId))
-      .then(rows => { if (on) setLiveReviews(rows); })
-      .catch(() => { if (on) setLiveReviews([]); });
-    return () => { on = false; };
-  }, [resolvedSellerId]);
   // Prefer live reviews; fall back to any demo reviews on the seller object.
   const reviewsToShow = liveReviews != null ? liveReviews : (data.reviews || []);
 
