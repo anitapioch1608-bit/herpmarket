@@ -4765,6 +4765,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
 
         {/* GROUP 4: Configuration */}
         <ProfileGroup label={t.configuration}>
+          <ProfileRow icon={<CreditCard size={18} />} label={t.plansLabel} onClick={() => go("plans")} />
           <ProfileRow icon={<SettingsIcon size={18} />} label={t.settingsKyc} onClick={() => go("settings")} />
         </ProfileGroup>
       </div>
@@ -7671,68 +7672,191 @@ function PrivacyPolicy({ t, go, lang }) {
    Not yet linked from the main nav; reachable via /plans route.
    Activate links to it once you actually have plans to sell.
    ═════════════════════════════════════════════════════════════════ */
-function PlansScreen({ t, go, lang }) {
+function PlansScreen({ t, go, lang, user }) {
+  const [billing, setBilling] = useState("yearly");   // "monthly" | "yearly"
+  const isYr = billing === "yearly";
+
+  // Tier definitions. Prices in EUR. `email` builds a prefilled upgrade request
+  // to you — no payment is taken yet; you enable the account manually.
+  const tiers = [
+    {
+      id: "free",
+      name: lang === "it" ? "Gratuito" : "Free",
+      tagline: lang === "it" ? "Per iniziare" : "To get started",
+      monthly: 0, yearly: 0,
+      accent: "stone",
+      features: lang === "it"
+        ? ["Fino a 3 annunci attivi", "1 asta", "Pagina venditore", "Documenti CITES e di origine"]
+        : ["Up to 3 active listings", "1 auction", "Seller page", "CITES & origin documents"],
+      cta: null,
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      tagline: lang === "it" ? "Per allevatori in crescita" : "For growing breeders",
+      monthly: 9, yearly: 95,
+      accent: "amber",
+      highlight: true,
+      features: lang === "it"
+        ? ["10 annunci attivi", "3 aste all'anno", "Badge Pro sul profilo", "Tutto ciò che c'è nel piano Gratuito"]
+        : ["10 active listings", "3 auctions per year", "Pro badge on your profile", "Everything in Free"],
+      cta: "pro",
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      tagline: lang === "it" ? "Per professionisti" : "For professionals",
+      monthly: 18, yearly: 170,
+      accent: "sky",
+      features: lang === "it"
+        ? ["Annunci illimitati", "Aste illimitate", "Badge Premium", "Tutto ciò che c'è nel piano Pro"]
+        : ["Unlimited listings", "Unlimited auctions", "Premium badge", "Everything in Pro"],
+      cta: "premium",
+    },
+  ];
+
+  const priceLabel = (tier) => {
+    if (tier.monthly === 0) return lang === "it" ? "Gratis" : "Free";
+    if (isYr) return `€${tier.yearly}`;
+    return `€${tier.monthly}`;
+  };
+  const periodLabel = (tier) => {
+    if (tier.monthly === 0) return "";
+    return isYr ? (lang === "it" ? "/anno" : "/year") : (lang === "it" ? "/mese" : "/month");
+  };
+  // Monthly-equivalent hint for the yearly price (shows the saving).
+  const savingHint = (tier) => {
+    if (tier.monthly === 0 || !isYr) return null;
+    const perMonth = (tier.yearly / 12).toFixed(2).replace(".", lang === "it" ? "," : ".");
+    const fullYear = tier.monthly * 12;
+    const saved = fullYear - tier.yearly;
+    return lang === "it"
+      ? `≈ €${perMonth}/mese · risparmi €${saved}`
+      : `≈ €${perMonth}/mo · save €${saved}`;
+  };
+
+  // Build the prefilled mailto for an upgrade request.
+  const upgradeHref = (tier) => {
+    const plan = tier.name;
+    const cycle = isYr ? (lang === "it" ? "annuale" : "yearly") : (lang === "it" ? "mensile" : "monthly");
+    const price = isYr ? `€${tier.yearly}` : `€${tier.monthly}`;
+    const acct = user?.email || user?.name || (lang === "it" ? "[il mio account]" : "[my account]");
+    const subject = lang === "it"
+      ? `Richiesta upgrade ${plan} (${cycle})`
+      : `${plan} upgrade request (${cycle})`;
+    const body = lang === "it"
+      ? `Ciao HerpMarket,\n\nVorrei passare al piano ${plan} (${cycle}, ${price}).\n\nAccount: ${acct}\n\nGrazie!`
+      : `Hi HerpMarket,\n\nI'd like to upgrade to the ${plan} plan (${cycle}, ${price}).\n\nAccount: ${acct}\n\nThanks!`;
+    return `mailto:support@herpmarket.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   return (
-    <div className="max-w-xl mx-auto w-full pb-16">
+    <div className="max-w-3xl mx-auto w-full pb-16">
       <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
         <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
         <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.plansLabel}</h1>
       </header>
 
       <div className="p-5 md:p-8">
-        {/* Current state: free for all */}
-        <div className="bg-gradient-to-br from-emerald-500/10 to-amber-500/10 ring-1 ring-emerald-500/20 rounded-2xl p-6">
-          <div className="flex items-center gap-2.5 mb-3">
-            <CheckCircle size={20} className="text-emerald-400" />
-            <h2 className="font-display text-xl text-stone-50">
-              {lang === "it" ? "HerpMarket è gratuito" : "HerpMarket is free"}
-            </h2>
-          </div>
-          <p className="text-sm text-stone-300 leading-relaxed">{t.plansComingSoon}</p>
-          <p className="text-xs text-stone-400 leading-relaxed mt-3">{t.plansDescription}</p>
+        <div className="text-center max-w-lg mx-auto mb-6">
+          <h2 className="font-display text-2xl text-stone-50 tracking-tight">
+            {lang === "it" ? "Scegli il piano giusto per te" : "Choose the plan that fits you"}
+          </h2>
+          <p className="text-sm text-stone-400 mt-2 leading-relaxed">
+            {lang === "it"
+              ? "Inizia gratis. Passa a Pro o Premium quando il tuo allevamento cresce."
+              : "Start free. Upgrade to Pro or Premium as your breeding grows."}
+          </p>
         </div>
 
-        {/* Preview of future tiers (greyed out — informational only) */}
-        <div className="mt-6 space-y-3 opacity-60">
-          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">
-            {lang === "it" ? "Anteprima (non ancora attiva)" : "Preview (not yet active)"}
+        {/* Billing cycle toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1">
+            <button onClick={() => setBilling("monthly")}
+                    className={`px-4 py-2 rounded-md text-xs font-bold transition-colors ${
+                      !isYr ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
+                    }`}>
+              {lang === "it" ? "Mensile" : "Monthly"}
+            </button>
+            <button onClick={() => setBilling("yearly")}
+                    className={`px-4 py-2 rounded-md text-xs font-bold transition-colors inline-flex items-center gap-1.5 ${
+                      isYr ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
+                    }`}>
+              {lang === "it" ? "Annuale" : "Yearly"}
+              <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                isYr ? "bg-stone-950/20 text-stone-900" : "bg-emerald-500/15 text-emerald-300"
+              }`}>
+                {lang === "it" ? "Risparmia" : "Save"}
+              </span>
+            </button>
           </div>
-          <PlanCard
-            name={lang === "it" ? "Allevatore Pro" : "Pro Breeder"}
-            price={lang === "it" ? "Prezzo da definire" : "Price TBD"}
-            features={lang === "it" ? [
-              "Annunci illimitati",
-              "Pagina negozio personalizzata",
-              "Posizionamento prioritario in ricerca",
-              "Statistiche dettagliate",
-            ] : [
-              "Unlimited listings",
-              "Custom store page",
-              "Priority placement in search",
-              "Detailed analytics",
-            ]}
-          />
+        </div>
+
+        {/* Tier cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {tiers.map(tier => {
+            const isPremium = tier.id === "premium";
+            const ring = tier.highlight ? "ring-2 ring-amber-500/50" : isPremium ? "ring-1 ring-sky-500/30" : "ring-1 ring-stone-800";
+            const accentText = tier.accent === "amber" ? "text-amber-400" : tier.accent === "sky" ? "text-sky-400" : "text-stone-300";
+            return (
+              <div key={tier.id}
+                   className={`relative bg-stone-900/60 ${ring} rounded-2xl p-5 flex flex-col`}>
+                {tier.highlight && (
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-500 text-stone-950 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+                    {lang === "it" ? "Più popolare" : "Most popular"}
+                  </div>
+                )}
+                <div className="mb-3">
+                  <h3 className={`font-display text-xl ${accentText}`}>{tier.name}</h3>
+                  <p className="text-[11px] text-stone-500 mt-0.5">{tier.tagline}</p>
+                </div>
+                <div className="mb-1 flex items-baseline gap-1">
+                  <span className="font-display text-3xl text-stone-50">{priceLabel(tier)}</span>
+                  <span className="text-xs text-stone-500 font-bold">{periodLabel(tier)}</span>
+                </div>
+                <div className="h-4 mb-3">
+                  {savingHint(tier) && <span className="text-[10px] text-emerald-400 font-bold">{savingHint(tier)}</span>}
+                </div>
+
+                <ul className="space-y-2 flex-1 mb-4">
+                  {tier.features.map((f, i) => (
+                    <li key={i} className="text-[13px] text-stone-300 flex items-start gap-2">
+                      <Check size={13} className={`${accentText} mt-0.5 shrink-0`} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {tier.cta ? (
+                  <a href={upgradeHref(tier)}
+                     className={`w-full text-center font-bold text-sm py-3 rounded-lg transition-colors inline-flex items-center justify-center gap-1.5 ${
+                       tier.highlight
+                         ? "bg-amber-500 hover:bg-amber-400 text-stone-950"
+                         : "bg-sky-500 hover:bg-sky-400 text-stone-950"
+                     }`}>
+                    <Mail size={15} />
+                    {lang === "it" ? "Richiedi" : "Request"} {tier.name}
+                  </a>
+                ) : (
+                  <div className="w-full text-center font-bold text-sm py-3 rounded-lg bg-stone-800 text-stone-500">
+                    {lang === "it" ? "Piano attuale" : "Current plan"}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* How upgrading works — honest note, no payments yet */}
+        <div className="mt-6 bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-4 flex gap-3">
+          <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-[12px] text-stone-400 leading-relaxed">
+            {lang === "it"
+              ? "I pagamenti online non sono ancora attivi. Toccando «Richiedi» si apre un'email già compilata: inviacela e attiveremo il tuo piano manualmente, spiegandoti come completare il pagamento. Stiamo lavorando per integrare i pagamenti automatici a breve."
+              : "Online payments aren't live yet. Tapping \"Request\" opens a pre-filled email — send it and we'll enable your plan manually and explain how to complete payment. Automated checkout is coming soon."}
+          </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function PlanCard({ name, price, features }) {
-  return (
-    <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
-      <div className="flex items-baseline justify-between mb-3">
-        <h3 className="font-display text-lg text-stone-50">{name}</h3>
-        <span className="font-display text-sm text-amber-400">{price}</span>
-      </div>
-      <ul className="space-y-1.5">
-        {features.map((f, i) => (
-          <li key={i} className="text-xs text-stone-300 flex items-start gap-2">
-            <Check size={12} className="text-emerald-400 mt-0.5 shrink-0" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
