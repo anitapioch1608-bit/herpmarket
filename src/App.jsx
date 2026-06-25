@@ -6206,6 +6206,14 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   const attendedExpos = data.expoIds.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
   const bio = lang === "it" ? data.bioIt : data.bioEn;
 
+  // The header shows the STORE name (the brand). The breeder's personal name
+  // lives in the About tab instead. Fall back to the personal name only if no
+  // store name has been set, so the header is never empty.
+  const storeTitle = (data.storeName && data.storeName.trim()) || data.name || sellerName;
+  // Show the personal name in About only when it differs from the store name.
+  const personName = data.name && data.name.trim();
+  const showPersonName = personName && personName !== storeTitle;
+
   // Prefer live reviews; fall back to any demo reviews on the seller object.
   const reviewsToShow = liveReviews != null ? liveReviews : (data.reviews || []);
 
@@ -6224,11 +6232,11 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
       <div className="px-5 md:px-8 -mt-12 md:-mt-14 relative">
         <div className="flex items-end gap-4">
           <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-500 to-amber-800 ring-4 ring-stone-950 flex items-center justify-center font-display text-4xl text-stone-50 font-bold shadow-2xl">
-            {data.avatarUrl ? <img src={data.avatarUrl} alt={data.name} className="w-full h-full object-cover" /> : (data.name || "?")[0]}
+            {data.avatarUrl ? <img src={data.avatarUrl} alt={storeTitle} className="w-full h-full object-cover" /> : (storeTitle || "?")[0]}
           </div>
           <div className="flex-1 pb-1 min-w-0">
             <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight flex items-center gap-2 leading-tight">
-              <span className="truncate">{data.name}</span>
+              <span className="truncate">{storeTitle}</span>
               {data.verified && <ShieldCheck size={20} className="text-sky-400 shrink-0" />}
             </h1>
             <div className="flex items-center gap-1.5 text-stone-400 text-xs md:text-sm mt-1">
@@ -6311,6 +6319,16 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
 
         {tab === "about" && (
           <div className="max-w-2xl space-y-6">
+            {showPersonName && (
+              <div>
+                <h3 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
+                  {lang === "it" ? "Allevatore" : "Breeder"}
+                </h3>
+                <p className="text-sm text-stone-200 font-medium flex items-center gap-1.5">
+                  <User size={14} className="text-stone-400" />{personName}
+                </p>
+              </div>
+            )}
             {bio && (
               <div>
                 <h3 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
@@ -7676,18 +7694,39 @@ function PlansScreen({ t, go, lang, user }) {
   const [billing, setBilling] = useState("yearly");   // "monthly" | "yearly"
   const isYr = billing === "yearly";
 
+  // ─── Founding Breeder program (manual scarcity) ───────────────────
+  // Limited launch offer: the first N professional breeders get lifetime
+  // Premium free. The counter is intentionally a hardcoded number you update
+  // by hand as spots fill — edit FOUNDING_SPOTS_TAKEN every few days.
+  // NB: keep this honest. These are professionals you'll deal with directly;
+  // a number that never moves reads as fake. Bump it as real requests arrive.
+  const FOUNDING_SPOTS_TOTAL = 20;
+  const FOUNDING_SPOTS_TAKEN = 8;   // ← update this manually as spots fill
+  const foundingRemaining = Math.max(0, FOUNDING_SPOTS_TOTAL - FOUNDING_SPOTS_TAKEN);
+  const foundingOpen = foundingRemaining > 0;
+
+  // Prefilled email to claim a Founding Breeder spot.
+  const foundingHref = (() => {
+    const acct = user?.email || user?.name || (lang === "it" ? "[il mio account]" : "[my account]");
+    const subject = lang === "it" ? "Richiesta posto Founding Breeder" : "Founding Breeder spot request";
+    const body = lang === "it"
+      ? `Ciao HerpMarket,\n\nVorrei richiedere uno dei posti del programma Founding Breeder (Premium a vita gratuito).\n\nAccount: ${acct}\nLink al mio allevamento / sito (se presente): \n\nGrazie!`
+      : `Hi HerpMarket,\n\nI'd like to claim one of the Founding Breeder spots (free lifetime Premium).\n\nAccount: ${acct}\nLink to my breeding / website (if any): \n\nThanks!`;
+    return `mailto:support@herpmarket.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  })();
+
   // Tier definitions. Prices in EUR. `email` builds a prefilled upgrade request
   // to you — no payment is taken yet; you enable the account manually.
   const tiers = [
     {
       id: "free",
-      name: lang === "it" ? "Gratuito" : "Free",
-      tagline: lang === "it" ? "Per iniziare" : "To get started",
+      name: lang === "it" ? "Founding Breeder" : "Founding Breeder",
+      tagline: lang === "it" ? "Per chi inizia con noi" : "For early adopters",
       monthly: 0, yearly: 0,
       accent: "stone",
       features: lang === "it"
-        ? ["Fino a 3 annunci attivi", "1 asta", "Pagina venditore", "Documenti CITES e di origine"]
-        : ["Up to 3 active listings", "1 auction", "Seller page", "CITES & origin documents"],
+        ? ["Fino a 3 annunci attivi", "1 asta", "Pagina venditore", "Documenti CITES e di origine", "Badge Founding Breeder esclusivo"]
+        : ["Up to 3 active listings", "1 auction", "Seller page", "CITES & origin documents", "Exclusive Founding Breeder badge"],
       cta: null,
     },
     {
@@ -7758,14 +7797,65 @@ function PlansScreen({ t, go, lang, user }) {
       </header>
 
       <div className="p-5 md:p-8">
+        {/* ─── Founding Breeder hero — limited-spots launch offer ─── */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-stone-900/40 ring-1 ring-amber-500/30 rounded-2xl p-5 md:p-6 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">🚀</span>
+            <h2 className="font-display text-xl md:text-2xl text-stone-50 tracking-tight">
+              {lang === "it" ? "Programma Founding Breeder" : "Founding Breeder Program"}
+            </h2>
+            <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-2 py-0.5 rounded-full">
+              {lang === "it" ? "Posti limitati" : "Limited spots"}
+            </span>
+          </div>
+          <p className="text-[13px] text-stone-300 leading-relaxed">
+            {lang === "it"
+              ? <>Siamo in Beta privata. Per festeggiare il lancio ufficiale alla <span className="font-bold text-amber-300">fiera di Verona</span>, i primi <span className="font-bold text-amber-300">{FOUNDING_SPOTS_TOTAL} allevatori professionali</span> che si uniscono ricevono un <span className="font-bold text-amber-300">account Premium a vita, GRATIS</span>.</>
+              : <>We are in private Beta. To celebrate our official launch at the <span className="font-bold text-amber-300">Verona Expo</span>, the first <span className="font-bold text-amber-300">{FOUNDING_SPOTS_TOTAL} professional breeders</span> to join get a <span className="font-bold text-amber-300">Lifetime Premium account, FREE</span>.</>}
+          </p>
+
+          {/* Spots remaining — progress bar + count */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[11px] font-bold mb-1.5">
+              <span className="text-amber-300">
+                {foundingOpen
+                  ? (lang === "it" ? `${foundingRemaining}/${FOUNDING_SPOTS_TOTAL} posti rimasti` : `${foundingRemaining}/${FOUNDING_SPOTS_TOTAL} spots remaining`)
+                  : (lang === "it" ? "Tutti i posti esauriti" : "All spots claimed")}
+              </span>
+              <span className="text-stone-500">{FOUNDING_SPOTS_TAKEN}/{FOUNDING_SPOTS_TOTAL}</span>
+            </div>
+            <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all"
+                   style={{ width: `${(FOUNDING_SPOTS_TAKEN / FOUNDING_SPOTS_TOTAL) * 100}%` }} />
+            </div>
+          </div>
+
+          {foundingOpen ? (
+            <a href={foundingHref}
+               className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
+              <Mail size={15} />
+              {lang === "it" ? "Richiedi il mio posto" : "Claim my spot"}
+            </a>
+          ) : (
+            <div className="mt-4 w-full text-center bg-stone-800 text-stone-500 font-bold text-sm py-3 rounded-lg">
+              {lang === "it" ? "Posti esauriti — iscriviti per la lista d'attesa" : "Spots filled — email us for the waitlist"}
+            </div>
+          )}
+          <p className="text-[11px] text-stone-500 leading-relaxed mt-2.5">
+            {lang === "it"
+              ? "Tocca «Richiedi il mio posto»: si apre un'email già compilata. Inviacela per richiedere il tuo posto Founding Breeder e attiveremo manualmente il tuo account."
+              : "Tapping \"Claim my spot\" opens a pre-filled email. Send it to claim your Founding Breeder spot and we'll manually upgrade your account."}
+          </p>
+        </div>
+
         <div className="text-center max-w-lg mx-auto mb-6">
           <h2 className="font-display text-2xl text-stone-50 tracking-tight">
-            {lang === "it" ? "Scegli il piano giusto per te" : "Choose the plan that fits you"}
+            {lang === "it" ? "HerpMarket è gratuito per ora" : "HerpMarket is free for now"}
           </h2>
           <p className="text-sm text-stone-400 mt-2 leading-relaxed">
             {lang === "it"
-              ? "Inizia gratis. Passa a Pro o Premium quando il tuo allevamento cresce."
-              : "Start free. Upgrade to Pro or Premium as your breeding grows."}
+              ? "Tutti partono dal piano gratuito. Se ti serve più capacità — più annunci o più aste — scrivici e attiveremo manualmente il tuo account. I prezzi qui sotto sono indicativi per quando attiveremo i pagamenti."
+              : "Everyone starts on the free plan. If you need more capacity — more listings or more auctions — just reach out and we'll enable it on your account manually. The prices below are a preview for when paid plans go live."}
           </p>
         </div>
 
@@ -7852,8 +7942,8 @@ function PlansScreen({ t, go, lang, user }) {
           <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
           <p className="text-[12px] text-stone-400 leading-relaxed">
             {lang === "it"
-              ? "I pagamenti online non sono ancora attivi. Toccando «Richiedi» si apre un'email già compilata: inviacela e attiveremo il tuo piano manualmente, spiegandoti come completare il pagamento. Stiamo lavorando per integrare i pagamenti automatici a breve."
-              : "Online payments aren't live yet. Tapping \"Request\" opens a pre-filled email — send it and we'll enable your plan manually and explain how to complete payment. Automated checkout is coming soon."}
+              ? "Per ora HerpMarket è gratuito e i pagamenti online non sono attivi. Se ti serve più capacità, tocca «Richiedi»: si apre un'email già compilata. Inviacela e attiveremo il tuo piano manualmente. I pagamenti automatici arriveranno più avanti."
+              : "For now HerpMarket is free and online payments aren't live. If you need more capacity, tap \"Request\" — it opens a pre-filled email. Send it and we'll enable your plan manually. Automated checkout is coming later."}
           </p>
         </div>
       </div>
