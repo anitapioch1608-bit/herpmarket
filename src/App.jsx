@@ -1264,11 +1264,20 @@ export default function HerpMarket() {
 
   // Remember scroll position per view so returning to search (or anywhere)
   // lands the user where they left off instead of jumping to the top.
+  // NOTE: the app scrolls an inner <div> (flex layout with overflow-hidden on
+  // the root), NOT the window — so we must read/set scrollTop on that container,
+  // not window.scrollY / window.scrollTo (which are always 0 here).
   const scrollMemory = useRef({});
+  const scrollContainerRef = useRef(null);
   const navHistory = useRef([]);   // stack of previous {view, data}
+  const getScroll = () => scrollContainerRef.current?.scrollTop ?? 0;
+  const setScroll = (y) => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = y;
+  };
   const go = (v, data = null, fresh = false) => {
     // Save where we are before leaving the current view
-    scrollMemory.current[view] = window.scrollY;
+    scrollMemory.current[view] = getScroll();
     if (fresh) scrollMemory.current[v] = 0; // intentional new view → start at top
     // Push current view onto history so "back" can return to it
     navHistory.current.push({ view, data: viewData });
@@ -1278,8 +1287,10 @@ export default function HerpMarket() {
     setView(v);
     setViewData(data);
     const saved = scrollMemory.current[v];
+    // Opening a NEW view (not in memory) must land at the top. Only restore a
+    // remembered position when we actually have one saved for that view.
     requestAnimationFrame(() => {
-      window.scrollTo(0, typeof saved === "number" ? saved : 0);
+      setScroll(typeof saved === "number" ? saved : 0);
     });
   };
   // Go back to the previous screen in history (restores its scroll position).
@@ -1287,14 +1298,22 @@ export default function HerpMarket() {
   const goBack = () => {
     const prev = navHistory.current.pop();
     const target = prev?.view || "home";
-    scrollMemory.current[view] = window.scrollY;
+    scrollMemory.current[view] = getScroll();
     setView(target);
     setViewData(prev?.data ?? null);
     const saved = scrollMemory.current[target];
     requestAnimationFrame(() => {
-      window.scrollTo(0, typeof saved === "number" ? saved : 0);
+      setScroll(typeof saved === "number" ? saved : 0);
     });
   };
+  // Safety net: after any view change, if we don't have a remembered scroll
+  // position for this view, make sure the container is at the top. Runs after
+  // the new (possibly taller) content has rendered, so it can't be undone by
+  // a late layout. Covers navigation paths that bypass go() (e.g. bottom nav).
+  useEffect(() => {
+    const saved = scrollMemory.current[view];
+    if (typeof saved !== "number") setScroll(0);
+  }, [view, viewData]);
   // Bridge the browser/device Back button to the app's own history. When the
   // user presses Back, the browser fires popstate; we consume our nav stack
   // instead of letting the page leave the app.
@@ -1456,7 +1475,7 @@ export default function HerpMarket() {
 
       {/* Main */}
       <div className="flex-1 relative flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto hide-scrollbar pb-24 md:pb-0">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto hide-scrollbar pb-24 md:pb-0">
           {screen()}
         </div>
         {/* Mobile bottom nav — fixed to viewport, with safe-area padding so the
