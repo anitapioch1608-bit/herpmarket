@@ -11,4 +11,15 @@ if (!url || !anon) {
   console.warn('[HerpMarket] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient(url, anon);
+// Single Supabase client for the whole app, configured to KEEP the user logged
+// in across visits. Without these explicit auth options, a session can fail to
+// persist in some mobile/PWA contexts, forcing users to log in every time.
+export const supabase = createClient(url, anon, {
+  auth: {
+    persistSession: true,        // save the session to storage so it survives reloads
+    autoRefreshToken: true,      // refresh the access token before it expires
+    detectSessionInUrl: true,    // handle magic-link / recovery redirects
+    storageKey: 'herpmarket-auth',
+    flowType: 'pkce',            // safer auth flow for browser/PWA apps
+  },
+});
