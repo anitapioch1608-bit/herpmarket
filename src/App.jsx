@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   Home, Search, PlusCircle, MessageCircle, User,
   ChevronRight, ChevronLeft, ShieldCheck, MapPin,
@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -1275,18 +1275,30 @@ export default function HerpMarket() {
   const t = I18N[lang];
 
   // ── Live data from Supabase (Option B bridge) ──
-  // Fetches listings once on load. Falls back to demo LISTINGS until they arrive
-  // or if the fetch fails, so the app never looks empty.
+  // Fetches listings on load. We track status explicitly so a FAILED fetch
+  // (common on flaky mobile data) is not mistaken for "the marketplace is
+  // empty" — instead the UI can show a retry. Status: "loading" | "ok" | "error".
   const [liveListings, setLiveListings] = useState(null);
-  useEffect(() => {
+  const [listingsStatus, setListingsStatus] = useState("loading");
+  const loadListings = useCallback(() => {
+    setListingsStatus("loading");
     loadApi().then(({ fetchListings }) => {
       fetchListings({})
-        .then(rows => { setLiveListings(rows || []); })
-        .catch(err => { console.warn('[HerpMarket] Supabase fetch failed:', err); setLiveListings([]); });
+        .then(rows => { setLiveListings(rows || []); setListingsStatus("ok"); })
+        .catch(err => {
+          console.warn('[HerpMarket] Supabase fetch failed:', err);
+          // Don't overwrite previously-loaded data with nothing; just flag error.
+          setListingsStatus("error");
+        });
+    }).catch(err => {
+      console.warn('[HerpMarket] api load failed:', err);
+      setListingsStatus("error");
     });
   }, []);
-  // Live data is the source of truth once loaded (empty array = empty marketplace).
-  const LISTINGS_DATA = liveListings || [];
+  useEffect(() => { loadListings(); }, [loadListings]);
+  // Live data once loaded. null until the first successful load (lets screens
+  // tell "still loading / failed" apart from a genuinely empty marketplace).
+  const LISTINGS_DATA = liveListings;
 
   // ── Real auth session (Supabase) ──
   // Loads any existing session on startup and keeps `user` in sync with login/
@@ -1429,7 +1441,7 @@ export default function HerpMarket() {
     go("home");
   };
 
-  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout, listingsData: LISTINGS_DATA };
+  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout, listingsData: LISTINGS_DATA, listingsStatus, retryListings: loadListings };
 
   const screen = () => {
     switch (view) {
@@ -1859,9 +1871,11 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
-function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth, listingsData }) {
+function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth, listingsData, listingsStatus, retryListings }) {
   const userRegion = user?.region || "Piemonte";
-  const LIST = listingsData || LISTINGS;
+  // Use real data when we have it. While loading/erroring with nothing yet,
+  // show an empty list (not demo animals) so we don't display fake listings.
+  const LIST = listingsData || [];
   const near = LIST.filter(l => l.region === userRegion);
   const all = LIST;
   const [showAllExpos, setShowAllExpos] = useState(false);
@@ -1917,7 +1931,28 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         </div>
       </div>
 
-      {/* Desktop hero */}
+      {/* Connectivity status — shown when listings fail to load (e.g. weak
+          mobile signal) so the user knows it's a network issue, not an empty
+          marketplace, and can retry. */}
+      {listingsStatus === "error" && (
+        <div className="px-5 md:px-8 pt-4">
+          <div className="bg-amber-500/10 ring-1 ring-amber-500/30 rounded-xl p-3.5 flex items-center gap-3">
+            <WifiOff size={18} className="text-amber-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-stone-100">
+                {lang === "it" ? "Impossibile caricare gli annunci" : "Couldn't load listings"}
+              </p>
+              <p className="text-[11px] text-stone-400">
+                {lang === "it" ? "Controlla la connessione e riprova." : "Check your connection and try again."}
+              </p>
+            </div>
+            <button onClick={retryListings}
+                    className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs px-3 py-2 rounded-lg transition-colors">
+              <RefreshCw size={13} />{lang === "it" ? "Riprova" : "Retry"}
+            </button>
+          </div>
+        </div>
+      )}
       <header className="hidden md:block px-8 pt-12 pb-8 border-b border-stone-800/60">
         <div className="max-w-3xl">
           <h2 className="font-display text-4xl lg:text-5xl text-stone-50 tracking-tight leading-[1.1]" style={{ fontVariationSettings: "'opsz' 144" }}>
@@ -2153,9 +2188,13 @@ function AllExposModal({ onClose, go, t, lang }) {
 /* ═══════════════════════════════════════════════════════════════════
    SEARCH — filters drawer + grid (the real MorphMarket workhorse)
    ═════════════════════════════════════════════════════════════════ */
-function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState, listingsData, user }) {
+function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, initialState, listingsData, user, listingsStatus, retryListings }) {
   const [showFilters, setShowFilters] = useState(initialState?.openFilters || false);
   const [showSort, setShowSort] = useState(false);
+  // Traits/morphs are hidden behind a button by default — casual buyers never
+  // see the genetics chips unless they ask for them. Auto-open if a trait is
+  // already applied (e.g. reopening the filter sheet).
+  const [showTraits, setShowTraits] = useState(filter.traits.length > 0);
   // Snapshot of the filter when the sheet opens. If the user closes with X
   // (cancel) we restore it; if they tap Apply we keep the changes.
   const filterSnapshot = useRef(null);
@@ -2168,7 +2207,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
   };
 
   const filtered = useMemo(() => {
-    let r = listingsData || LISTINGS;
+    let r = listingsData || [];
     if (filter.category)    r = r.filter(l => l.category === filter.category);
     if (filter.subCategory) r = r.filter(l => l.species === filter.subCategory);
     if (filter.sex)         r = r.filter(l => l.sex === filter.sex);
@@ -2319,7 +2358,24 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
 
       {/* Grid */}
       <div className="px-5 md:px-8 py-5 pb-20">
-        {filtered.length === 0 ? (
+        {listingsData == null && listingsStatus === "loading" ? (
+          <div className="text-center py-20 text-stone-500">
+            <Loader2 size={28} className="animate-spin mx-auto text-amber-500" />
+            <p className="text-xs mt-3">{lang === "it" ? "Caricamento annunci…" : "Loading listings…"}</p>
+          </div>
+        ) : listingsData == null && listingsStatus === "error" ? (
+          <div className="text-center py-20 text-stone-500">
+            <WifiOff size={28} className="mx-auto text-amber-400" />
+            <p className="font-display italic text-lg mt-3 text-stone-300">
+              {lang === "it" ? "Impossibile caricare gli annunci" : "Couldn't load listings"}
+            </p>
+            <p className="text-xs mt-2">{lang === "it" ? "Controlla la connessione." : "Check your connection."}</p>
+            <button onClick={retryListings}
+                    className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
+              <RefreshCw size={14} />{lang === "it" ? "Riprova" : "Retry"}
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-stone-500">
             <p className="font-display italic text-lg">{lang === "it" ? "Nessun risultato trovato" : "No results found"}</p>
             <p className="text-xs mt-2">{lang === "it" ? "Prova a modificare i filtri" : "Try adjusting your filters"}</p>
@@ -2341,7 +2397,24 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
 
       {/* Filters drawer */}
       {showFilters && (
-        <BottomSheet onClose={cancelFilters} title={t.advFilters}>
+        <BottomSheet onClose={cancelFilters} title={t.advFilters}
+          footer={
+            <div className="flex gap-2">
+              <button onClick={() => { setShowTraits(false); setFilter({
+                        category: null, subCategory: null, sex: null, region: null, country: null,
+                        sort: filter.sort, search: filter.search,
+                        priceMin: null, priceMax: null, traits: [], traitClass: null,
+                        seller: null, expoOnly: false, verifiedOnly: false, auctionOnly: false,
+                      }); }}
+                      className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">
+                {t.clearAll}
+              </button>
+              <button onClick={applyFilters}
+                      className="flex-[2] py-3 rounded-lg text-sm font-bold bg-amber-500 text-stone-950 hover:bg-amber-400 transition-colors">
+                {t.apply} · {t.resultsCount(filtered.length)}
+              </button>
+            </div>
+          }>
           <div className="space-y-5">
             {/* Category */}
             <FilterGroup label={t.species}>
@@ -2368,19 +2441,33 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               </FilterGroup>
             )}
 
-            {/* Trait tags — dynamic by category/species */}
+            {/* Trait tags — hidden behind a button by default. Only shown once
+                the buyer opts in, so casual shoppers aren't faced with genetics. */}
             <FilterGroup label={t.traitsLabel}>
-              {filter.category ? (
-                scopeTraits.length > 0 ? (
+              {!filter.category ? (
+                <p className="text-xs text-stone-500 italic">{t.selectCategoryFirst}</p>
+              ) : !showTraits ? (
+                <button onClick={() => setShowTraits(true)}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 ring-1 ring-stone-700 transition-colors">
+                  <GitBranch size={15} className="text-amber-400" />
+                  {lang === "it" ? "Seleziona morph / tratti" : "Select morphs / traits"}
+                </button>
+              ) : scopeTraits.length > 0 ? (
+                <>
                   <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto hide-scrollbar">
                     {scopeTraits.map((tr, i) => {
                       const on = filter.traits.includes(tr.name);
                       return (
                         <button key={i}
-                                onClick={() => setFilter({
-                                  ...filter,
-                                  traits: on ? filter.traits.filter(x => x !== tr.name) : [...filter.traits, tr.name],
-                                })}>
+                                onClick={() => {
+                                  const nextTraits = on ? filter.traits.filter(x => x !== tr.name) : [...filter.traits, tr.name];
+                                  setFilter({
+                                    ...filter,
+                                    traits: nextTraits,
+                                    // If no traits remain, the (now hidden) genetic-type filter must clear too.
+                                    traitClass: nextTraits.length === 0 ? null : filter.traitClass,
+                                  });
+                                }}>
                           <span className={on ? "ring-2 ring-amber-400 rounded-md inline-block" : "opacity-60 hover:opacity-100 inline-block"}>
                             <TraitChip trait={tr} size="sm" />
                           </span>
@@ -2388,15 +2475,20 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                       );
                     })}
                   </div>
-                ) : (
-                  <p className="text-xs text-stone-500 italic">{lang === "it" ? "Nessun tratto catalogato per questa categoria." : "No catalogued traits for this category."}</p>
-                )
+                  <button onClick={() => { setShowTraits(false); setFilter({ ...filter, traits: [], traitClass: null }); }}
+                          className="mt-2 text-[11px] text-stone-500 hover:text-stone-300 transition-colors">
+                    {lang === "it" ? "Nascondi tratti" : "Hide traits"}
+                  </button>
+                </>
               ) : (
-                <p className="text-xs text-stone-500 italic">{t.selectCategoryFirst}</p>
+                <p className="text-xs text-stone-500 italic">{lang === "it" ? "Nessun tratto catalogato per questa categoria." : "No catalogued traits for this category."}</p>
               )}
             </FilterGroup>
 
-            {/* Genetic type (trait class) */}
+            {/* Genetic type (trait class) — only relevant once the buyer is
+                actually filtering by traits. Hidden by default so casual buyers
+                (e.g. someone just wanting a gecko) aren't confused by genetics. */}
+            {filter.traits.length > 0 && (
             <FilterGroup label={t.traitClassLabel}>
               <div className="flex flex-wrap gap-1.5">
                 {[
@@ -2412,6 +2504,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                 ))}
               </div>
             </FilterGroup>
+            )}
 
             {/* Price range */}
             <FilterGroup label={t.priceRange}>
@@ -2501,23 +2594,6 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
               </label>
             </div>
-
-            {/* Actions */}
-            <div className="flex gap-2 pt-2 sticky bottom-0 bg-stone-900 pb-1">
-              <button onClick={() => setFilter({
-                        category: null, subCategory: null, sex: null, region: null, country: null,
-                        sort: filter.sort, search: filter.search,
-                        priceMin: null, priceMax: null, traits: [], traitClass: null,
-                        seller: null, expoOnly: false, verifiedOnly: false, auctionOnly: false,
-                      })}
-                      className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">
-                {t.clearAll}
-              </button>
-              <button onClick={applyFilters}
-                      className="flex-[2] py-3 rounded-lg text-sm font-bold bg-amber-500 text-stone-950 hover:bg-amber-400 transition-colors">
-                {t.apply} · {t.resultsCount(filtered.length)}
-              </button>
-            </div>
           </div>
         </BottomSheet>
       )}
@@ -2568,16 +2644,23 @@ function ToggleChip({ active, onClick, children }) {
     </button>
   );
 }
-function BottomSheet({ title, onClose, children }) {
+function BottomSheet({ title, onClose, children, footer }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={onClose}>
       <div onClick={e => e.stopPropagation()}
-           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85vh] overflow-y-auto hide-scrollbar anim-up">
-        <div className="flex items-center justify-between mb-5">
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[85vh] anim-up overflow-hidden">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
           <h3 className="font-display text-lg text-stone-50">{title}</h3>
           <button onClick={onClose} className="text-stone-400 hover:text-stone-100"><X size={20} /></button>
         </div>
-        {children}
+        <div className="flex-1 overflow-y-auto hide-scrollbar px-5 pb-2">
+          {children}
+        </div>
+        {footer && (
+          <div className="shrink-0 px-5 py-3 border-t border-stone-800 bg-stone-900">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
