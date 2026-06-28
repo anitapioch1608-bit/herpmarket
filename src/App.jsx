@@ -5083,6 +5083,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const [items, setItems] = useState(null);   // null = loading
   const [tab, setTab] = useState("active");   // active | sold | held | breeder
   const [editId, setEditId] = useState(null);
+  const [eTitle, setETitle] = useState("");
   const [ePrice, setEPrice] = useState("");
   const [eDesc, setEDesc] = useState("");
   const [removeFor, setRemoveFor] = useState(null);  // listing whose "remove from sale" panel is open
@@ -5138,15 +5139,22 @@ function MyListingsScreen({ t, lang, go, user }) {
   useEffect(() => { if (user?.id) load(); }, [user?.id]);
 
   const startEdit = (l) => {
-    setEditId(l.id); setEPrice(String(l.price ?? "")); setEDesc(l.desc || "");
+    setEditId(l.id); setETitle(l.title || ""); setEPrice(String(l.price ?? "")); setEDesc(l.desc || "");
     setConfirmDel(null); setErr("");
   };
   const saveEdit = async (id) => {
-    if (!ePrice || Number(ePrice) <= 0) { setErr(t.needPrice); return; }
+    // Find the listing so we know whether it's for sale (price required) or a
+    // held/breeder animal (no price — it's not on the market).
+    const listing = (items || []).find(x => x.id === id);
+    const isForSale = listing ? bucket(listing) === "active" : true;
+    if (isForSale && (!ePrice || Number(ePrice) <= 0)) { setErr(t.needPrice); return; }
     setBusy(true); setErr("");
     try {
       const api = await loadApi();
-      await api.updateListing(id, { price: Number(ePrice), desc: eDesc });
+      const patch = { title: eTitle.trim(), desc: eDesc };
+      // Only touch price for for-sale animals; held/breeder stay price-less.
+      if (isForSale) patch.price = Number(ePrice);
+      await api.updateListing(id, patch);
       setEditId(null); load();
     } catch (e) { setErr(e?.message || "Error"); }
     finally { setBusy(false); }
@@ -5189,7 +5197,7 @@ function MyListingsScreen({ t, lang, go, user }) {
           <p className="text-[11px] text-stone-500 mt-0.5">{t.mlIntro}</p>
         </div>
         <button onClick={() => go("addanimal")}
-                className="shrink-0 inline-flex items-center gap-1.5 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
+                className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500/15 ring-1 ring-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
           <PlusCircle size={14} />{t.addAnimal}
         </button>
       </header>
@@ -5229,10 +5237,16 @@ function MyListingsScreen({ t, lang, go, user }) {
           <div className="text-center py-16 text-stone-500">
             <PackageCheck size={32} className="mx-auto mb-3 opacity-30" />
             <p className="text-sm font-display italic">{emptyMsg}</p>
-            <button onClick={() => go(tab === "active" ? "sell" : "addanimal")}
-                    className="mt-5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
-              {tab === "active" ? t.sellCta : t.addAnimal}
-            </button>
+            {tab !== "sold" && (
+              <button onClick={() => go(tab === "active" ? "sell" : "addanimal")}
+                      className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
+                <PlusCircle size={15} />
+                {tab === "active" ? t.sellCta
+                  : tab === "breeder" ? (lang === "it" ? "Aggiungi riproduttore" : "Add a breeder")
+                  : tab === "held" ? (lang === "it" ? "Aggiungi animale tenuto" : "Add held-back animal")
+                  : t.addAnimal}
+              </button>
+            )}
           </div>
         ) : shown.map(l => (
           <div key={l.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
@@ -5243,8 +5257,18 @@ function MyListingsScreen({ t, lang, go, user }) {
                      className="w-full h-full object-cover" />
               </button>
               <button onClick={() => go("detail", l)} className="flex-1 min-w-0 text-left">
-                <div className="font-bold text-stone-100 text-sm truncate">{l.common}</div>
-                <div className="text-[11px] text-stone-500 italic truncate">{l.species}</div>
+                {l.title ? (
+                  <>
+                    <div className="font-bold text-stone-100 text-sm truncate">{l.title}</div>
+                    <div className="text-[11px] text-stone-400 truncate">{l.common}</div>
+                    <div className="text-[10px] text-stone-500 italic truncate">{l.species}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-bold text-stone-100 text-sm truncate">{l.common}</div>
+                    <div className="text-[11px] text-stone-500 italic truncate">{l.species}</div>
+                  </>
+                )}
                 {l.price != null && bucket(l) !== "held" && bucket(l) !== "breeder" && (
                   <div className="text-[11px] text-amber-400 font-bold mt-0.5">{formatPrice(l.price)}</div>
                 )}
@@ -5276,7 +5300,11 @@ function MyListingsScreen({ t, lang, go, user }) {
                 )}
                 {(bucket(l) === "held" || bucket(l) === "breeder") && (
                   <>
-                    <button onClick={() => { setRelistFor(relistFor?.id === l.id ? null : l); setRemoveFor(null); }} disabled={busy}
+                    <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 ring-1 ring-stone-700 text-stone-200 hover:bg-stone-700 transition-colors">
+                      {t.mlEdit}
+                    </button>
+                    <button onClick={() => { setRelistFor(relistFor?.id === l.id ? null : l); setRemoveFor(null); setEditId(null); }} disabled={busy}
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-amber-500/15 ring-1 ring-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition-colors">
                       {t.relist}
                     </button>
@@ -5312,12 +5340,19 @@ function MyListingsScreen({ t, lang, go, user }) {
             {editId === l.id && (
               <div className="border-t border-stone-800 p-3 space-y-2.5 bg-stone-950/40">
                 <div>
-                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
-                  <div className="flex items-center gap-2 max-w-[160px]">
-                    <span className="text-stone-400 text-sm shrink-0">€</span>
-                    <input type="number" min="0" className="form-input flex-1" value={ePrice} onChange={e => setEPrice(e.target.value)} />
-                  </div>
+                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.listingTitleLabel || (lang === "it" ? "Titolo annuncio" : "Listing title")}</div>
+                  <input type="text" className="form-input" value={eTitle} onChange={e => setETitle(e.target.value)}
+                         placeholder={lang === "it" ? "es. Crested Gecko Lily White femmina" : "e.g. Female Lily White Crested Gecko"} />
                 </div>
+                {bucket(l) === "active" && (
+                  <div>
+                    <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
+                    <div className="flex items-center gap-2 max-w-[160px]">
+                      <span className="text-stone-400 text-sm shrink-0">€</span>
+                      <input type="number" min="0" className="form-input flex-1" value={ePrice} onChange={e => setEPrice(e.target.value)} />
+                    </div>
+                  </div>
+                )}
                 <div>
                   <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.description}</div>
                   <textarea rows="3" className="form-input resize-none" value={eDesc} onChange={e => setEDesc(e.target.value)} />
