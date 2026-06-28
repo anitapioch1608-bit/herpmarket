@@ -1316,7 +1316,13 @@ export default function HerpMarket() {
   };
   useEffect(() => {
     let unsub;
-    loadApi().then(api => {
+    loadApi().then(async (api) => {
+      // First, handle any password-reset / magic-link redirect (?code=... PKCE).
+      // This exchanges the code for a session and tells us if it's a recovery.
+      try {
+        const res = await api.handleAuthRedirect?.();
+        if (res?.recovery) setRecovery(true);
+      } catch (e) { /* non-fatal */ }
       api.getSession().then(s => applySession(api, s)).catch(() => {});
       unsub = api.onAuthChange((event, session) => {
         if (event === "PASSWORD_RECOVERY") setRecovery(true);
@@ -2950,6 +2956,15 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   // calls MUST sit above the early return so the hook order never changes.
   const [deliveryMode, setDeliveryMode] = useState("ship");
   const [selectedExpoId, setSelectedExpoId] = useState(null);
+  // Owner controls (Edit / Mark sold / Delete) shown when this is the user's
+  // own listing. All declared before the early return to keep hook order stable.
+  const [ownerMode, setOwnerMode] = useState(null);   // null | "edit" | "sold" | "delete"
+  const [oTitle, setOTitle] = useState("");
+  const [oPrice, setOPrice] = useState("");
+  const [oDesc, setODesc] = useState("");
+  const [ownerBusy, setOwnerBusy] = useState(false);
+  const [ownerErr, setOwnerErr] = useState("");
+  const [ownerDone, setOwnerDone] = useState("");   // success note after save
 
   // NOTE: every hook (useState/useEffect) must run before any early return,
   // and must reference `listing` (the prop) — never the post-return `a` alias.
@@ -2989,6 +3004,37 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   const expo = isExpoFlow ? (listingExpos.find(e => e.id === selectedExpoId) || listingExpos[0]) : null;
   // CITES required for Annex A (tortoises) and many Annex B (chameleons, large pythons etc.)
   const requiresCITES = a.category === "tortoises" || a.category === "chameleons";
+
+  // Which collection bucket is this animal in (mirrors My Listings logic).
+  const ownerBucket = a.status === "sold" ? "sold" : a.status === "held" ? "held" : a.status === "breeder" ? "breeder" : "active";
+  const openOwnerEdit = () => {
+    setOTitle(a.title || ""); setOPrice(String(a.price ?? "")); setODesc(a.desc || "");
+    setOwnerErr(""); setOwnerDone(""); setOwnerMode(ownerMode === "edit" ? null : "edit");
+  };
+  const saveOwnerEdit = async () => {
+    const forSale = ownerBucket === "active";
+    if (forSale && (!oPrice || Number(oPrice) <= 0)) { setOwnerErr(t.needPrice); return; }
+    setOwnerBusy(true); setOwnerErr("");
+    try {
+      const api = await loadApi();
+      const patch = { title: oTitle.trim(), desc: oDesc };
+      if (forSale) patch.price = Number(oPrice);
+      const updated = await api.updateListing(a.id, patch);
+      setOwnerDone(lang === "it" ? "Salvato ✓" : "Saved ✓");
+      setOwnerMode(null);
+      // Refresh the detail view with the updated data.
+      if (updated) go("detail", updated);
+    } catch (e) { setOwnerErr(e?.message || "Error"); }
+    finally { setOwnerBusy(false); }
+  };
+  const deleteOwnerListing = async () => {
+    setOwnerBusy(true); setOwnerErr("");
+    try {
+      const api = await loadApi();
+      await api.deleteListing(a.id);
+      go("mylistings");
+    } catch (e) { setOwnerErr(e?.message || "Error"); setOwnerBusy(false); }
+  };
 
   /* ─── Buyer actions ─── */
   const handleRequest = () => {
@@ -3273,10 +3319,22 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
       <div className="fixed md:absolute bottom-16 md:bottom-0 inset-x-0 z-30 bg-stone-950/95 backdrop-blur-xl border-t border-stone-800 px-4 py-3">
         <div className="max-w-3xl mx-auto flex gap-2">
           {isMine ? (
-            <button onClick={() => go("mylistings")}
-                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
-              <SettingsIcon size={16} />{t.manageListing}
-            </button>
+            <div className="flex-1 flex gap-2">
+              <button onClick={openOwnerEdit}
+                      className={`flex-1 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors ${ownerMode === "edit" ? "bg-amber-500 text-stone-950" : "bg-stone-800 hover:bg-stone-700 text-stone-100"}`}>
+                <SettingsIcon size={16} />{t.mlEdit}
+              </button>
+              {ownerBucket === "active" && (
+                <button onClick={() => { setOwnerMode("sold"); setOwnerErr(""); }}
+                        className="flex-1 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
+                  <CheckCircle size={16} />{t.markSold}
+                </button>
+              )}
+              <button onClick={() => { setOwnerMode("delete"); setOwnerErr(""); }}
+                      className="flex-1 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                <X size={16} />{t.mlDelete}
+              </button>
+            </div>
           ) : (
             <>
               <button onClick={handleMessage}
@@ -3307,6 +3365,78 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           )}
         </div>
       </div>
+
+      {/* Owner action panels — overlay sheet above the sticky bar */}
+      {isMine && ownerMode && (
+        <div className="fixed inset-0 z-40 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={() => !ownerBusy && setOwnerMode(null)}>
+          <div onClick={e => e.stopPropagation()}
+               className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85vh] overflow-y-auto hide-scrollbar anim-up mb-16 md:mb-0">
+            {ownerErr && <div className="text-xs font-bold text-rose-400 mb-3">{ownerErr}</div>}
+
+            {ownerMode === "edit" && (
+              <div className="space-y-3">
+                <h3 className="font-display text-lg text-stone-50 mb-1">{t.mlEdit}</h3>
+                <div>
+                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{lang === "it" ? "Titolo annuncio" : "Listing title"}</div>
+                  <input type="text" className="form-input" value={oTitle} onChange={e => setOTitle(e.target.value)}
+                         placeholder={lang === "it" ? "es. Crested Gecko Lily White femmina" : "e.g. Female Lily White Crested Gecko"} />
+                </div>
+                {ownerBucket === "active" && (
+                  <div>
+                    <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
+                    <div className="flex items-center gap-2 max-w-[160px]">
+                      <span className="text-stone-400 text-sm shrink-0">€</span>
+                      <input type="number" min="0" className="form-input flex-1" value={oPrice} onChange={e => setOPrice(e.target.value)} />
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.description}</div>
+                  <textarea rows="4" className="form-input resize-none" value={oDesc} onChange={e => setODesc(e.target.value)} />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => setOwnerMode(null)} className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">{t.cancel || (lang === "it" ? "Annulla" : "Cancel")}</button>
+                  <button onClick={saveOwnerEdit} disabled={ownerBusy}
+                          className="flex-[2] py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors">
+                    {ownerBusy ? t.processing : t.mlSave}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {ownerMode === "sold" && (
+              <MarkSoldPanel listing={a} t={t} lang={lang} busy={ownerBusy} user={user}
+                             onCancel={() => setOwnerMode(null)}
+                             onConfirm={async (payload) => {
+                               setOwnerBusy(true); setOwnerErr("");
+                               try {
+                                 const api = await loadApi();
+                                 const seller = await api.fetchMySeller(user.id);
+                                 await api.markListingSold({
+                                   sellerId: seller.id, listingId: a.id, sellerCountry: seller.country,
+                                   citesListed: a.citesListed, amount: a.price, ...payload,
+                                 });
+                                 go("mylistings");
+                               } catch (e) { setOwnerErr(e?.message || "Error"); setOwnerBusy(false); }
+                             }} />
+            )}
+
+            {ownerMode === "delete" && (
+              <div className="space-y-3">
+                <h3 className="font-display text-lg text-stone-50">{lang === "it" ? "Eliminare questo annuncio?" : "Delete this listing?"}</h3>
+                <p className="text-[12px] text-stone-400">{lang === "it" ? "Questa azione non può essere annullata." : "This can't be undone."}</p>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => setOwnerMode(null)} className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">{t.cancel || (lang === "it" ? "Annulla" : "Cancel")}</button>
+                  <button onClick={deleteOwnerListing} disabled={ownerBusy}
+                          className="flex-1 py-3 rounded-lg text-sm font-bold bg-rose-500 hover:bg-rose-400 disabled:opacity-60 text-white transition-colors">
+                    {ownerBusy ? t.processing : t.mlDelete}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Checkout modal */}
       {showCheckout && (

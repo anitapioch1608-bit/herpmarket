@@ -631,6 +631,34 @@ export async function updatePassword(newPassword) {
   if (error) throw error;
   return true;
 }
+
+// Handle a password-reset / magic-link redirect that comes back as ?code=...
+// (PKCE flow). Exchanges the code for a session and reports whether this was a
+// password-recovery link, so the app can show the "set new password" screen.
+// Returns { recovery: boolean } or null if there was no code to handle.
+export async function handleAuthRedirect() {
+  try {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('code');
+    const isRecovery = url.searchParams.get('type') === 'recovery'
+      || /type=recovery/.test(url.hash || '');
+    if (!code) {
+      // Older fragment style (#access_token=...&type=recovery) — detectSessionInUrl
+      // usually handles it, but flag recovery if present.
+      return { recovery: /type=recovery/.test(url.hash || '') };
+    }
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    // Clean the code out of the URL so a refresh doesn't re-run it.
+    url.searchParams.delete('code');
+    url.searchParams.delete('type');
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    return { recovery: isRecovery };
+  } catch (e) {
+    console.warn('[HerpMarket] auth redirect handling failed:', e);
+    return null;
+  }
+}
 // Load the profile row for the logged-in user (display name, consents, role, etc.)
 export async function fetchProfile(userId) {
   const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
