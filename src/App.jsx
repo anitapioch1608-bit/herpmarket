@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw, Flag
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -35,6 +35,16 @@ const I18N = {
     breedingFeat3: "Collegamento agli esemplari nel tuo inventario",
     breedingFeat4: "Esportazione e condivisione dei progetti",
     breedingNotify: "Avvisami quando è pronto",
+    reportListing: "Segnala questo annuncio",
+    reportTitle: "Segnala un annuncio",
+    reportProblem: "Segnala un problema",
+    reportReasonLabel: "Motivo",
+    reportNoteLabel: "Dettagli (facoltativo)",
+    reportNotePlaceholder: "Aggiungi dettagli che ci aiutano a esaminare la segnalazione…",
+    reportSend: "Invia segnalazione",
+    reportSending: "Invio…",
+    reportThanks: "Grazie. Abbiamo ricevuto la tua segnalazione e la esamineremo.",
+    reportReasons: ["Specie vietata o illegale", "Possibile truffa o frode", "Animale non sano / maltrattamento", "Annuncio ingannevole o spam", "Contenuto inappropriato", "Altro"],
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     heroTitle: "Scopri i rettili e gli animali esotici premium in Italia.",
@@ -278,6 +288,16 @@ const I18N = {
     breedingFeat3: "Linked to the animals in your inventory",
     breedingFeat4: "Export and share your projects",
     breedingNotify: "Notify me when it's ready",
+    reportListing: "Report this listing",
+    reportTitle: "Report a listing",
+    reportProblem: "Report a problem",
+    reportReasonLabel: "Reason",
+    reportNoteLabel: "Details (optional)",
+    reportNotePlaceholder: "Add any details that help us review the report…",
+    reportSend: "Send report",
+    reportSending: "Sending…",
+    reportThanks: "Thank you. We've received your report and will review it.",
+    reportReasons: ["Prohibited or illegal species", "Possible scam or fraud", "Unhealthy animal / welfare concern", "Misleading listing or spam", "Inappropriate content", "Other"],
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
     heroTitle: "Discover Italy's Premium Reptiles & Exotic Animals.",
@@ -3005,6 +3025,75 @@ function CrossBorderNotice({ sellerCountry, t, lang, buyerCountry = "IT" }) {
   );
 }
 
+/* Reusable report sheet — used by listing detail (with a listing) and the
+   contact page (general report, no listing). Reuses api.submitReport, which
+   feeds the same email-notify pipeline as plan/genetics requests. */
+function ReportSheet({ listing = null, t, lang, onClose }) {
+  const reasons = t.reportReasons || [];
+  const [reason, setReason] = useState(reasons[0] || "Other");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [err, setErr] = useState("");
+  const send = async () => {
+    setBusy(true); setErr("");
+    try {
+      const api = await loadApi();
+      await api.submitReport({
+        reason,
+        listing: listing ? { id: listing.id, title: listing.title, common: listing.common, species: listing.species } : null,
+        note: note.trim(),
+      });
+      setDone(true);
+    } catch (e) {
+      setErr(lang === "it" ? "Qualcosa è andato storto. Riprova." : "Something went wrong. Please try again.");
+    } finally { setBusy(false); }
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={() => !busy && onClose()}>
+      <div onClick={e => e.stopPropagation()}
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85vh] overflow-y-auto anim-up">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-lg text-stone-50">{t.reportTitle}</h3>
+          <button onClick={onClose} className="text-stone-500 hover:text-stone-300"><X size={18} /></button>
+        </div>
+        {done ? (
+          <div className="text-center py-6">
+            <CheckCircle size={32} className="text-emerald-400 mx-auto mb-3" />
+            <p className="text-sm text-stone-200">{t.reportThanks}</p>
+            <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-lg text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-100 transition-colors">OK</button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {listing && (
+              <p className="text-[11px] text-stone-500 bg-stone-950/50 rounded-lg px-3 py-2 truncate">
+                {listing.title || listing.common || listing.species}
+              </p>
+            )}
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportReasonLabel}</div>
+              <select className="form-input" value={reason} onChange={e => setReason(e.target.value)}>
+                {reasons.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportNoteLabel}</div>
+              <textarea rows="3" className="form-input resize-none" value={note} onChange={e => setNote(e.target.value)}
+                        placeholder={t.reportNotePlaceholder} />
+            </div>
+            {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
+            <button onClick={send} disabled={busy}
+                    className="w-full py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors inline-flex items-center justify-center gap-2">
+              {busy && <Loader2 size={16} className="animate-spin" />}
+              {busy ? t.reportSending : t.reportSend}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAuth, lang }) {
   // Single state machine. Possible values:
   // "idle" | "requested" | "approved" | "declined" | "paid" | "handover" | "completed"
@@ -3028,6 +3117,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   const [ownerBusy, setOwnerBusy] = useState(false);
   const [ownerErr, setOwnerErr] = useState("");
   const [ownerDone, setOwnerDone] = useState("");   // success note after save
+  const [showReport, setShowReport] = useState(false);
 
   // NOTE: every hook (useState/useEffect) must run before any early return,
   // and must reference `listing` (the prop) — never the post-return `a` alias.
@@ -3389,6 +3479,19 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           </div>
         </Section>
       )}
+
+      {/* Quiet report link — present on every listing (DSA notice mechanism),
+          but visually unobtrusive. Hidden on the user's own listing. */}
+      {!isMine && (
+        <div className="px-5 md:px-8 pb-28 md:pb-24 pt-2 text-center">
+          <button onClick={() => setShowReport(true)}
+                  className="inline-flex items-center gap-1.5 text-[11px] text-stone-600 hover:text-stone-400 transition-colors">
+            <Flag size={12} />{t.reportListing}
+          </button>
+        </div>
+      )}
+
+      {showReport && <ReportSheet listing={a} t={t} lang={lang} onClose={() => setShowReport(false)} />}
 
       {/* Sticky action bar — Edit for my own listing; otherwise Message + CTA. */}
       <div className="fixed md:absolute bottom-16 md:bottom-0 inset-x-0 z-30 bg-stone-950/95 backdrop-blur-xl border-t border-stone-800 px-4 py-3">
@@ -7397,6 +7500,7 @@ function PlaceholderScreen({ title, icon, badge, t, go, lang }) {
 }
 
 function AboutContact({ t, go, lang }) {
+  const [showReport, setShowReport] = useState(false);
   return (
     <div className="max-w-2xl mx-auto w-full pb-10">
       <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
@@ -7420,7 +7524,18 @@ function AboutContact({ t, go, lang }) {
             <Mail size={16} />support@herpmarket.it
           </a>
         </div>
+        <button onClick={() => setShowReport(true)}
+                className="w-full bg-stone-900/60 ring-1 ring-stone-800 hover:ring-stone-700 rounded-xl p-5 flex items-center gap-3 text-left transition-colors">
+          <Flag size={18} className="text-stone-400 shrink-0" />
+          <div>
+            <div className="text-sm font-bold text-stone-100">{t.reportProblem}</div>
+            <div className="text-[11px] text-stone-500">
+              {lang === "it" ? "Segnala un annuncio o un comportamento scorretto." : "Report a listing or improper conduct."}
+            </div>
+          </div>
+        </button>
       </div>
+      {showReport && <ReportSheet t={t} lang={lang} onClose={() => setShowReport(false)} />}
     </div>
   );
 }

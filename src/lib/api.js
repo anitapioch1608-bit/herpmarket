@@ -704,3 +704,34 @@ export async function submitSignupRequest({ kind, plan = null, billing = null, m
   if (error) throw error;
   return true;
 }
+
+// Report a listing (or a general problem) — reuses the signup_requests table
+// and the same email-notify Edge Function. This is the DSA "notice" mechanism.
+//   reason   — short category, e.g. "Prohibited species", "Scam/fraud"
+//   listing  — optional { id, title, species } of the reported listing
+//   note     — optional free-text detail from the reporter
+export async function submitReport({ reason, listing = null, note = "" } = {}) {
+  let user_id = null, email = null, name = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      user_id = user.id;
+      email = user.email || null;
+      const { data: prof } = await supabase.from('profiles')
+        .select('display_name').eq('id', user.id).maybeSingle();
+      name = prof?.display_name || null;
+    }
+  } catch { /* logged-out reporter — still accept the report */ }
+
+  const ref = listing
+    ? `Listing: ${listing.title || listing.common || listing.species || "—"} (id ${listing.id})`
+    : "General report (no specific listing)";
+  const message = [ref, note && `Note: ${note}`].filter(Boolean).join("\n");
+
+  const { error } = await supabase.from('signup_requests').insert({
+    kind: "report", plan: reason || "Report", billing: null,
+    user_id, email, name, message,
+  });
+  if (error) throw error;
+  return true;
+}
