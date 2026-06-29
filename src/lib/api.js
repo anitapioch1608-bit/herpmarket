@@ -31,6 +31,7 @@ export function mapListing(row) {
     image: row.image_url,
     images: (row.images && row.images.length) ? row.images : (row.image_url ? [row.image_url] : []),
     shipping: row.shipping,
+    shippingCost: row.shipping_cost != null ? Number(row.shipping_cost) : null,
     euShipping: row.eu_shipping,
     localPickup: row.local_pickup,
     expoIds: row.expo_ids || [],
@@ -143,6 +144,7 @@ export async function createListing(listing, sellerId) {
     sire: listing.sire, dam: listing.dam, description: listing.desc,
     image_url: listing.image, images: listing.images || (listing.image ? [listing.image] : []),
     shipping: !!listing.shipping,
+    shipping_cost: listing.shippingCost != null ? listing.shippingCost : null,
     eu_shipping: !!listing.euShipping, local_pickup: listing.localPickup !== false,
     expo_ids: listing.expoIds || [], auction: listing.auction || null,
     status: listing.status || 'active',
@@ -192,8 +194,23 @@ export async function updateListing(id, fields) {
   if (fields.status != null) patch.status = fields.status;
   if (fields.expoIds != null) patch.expo_ids = fields.expoIds;
   if (fields.shipping != null) patch.shipping = fields.shipping;
+  if (fields.shippingCost !== undefined) patch.shipping_cost = fields.shippingCost != null ? fields.shippingCost : null;
+  if (fields.euShipping != null) patch.eu_shipping = fields.euShipping;
   if (fields.localPickup != null) patch.local_pickup = fields.localPickup;
   if (fields.auction !== undefined) patch.auction = fields.auction;
+  // Full-form edit also updates the animal's own details:
+  if (fields.species != null) patch.species = fields.species;
+  if (fields.category != null) patch.category = fields.category;
+  if (fields.traits != null) patch.traits = fields.traits;
+  if (fields.sex != null) patch.sex = fields.sex;
+  if (fields.ageMonths !== undefined) patch.age_months = fields.ageMonths;
+  if (fields.birthDate !== undefined) patch.birth_date = fields.birthDate || null;
+  if (fields.weight !== undefined) patch.weight = fields.weight || null;
+  if (fields.citesListed != null) patch.cites_listed = fields.citesListed;
+  if (fields.country != null) patch.country = fields.country;
+  if (fields.region != null) patch.region = fields.region;
+  if (fields.image !== undefined) patch.image_url = fields.image;
+  if (fields.images != null) patch.images = fields.images;
   const { data, error } = await supabase.from('listings')
     .update(patch).eq('id', id).select('*, sellers(*)').single();
   if (error) throw error;

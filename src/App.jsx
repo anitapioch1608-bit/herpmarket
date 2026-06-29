@@ -47,8 +47,8 @@ const I18N = {
     reportReasons: ["Specie vietata o illegale", "Possibile truffa o frode", "Animale non sano / maltrattamento", "Annuncio ingannevole o spam", "Contenuto inappropriato", "Altro"],
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
-    heroTitle: "Scopri i rettili e gli animali esotici premium in Italia.",
-    heroSub: "Connettiti direttamente con allevatori verificati per morph esclusivi e specie rare. Dalla documentazione CITES automatica ai ritiri sicuri e garantiti alle grandi fiere come Verona o Hamm: tutto ciò di cui hai bisogno è qui.",
+    heroTitle: "Rettili e animali esotici, dagli appassionati italiani.",
+    heroSub: "Che tu voglia trovare il tuo prossimo geco, serpente o tarantola, o presentare gli animali del tuo allevamento, HerpMarket è il punto d'incontro per chi ama i rettili e gli esotici in Italia e in Europa. Sfogliare e pubblicare è gratuito.",
     heroBtn: "Esplora il marketplace",
     browseListings: "Sfoglia annunci", sellCta: "Vendi un animale", orSep: "oppure",
     filters: "Filtri", sort: "Ordina", apply: "Applica", reset: "Reimposta",
@@ -303,8 +303,8 @@ const I18N = {
     reportReasons: ["Prohibited or illegal species", "Possible scam or fraud", "Unhealthy animal / welfare concern", "Misleading listing or spam", "Inappropriate content", "Other"],
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
-    heroTitle: "Discover Italy's Premium Reptiles & Exotic Animals.",
-    heroSub: "Connect directly with verified breeders for high-end morphs and rare species. From automated CITES documentation to secure, guaranteed pickups at major expos like Verona or Hamm—everything you need is right here.",
+    heroTitle: "Reptiles & exotic animals, from enthusiasts across Italy.",
+    heroSub: "Whether you're looking for your next gecko, snake or tarantula, or showing the animals you breed, HerpMarket is the meeting place for everyone who loves reptiles and exotics in Italy and across Europe. Browsing and listing are free.",
     heroBtn: "Browse the Marketplace",
     browseListings: "Browse listings", sellCta: "Sell an animal", orSep: "or",
     filters: "Filters", sort: "Sort", apply: "Apply", reset: "Reset",
@@ -3409,7 +3409,12 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                     <span className="font-bold text-stone-100 text-sm">{t.deliveryShip}</span>
                     <span className="font-display font-bold text-stone-50">{formatPrice(a.price)}</span>
                   </div>
-                  <p className="text-[11px] text-stone-400 mt-0.5">{t.deliveryShipDesc}</p>
+                  <p className="text-[11px] text-stone-400 mt-0.5">
+                    {t.deliveryShipDesc}
+                    {a.shippingCost != null && a.shippingCost > 0 && (
+                      <span className="text-stone-300 font-bold"> · {lang === "it" ? "Spedizione" : "Shipping"} {formatPrice(a.shippingCost)}</span>
+                    )}
+                  </p>
                 </div>
               </button>
             ) : (
@@ -4303,18 +4308,22 @@ function SellScreen({ t, lang, go, user, editListing }) {
         country, region, city: null,
         sire: null, dam: null, desc: desc.trim(),
         image: urls[0] || null, images: urls,
+        // Delivery options chosen by the seller (shared by create + edit).
+        shipping: !!shipping,
+        euShipping: false,
+        localPickup: !!localPickup,
+        expoIds: expoPickup ? selectedExpoIds : [],
+        shippingCost: shipping && shippingCost ? Number(shippingCost) : null,
       };
       if (isEdit) {
-        // Update the existing listing. Don't touch shipping/expo/auction here —
-        // edit keeps the listing's current sale type and delivery options.
+        // Update the existing listing, including its delivery options.
         const updated = await api.updateListing(editListing.id, fields);
         go("detail", updated || { ...editListing, ...fields });
         return;
       }
       const created = await api.createListing({
         ...fields,
-        shipping: false, euShipping: false, localPickup: true,
-        expoIds: [], auction,
+        auction,
       }, seller.id);
       setCreatedListing(created);
       setSuccess(true);
@@ -4331,6 +4340,14 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // Country → region
   const [country, setCountry] = useState(editListing?.country || "IT");
   const [region, setRegion] = useState(editListing?.region || "");   // empty until chosen/prefilled — prevents silent wrong default
+  // Delivery options — owned here (DeliverySection is a controlled child) so
+  // they are actually saved. Pre-filled from the listing when editing.
+  const [localPickup, setLocalPickup] = useState(isEdit ? !!editListing.localPickup : true);
+  const [expoPickup, setExpoPickup] = useState(isEdit ? !!(editListing.expoIds && editListing.expoIds.length) : false);
+  const [shipping, setShipping] = useState(isEdit ? !!editListing.shipping : false);
+  const [shippingCost, setShippingCost] = useState(isEdit && editListing.shippingCost ? String(editListing.shippingCost) : "");
+  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds : []);
+  const toggleExpoId = (id) => setSelectedExpoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   // Pre-fill location from the breeder's saved store profile (they can still
   // change it). Skip when editing — keep the listing's existing location.
@@ -4649,7 +4666,12 @@ function SellScreen({ t, lang, go, user, editListing }) {
         </FormBlock>
 
         {/* ─── Delivery options ─── */}
-        <DeliverySection lang={lang} t={t} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0} />
+        <DeliverySection lang={lang} t={t} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0}
+                         localPickup={localPickup} setLocalPickup={setLocalPickup}
+                         expoPickup={expoPickup} setExpoPickup={setExpoPickup}
+                         shipping={shipping} setShipping={setShipping}
+                         shippingCost={shippingCost} setShippingCost={setShippingCost}
+                         selectedExpoIds={selectedExpoIds} toggleExpo={toggleExpoId} />
 
         {/* Terms acceptance — only needed for a brand-new listing. */}
         {!isEdit && (
@@ -4794,18 +4816,9 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
    Expo pickup is positioned as HerpMarket's signature feature: amber accent,
    highlighted card, deposit explanation; all upcoming expos available
    as multi-select chips with date right on the chip.                       */
-function DeliverySection({ lang, t, itemPrice = 0 }) {
-  const [localPickup, setLocalPickup] = useState(true);
-  const [expoPickup, setExpoPickup] = useState(false);
-  const [shipping, setShipping] = useState(false);
-  const [shippingCost, setShippingCost] = useState("");
+function DeliverySection({ lang, t, itemPrice = 0, localPickup, setLocalPickup, expoPickup, setExpoPickup, shipping, setShipping, shippingCost, setShippingCost, selectedExpoIds, toggleExpo }) {
   const [internationalShipping, setInternationalShipping] = useState(false);
-  const [selectedExpoIds, setSelectedExpoIds] = useState([]);
   const upcomingExpos = getUpcomingExpos();
-
-  const toggleExpo = (id) => {
-    setSelectedExpoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
 
   const monthShort = lang === "it"
     ? ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"]
