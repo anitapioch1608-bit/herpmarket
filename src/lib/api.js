@@ -91,7 +91,7 @@ export function mapExpo(row) {
 // ── LISTINGS ────────────────────────────────────────────────────────────────
 export async function fetchListings(filter = {}) {
   let q = supabase.from('listings')
-    .select('*, sellers(name, store_name, verified, seller_type, rating, review_count, country, owner_id)')
+    .select('*, sellers(*)')
     .eq('status', 'active');
 
   if (filter.category)  q = q.eq('category', filter.category);
@@ -126,7 +126,7 @@ export async function fetchListingsBySeller(sellerName) {
   // PostgREST .or() filter syntax (which is comma-delimited).
   const safe = `"${String(sellerName).replace(/"/g, '')}"`;
   const { data, error } = await supabase.from('listings')
-    .select('*, sellers!inner(name, store_name, verified, seller_type, rating, review_count, country, owner_id)')
+    .select('*, sellers!inner(*)')
     .or(`name.eq.${safe},store_name.eq.${safe}`, { foreignTable: 'sellers' })
     .eq('status', 'active');
   if (error) throw error;
