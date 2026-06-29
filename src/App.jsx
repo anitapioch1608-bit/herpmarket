@@ -74,7 +74,7 @@ const I18N = {
     txRequest: "Richiedi acquisto", txRequestExpo: "Richiedi prenotazione fiera",
     deliveryChoose: "Come vuoi ricevere l'animale?",
     deliveryShip: "Acquista e spedisci", deliveryShipDesc: "Pagamento completo, spedizione con corriere abilitato",
-    deliveryExpo: "Prenota per la fiera", deliveryExpoDesc: "Acconto 10%, ritiro allo stand del venditore",
+    deliveryExpo: "Prenota per la fiera", deliveryExpoDesc: "Acconto da concordare, ritiro allo stand del venditore",
     noShipping: "Spedizione non disponibile", noShippingDesc: "Questo venditore non spedisce questo esemplare. Disponibile solo per ritiro alle fiere indicate sotto.",
     availableAtExpos: "Disponibile a queste fiere", noExpoNoShip: "Nessuna opzione di consegna impostata dal venditore. Contattalo via messaggio.",
     buyAndShip: "Acquista e spedisci",
@@ -146,6 +146,9 @@ const I18N = {
     spSpecialties: "Specializzazioni (separate da virgola)", spSpecialtiesPh: "es. Correlophus ciliatus, Python regius",
     spSave: "Salva modifiche", spSaved: "Modifiche salvate!", spNameTaken: "Questo nome è già in uso, scegline un altro.",
     spStoreName: "Nome del negozio", spStoreNameHint: "Facoltativo. Se impostato, gli acquirenti vedranno e cercheranno questo nome invece del tuo nome reale.",
+    spSellerType: "Vendo come", spSellerTypePro: "Professionale (P.IVA)", spSellerTypePrivate: "Privato",
+    spSellerTypeHint: "Indica se vendi come attività professionale (con Partita IVA) o come privato. Questa informazione è mostrata negli annunci: per gli acquisti da privati non si applicano alcune tutele del Codice del Consumo.",
+    sellerBadgePro: "Venditore professionale", sellerBadgePrivate: "Venditore privato",
     spView: "Vedi la tua pagina pubblica",
     pickSpecies: "Seleziona specie", pickTraits: "Aggiungi tratti", describePlaceholder: "Carattere, alimentazione, condizioni di salute…",
     typeMessage: "Scrivi un messaggio…",
@@ -248,7 +251,7 @@ const I18N = {
     emptyWishlist: "Nessun esemplare salvato. Tocca il cuore per aggiungere.",
     backToBrowse: "Torna agli annunci",
     legalIntro: "Il mercato italiano dei rettili è regolato dal D.Lgs. 135/2022 e dal Reg. CE 338/97. Verifica sempre la categoria CITES prima di acquistare.",
-    depositNotice: "L'acconto del 10% blocca l'esemplare fino al ritiro in fiera. Non rimborsabile.",
+    depositNotice: "Un eventuale acconto, da concordare con il venditore, blocca l'esemplare fino al ritiro in fiera.",
     realPhoto: "Foto dell'esemplare",
     auction: "Asta", auctionLabel: "ASTA", auctionLive: "Asta in corso", startPrice: "Prezzo di partenza", currentBid: "Offerta attuale",
     placeBid: "Fai un'offerta", yourBid: "La tua offerta", bidCount: "offerte", bids: "offerte",
@@ -267,7 +270,7 @@ const I18N = {
     crossBorderEu: "Questo esemplare proviene da un altro Paese UE. Per il trasporto è richiesta la registrazione TRACES e, per le specie CITES Allegato A/B, la documentazione di movimento intra-UE.",
     crossBorderCh: "Attenzione: questo Paese non fa parte dell'UE. Il movimento di animali vivi da/verso l'UE attraversa una frontiera doganale e richiede controlli veterinari di confine e permessi di importazione/esportazione. Verifica i requisiti prima di procedere.",
     sellerCountryLabel: "Paese del venditore", countryLabel: "Paese", anyCountry: "Tutti i Paesi", clearFilters: "Cancella filtri", viewMyListing: "Vedi il mio annuncio", msgSending: "Invio…", msgSent: "Inviato", verifyBannerTitle: "Verifica il tuo account", verifyBannerSub: "Ottieni la spunta blu e aumenta la fiducia degli acquirenti.",
-    nextStepsTitle: "Prossimi passi", nextStepsExpo: (name, date) => `Il venditore ti incontrerà a ${name}${date ? " il " + date : ""}. L'acconto del 10% resta protetto dal sistema di pagamento fino alla consegna.`, nextStepsExpoGeneric: "Il venditore ti incontrerà alla fiera concordata. L'acconto del 10% resta protetto fino alla consegna.", nextStepsShipping: "Il venditore ti contatterà in chat per concordare la spedizione (di solito lun–mer). Riceverai qui i dettagli di tracciamento.",
+    nextStepsTitle: "Prossimi passi", nextStepsExpo: (name, date) => `Il venditore ti incontrerà a ${name}${date ? " il " + date : ""}. Concorda con il venditore l'eventuale acconto e il pagamento del saldo al ritiro.`, nextStepsExpoGeneric: "Il venditore ti incontrerà alla fiera concordata. Concorda con il venditore l'eventuale acconto e il saldo al ritiro.", nextStepsShipping: "Il venditore ti contatterà in chat per concordare la spedizione (di solito lun–mer). Riceverai qui i dettagli di tracciamento.",
     resultsCount: (n) => `${n} ${n === 1 ? "annuncio trovato" : "annunci trovati"}`,
     secureCheckout: "Pagamento sicuro",
     payNow: "Paga",
@@ -327,7 +330,7 @@ const I18N = {
     txRequest: "Request to buy", txRequestExpo: "Request expo reservation",
     deliveryChoose: "How do you want to receive the animal?",
     deliveryShip: "Buy & ship", deliveryShipDesc: "Full payment, delivery by authorised courier",
-    deliveryExpo: "Reserve for expo", deliveryExpoDesc: "10% deposit, pickup at the seller's stand",
+    deliveryExpo: "Reserve for expo", deliveryExpoDesc: "Deposit by arrangement, pickup at the seller's stand",
     noShipping: "Shipping not available", noShippingDesc: "This seller does not ship this animal. Available only for pickup at the expos listed below.",
     availableAtExpos: "Available at these expos", noExpoNoShip: "No delivery option set by the seller. Contact them by message.",
     buyAndShip: "Buy & ship",
@@ -399,6 +402,9 @@ const I18N = {
     spSpecialties: "Specialties (comma-separated)", spSpecialtiesPh: "e.g. Correlophus ciliatus, Python regius",
     spSave: "Save changes", spSaved: "Changes saved!", spNameTaken: "That name is already taken, choose another.",
     spStoreName: "Store name", spStoreNameHint: "Optional. If set, buyers will see and search for this name instead of your real name.",
+    spSellerType: "I sell as", spSellerTypePro: "Professional (VAT)", spSellerTypePrivate: "Private individual",
+    spSellerTypeHint: "State whether you sell as a professional business (VAT-registered) or as a private individual. This is shown on your listings: some Consumer Code protections do not apply to purchases from private sellers.",
+    sellerBadgePro: "Professional seller", sellerBadgePrivate: "Private seller",
     spView: "View your public page",
     pickSpecies: "Select species", pickTraits: "Add traits", describePlaceholder: "Temperament, feeding, health…",
     typeMessage: "Type a message…",
@@ -497,7 +503,7 @@ const I18N = {
     emptyWishlist: "No saved animals yet. Tap the heart to add.",
     backToBrowse: "Back to listings",
     legalIntro: "The Italian reptile market is governed by D.Lgs. 135/2022 and EU Reg. 338/97. Always check the CITES annex before buying.",
-    depositNotice: "A 10% deposit reserves the animal until expo pickup. Non-refundable.",
+    depositNotice: "An optional deposit, arranged with the seller, reserves the animal until expo pickup.",
     realPhoto: "Animal photo",
     auction: "Auction", auctionLabel: "AUCTION", auctionLive: "Auction live", startPrice: "Starting price", currentBid: "Current bid",
     placeBid: "Place a bid", yourBid: "Your bid", bidCount: "bids", bids: "bids",
@@ -516,7 +522,7 @@ const I18N = {
     crossBorderEu: "This animal is located in another EU country. Transport requires TRACES registration and, for CITES Annex A/B species, intra-EU movement documentation.",
     crossBorderCh: "Note: this country is not part of the EU. Moving live animals to/from the EU crosses a customs border and requires border veterinary checks and import/export permits. Check the requirements before proceeding.",
     sellerCountryLabel: "Seller country", countryLabel: "Country", anyCountry: "All countries", clearFilters: "Clear filters", viewMyListing: "View my listing", msgSending: "Sending…", msgSent: "Sent", verifyBannerTitle: "Verify your account", verifyBannerSub: "Get the blue check and build buyer trust.",
-    nextStepsTitle: "Next steps", nextStepsExpo: (name, date) => `The seller will meet you at ${name}${date ? " on " + date : ""}. Your 10% deposit is held securely by the payment provider until handover.`, nextStepsExpoGeneric: "The seller will meet you at the agreed expo. Your 10% deposit is held securely until handover.", nextStepsShipping: "The seller will contact you in chat to confirm shipping (usually Mon–Wed). You'll receive tracking details here.",
+    nextStepsTitle: "Next steps", nextStepsExpo: (name, date) => `The seller will meet you at ${name}${date ? " on " + date : ""}. Arrange any deposit and the balance due at pickup directly with the seller.`, nextStepsExpoGeneric: "The seller will meet you at the agreed expo. Arrange any deposit and the balance at pickup directly with the seller.", nextStepsShipping: "The seller will contact you in chat to confirm shipping (usually Mon–Wed). You'll receive tracking details here.",
     resultsCount: (n) => `${n} ${n === 1 ? "listing" : "listings"} found`,
     secureCheckout: "Secure checkout",
     payNow: "Pay",
@@ -3338,9 +3344,12 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
             {(a.seller || "?")[0]}
           </div>
           <div className="flex-1">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="font-bold text-stone-100 text-sm group-hover:text-amber-300 transition-colors">{a.seller || "—"}</span>
               {a.verified && <ShieldCheck size={14} className="text-sky-400" />}
+              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ring-1 ${a.sellerType === "professional" ? "text-emerald-300 bg-emerald-500/10 ring-emerald-500/25" : "text-stone-400 bg-stone-800/60 ring-stone-700"}`}>
+                {a.sellerType === "professional" ? t.sellerBadgePro : t.sellerBadgePrivate}
+              </span>
             </div>
             <div className="flex items-center gap-1 text-xs text-stone-400 mt-0.5">
               {a.reviews > 0 ? (
@@ -4831,8 +4840,8 @@ function DeliverySection({ lang, t, itemPrice = 0 }) {
               </div>
               <p className="text-[11px] text-stone-400 leading-relaxed">
                 {lang === "it"
-                  ? "Acconto 10% al momento della prenotazione, animale bloccato fino al ritiro al tuo stand. Maggiore protezione per acquirente e venditore."
-                  : "10% deposit at booking, animal reserved until pickup at your stand. Better protection for both parties."}
+                  ? "Acconto facoltativo da concordare, animale bloccato fino al ritiro al tuo stand."
+                  : "Optional deposit by arrangement, animal reserved until pickup at your stand."}
               </p>
             </div>
           </label>
@@ -6098,6 +6107,7 @@ function EditStoreScreen({ t, lang, go, user }) {
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");
   const [storeName, setStoreName] = useState("");
+  const [sellerType, setSellerType] = useState("private");
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [specs, setSpecs] = useState("");
@@ -6127,6 +6137,7 @@ function EditStoreScreen({ t, lang, go, user }) {
           setSeller(s);
           setName(s.name || "");
           setStoreName(s.storeName || "");
+          setSellerType(s.sellerType === "professional" ? "professional" : "private");
           setCity(s.city || "");
           setBio(s.bioIt || "");
           setSpecs((s.specialties || []).join(", "));
@@ -6160,6 +6171,7 @@ function EditStoreScreen({ t, lang, go, user }) {
       const fields = {
         name: name.trim() || seller.name,
         storeName: storeName.trim(),
+        sellerType,
         city: city.trim(),
         bio: bio.trim(),
         specialties: specs.split(",").map(s => s.trim()).filter(Boolean),
@@ -6214,6 +6226,18 @@ function EditStoreScreen({ t, lang, go, user }) {
               <input className="form-input" value={storeName} onChange={e => setStoreName(e.target.value)}
                      placeholder={lang === "it" ? "es. GeckosAndChameleons (facoltativo)" : "e.g. GeckosAndChameleons (optional)"} />
               <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">{t.spStoreNameHint}</p>
+            </FormBlock>
+
+            <FormBlock label={t.spSellerType}>
+              <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1">
+                {[["private", t.spSellerTypePrivate], ["professional", t.spSellerTypePro]].map(([key, label]) => (
+                  <button type="button" key={key} onClick={() => setSellerType(key)}
+                          className={`flex-1 py-2.5 rounded-md text-xs font-bold transition-colors ${sellerType === key ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">{t.spSellerTypeHint}</p>
             </FormBlock>
 
             <FormBlock label={t.spCity}>

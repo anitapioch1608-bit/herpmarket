@@ -42,6 +42,7 @@ export function mapListing(row) {
     sellerId: row.seller_id || row.sellers?.id || null,
     sellerOwnerId: row.sellers?.owner_id || null,
     verified: row.sellers?.verified ?? false,
+    sellerType: row.sellers?.seller_type || 'private',
     rating: row.sellers?.rating ?? 0,
     reviews: row.sellers?.review_count ?? 0,
     status: row.status,
@@ -60,6 +61,7 @@ export function mapSeller(row) {
     region: row.region,
     city: row.city,
     verified: row.verified,
+    sellerType: row.seller_type || 'private',
     memberSince: row.member_since,
     totalSales: row.total_sales,
     rating: Number(row.rating || 0),
@@ -88,7 +90,7 @@ export function mapExpo(row) {
 // ── LISTINGS ────────────────────────────────────────────────────────────────
 export async function fetchListings(filter = {}) {
   let q = supabase.from('listings')
-    .select('*, sellers(name, store_name, verified, rating, review_count, country, owner_id)')
+    .select('*, sellers(name, store_name, verified, seller_type, rating, review_count, country, owner_id)')
     .eq('status', 'active');
 
   if (filter.category)  q = q.eq('category', filter.category);
@@ -123,7 +125,7 @@ export async function fetchListingsBySeller(sellerName) {
   // PostgREST .or() filter syntax (which is comma-delimited).
   const safe = `"${String(sellerName).replace(/"/g, '')}"`;
   const { data, error } = await supabase.from('listings')
-    .select('*, sellers!inner(name, store_name, verified, rating, review_count, country, owner_id)')
+    .select('*, sellers!inner(name, store_name, verified, seller_type, rating, review_count, country, owner_id)')
     .or(`name.eq.${safe},store_name.eq.${safe}`, { foreignTable: 'sellers' })
     .eq('status', 'active');
   if (error) throw error;
@@ -410,6 +412,9 @@ export async function updateMySeller(sellerId, fields) {
   if (fields.specialties != null) patch.specialties = fields.specialties;
   if (fields.avatarUrl != null) patch.avatar_url = fields.avatarUrl;
   if (fields.website != null) patch.website = fields.website;
+  if (fields.sellerType != null && (fields.sellerType === 'professional' || fields.sellerType === 'private')) {
+    patch.seller_type = fields.sellerType;
+  }
   const { data, error } = await supabase.from('sellers')
     .update(patch).eq('id', sellerId).select().single();
   if (error) throw error;
