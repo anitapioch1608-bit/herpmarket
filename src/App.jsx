@@ -1208,9 +1208,10 @@ const fallback = (label) =>
    MAIN APP
    ═════════════════════════════════════════════════════════════════ */
 // Site-wide access password for the private pre-launch phase.
-// Set VITE_SITE_PASSWORD in .env.local and in Vercel. If left empty, the gate
-// is disabled (so local dev isn't blocked when no password is configured).
-const SITE_PW = import.meta.env.VITE_SITE_PASSWORD || "";
+// DISABLED — the site is now open to the public (the gate was stopping testers
+// from even trying). To re-enable a private phase later, restore:
+//   const SITE_PW = import.meta.env.VITE_SITE_PASSWORD || "";
+const SITE_PW = "";
 
 /* ───── Stale-deploy recovery ──────────────────────────────────────
    The app loads code lazily via import("./lib/api"). After a new deploy,
@@ -3065,7 +3066,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   const paymentAmount = isExpoFlow ? a.deposit : a.price;
   const expo = isExpoFlow ? (listingExpos.find(e => e.id === selectedExpoId) || listingExpos[0]) : null;
   // CITES required for Annex A (tortoises) and many Annex B (chameleons, large pythons etc.)
-  const requiresCITES = a.category === "tortoises" || a.category === "chameleons";
+  const requiresCITES = !!a.citesListed;
 
   // Which collection bucket is this animal in (mirrors My Listings logic).
   const ownerBucket = a.status === "sold" ? "sold" : a.status === "held" ? "held" : a.status === "breeder" ? "breeder" : "active";
@@ -4140,7 +4141,6 @@ function SellScreen({ t, lang, go, user, editListing }) {
     if (isAuction && reserve && Number(reserve) < basePrice) { setSaveErr(t.reserveTooLow); return; }
     if (!user?.id) { setSaveErr(t.needLoginPub); return; }
     if (!region || !region.trim()) { setSaveErr(t.needRegion); return; }
-    if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
     try {
       const api = await loadApi();
@@ -4252,15 +4252,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pre-tick CITES (and force a full birth date) when the chosen species is on our list.
-  // Skip the first run when editing so we keep the listing's stored CITES value.
-  const didMountCites = useRef(false);
-  useEffect(() => {
-    if (isEdit && !didMountCites.current) { didMountCites.current = true; return; }
-    const c = isCitesSpecies(speciesVal);
-    setIsCites(c);
-    if (c) setBornPrecision("day");
-  }, [speciesVal]);
+  // NOTE: CITES is intentionally NOT auto-ticked. The seller decides and
+  // declares it themselves (the checkbox block highlights known listed species
+  // and prompts the seller, but never ticks on their behalf).
 
   const subcats = catId ? subcatsFor(catId) : [];
   const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
@@ -4446,7 +4440,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
               ["month", lang === "it" ? "Mese e anno" : "Month & year"],
               ["year",  lang === "it" ? "Solo anno" : "Year only"],
             ].map(([key, label]) => {
-              const locked = isCites && key !== "day";
+              const locked = false;  // CITES no longer forces exact date — seller chooses
               return (
                 <button type="button" key={key} disabled={locked}
                         onClick={() => { setBornPrecision(key); setBorn(""); }}
@@ -4479,22 +4473,43 @@ function SellScreen({ t, lang, go, user, editListing }) {
                  placeholder={lang === "it" ? "es. 38g (facoltativo)" : "e.g. 38g (optional)"} />
         </FormBlock>
 
-        {/* CITES self-declaration. Pre-ticked from our best-effort list when the
-            species is selected; the breeder can override and remains responsible. */}
-        <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" checked={isCites}
-                   onChange={() => { const v = !isCites; setIsCites(v); if (v) { setBornPrecision("day"); setBorn(""); } }}
-                   className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <FileText size={15} className={isCites ? "text-amber-400" : "text-stone-400"} />
-                <span className="font-bold text-stone-100 text-sm">{t.citesCheckLabel}</span>
-              </div>
-              <p className="text-[11px] text-stone-400 leading-relaxed">{t.citesCheckHint}</p>
+        {/* CITES self-declaration — the SELLER decides. Never auto-ticked.
+            For known listed species we highlight the box and prompt the seller
+            to tick it. Ticking is the seller's agreement that they hold the
+            original documents and accept the marketplace rules. */}
+        {(() => {
+          const known = isCitesSpecies(speciesVal);
+          return (
+            <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/10 ring-amber-500/40" : known ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
+              {known && !isCites && (
+                <div className="flex items-start gap-2 mb-3 text-amber-300">
+                  <Info size={15} className="shrink-0 mt-0.5" />
+                  <p className="text-[11px] leading-relaxed font-bold">
+                    {lang === "it"
+                      ? "Questa specie è generalmente soggetta a CITES. Se lo è, spunta la casella qui sotto secondo i Termini e le regole del marketplace."
+                      : "This species is commonly CITES-listed. If yours is, please tick the box below in line with the Terms and marketplace rules."}
+                  </p>
+                </div>
+              )}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={isCites}
+                       onChange={() => setIsCites(!isCites)}
+                       className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <FileText size={15} className={isCites ? "text-amber-400" : "text-stone-400"} />
+                    <span className="font-bold text-stone-100 text-sm">{t.citesCheckLabel}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">
+                    {lang === "it"
+                      ? "Dichiaro che questo esemplare è una specie CITES, di aver letto e accettato i Termini e le regole del marketplace, e di possedere i documenti originali (es. certificato CITES / prova di origine) pronti per il trasferimento all'acquirente. La spunta consente anche la futura generazione dei documenti CITES."
+                      : "I declare this animal is a CITES species, that I have read and agree to the Terms and marketplace rules, and that I hold the original documents (e.g. CITES certificate / proof of origin) ready to transfer to the buyer. Ticking also enables future CITES document generation."}
+                  </p>
+                </div>
+              </label>
             </div>
-          </label>
-        </div>
+          );
+        })()}
 
         {/* Country → region cascade */}
         <div className="grid grid-cols-2 gap-3">
@@ -5693,11 +5708,8 @@ function AddAnimalScreen({ t, lang, go, user }) {
   }, [user?.id]);
 
   useEffect(() => { setSelectedTraits([]); }, [catId, speciesVal]);
-  useEffect(() => {
-    const c = isCitesSpecies(speciesVal);
-    setIsCites(c);
-    if (c) setBornPrecision("day");
-  }, [speciesVal]);
+  // CITES is seller-declared, not auto-ticked (the checkbox highlights known
+  // listed species but never ticks on the seller's behalf).
 
   const subcats = catId ? subcatsFor(catId) : [];
   const speciesOptions = (catId && subcatId) ? speciesForSubcat(catId, subcatId) : [];
@@ -5739,7 +5751,6 @@ function AddAnimalScreen({ t, lang, go, user }) {
   const save = async () => {
     setSaveErr("");
     if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
-    if (isCites && !/^\d{4}-\d{1,2}-\d{1,2}$/.test((born || "").trim())) { setSaveErr(t.needFullBirth); return; }
     setSaving(true);
     try {
       const api = await loadApi();
@@ -5909,10 +5920,10 @@ function AddAnimalScreen({ t, lang, go, user }) {
         </div>
 
         {/* Birth date with precision */}
-        <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
+        <FormBlock label={t.born} done={!!born}>
           <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
             {[["day", lang === "it" ? "Data esatta" : "Exact date"], ["month", lang === "it" ? "Mese e anno" : "Month & year"], ["year", lang === "it" ? "Solo anno" : "Year only"]].map(([key, label]) => {
-              const locked = isCites && key !== "day";
+              const locked = false;  // CITES no longer forces exact date
               return (
                 <button type="button" key={key} disabled={locked} onClick={() => { setBornPrecision(key); setBorn(""); }}
                         className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${bornPrecision === key ? "bg-amber-500 text-stone-950" : locked ? "text-stone-700 cursor-not-allowed" : "text-stone-400 hover:text-stone-200"}`}>
@@ -5930,20 +5941,39 @@ function AddAnimalScreen({ t, lang, go, user }) {
           <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)} placeholder={lang === "it" ? "es. 38g (facoltativo)" : "e.g. 38g (optional)"} />
         </FormBlock>
 
-        {/* CITES */}
-        <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" checked={isCites} onChange={() => { const v = !isCites; setIsCites(v); if (v) { setBornPrecision("day"); setBorn(""); } }}
-                   className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <FileText size={15} className={isCites ? "text-amber-400" : "text-stone-400"} />
-                <span className="font-bold text-stone-100 text-sm">{t.citesCheckLabel}</span>
-              </div>
-              <p className="text-[11px] text-stone-400 leading-relaxed">{t.citesCheckHint}</p>
+        {/* CITES — seller-controlled declaration (same model as the sell form). */}
+        {(() => {
+          const known = isCitesSpecies(speciesVal);
+          return (
+            <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/10 ring-amber-500/40" : known ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
+              {known && !isCites && (
+                <div className="flex items-start gap-2 mb-3 text-amber-300">
+                  <Info size={15} className="shrink-0 mt-0.5" />
+                  <p className="text-[11px] leading-relaxed font-bold">
+                    {lang === "it"
+                      ? "Questa specie è generalmente soggetta a CITES. Se lo è, spunta la casella qui sotto secondo i Termini e le regole del marketplace."
+                      : "This species is commonly CITES-listed. If yours is, please tick the box below in line with the Terms and marketplace rules."}
+                  </p>
+                </div>
+              )}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={isCites} onChange={() => setIsCites(!isCites)}
+                       className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <FileText size={15} className={isCites ? "text-amber-400" : "text-stone-400"} />
+                    <span className="font-bold text-stone-100 text-sm">{t.citesCheckLabel}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">
+                    {lang === "it"
+                      ? "Dichiaro che questo esemplare è una specie CITES, di aver letto e accettato i Termini e le regole del marketplace, e di possedere i documenti originali (es. certificato CITES / prova di origine) pronti per il trasferimento all'acquirente. La spunta consente anche la futura generazione dei documenti CITES."
+                      : "I declare this animal is a CITES species, that I have read and agree to the Terms and marketplace rules, and that I hold the original documents (e.g. CITES certificate / proof of origin) ready to transfer to the buyer. Ticking also enables future CITES document generation."}
+                  </p>
+                </div>
+              </label>
             </div>
-          </label>
-        </div>
+          );
+        })()}
 
         <FormBlock label={t.description}>
           <textarea rows="3" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
