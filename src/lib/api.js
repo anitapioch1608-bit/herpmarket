@@ -352,7 +352,7 @@ export async function uploadKycDoc(userId, kind, file) {
 // Save doc paths + ASL number and move the seller to 'pending' review.
 export async function submitKyc(userId, { visuraPath, docPath, asl }) {
   const { data: seller } = await supabase.from('sellers')
-    .select('id').eq('owner_id', userId).maybeSingle();
+    .select('id, name, store_name').eq('owner_id', userId).maybeSingle();
   if (!seller) throw new Error('No seller profile yet');
   const patch = { kyc_status: 'pending', kyc_submitted_at: new Date().toISOString() };
   if (visuraPath) patch.kyc_visura_path = visuraPath;
@@ -360,6 +360,21 @@ export async function submitKyc(userId, { visuraPath, docPath, asl }) {
   if (asl) patch.kyc_asl = asl;
   const { error } = await supabase.from('sellers').update(patch).eq('id', seller.id);
   if (error) throw error;
+
+  // Notify you (via the same email pipeline as plan/report requests) so you
+  // know a verification request is waiting. Failure here must NOT break the
+  // submission itself — the status is already saved above.
+  try {
+    let email = null, name = seller.store_name || seller.name || null;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) email = user.email || null;
+    await supabase.from('signup_requests').insert({
+      kind: 'verification',
+      plan: 'Breeder verification request',
+      user_id: userId, email, name,
+      message: `Seller "${seller.store_name || seller.name || '—'}" requested verification. Review documents in the sellers table (kyc_status = pending) and set verified = true to approve.`,
+    });
+  } catch (e) { /* non-fatal: submission already succeeded */ }
   return true;
 }
 

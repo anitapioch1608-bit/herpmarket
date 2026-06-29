@@ -7560,7 +7560,7 @@ function AboutContact({ t, go, lang }) {
 
 const TOS_CONTENT = {
   effectiveDate: { it: "1 gennaio 2026", en: "1 January 2026" },
-  version: "1.0 (bozza)",
+  version: "1.0",
   sections: [
     {
       id: "1", title: { it: "Premesse e definizioni", en: "Background and definitions" }, review: false,
@@ -7626,16 +7626,16 @@ const TOS_CONTENT = {
       id: "5", title: { it: "Conclusione del contratto e pagamenti", en: "Contract formation and payments" }, review: true,
       body: {
         it: [
-          "Il contratto di compravendita si conclude direttamente tra Acquirente e Venditore. HerpMarket fornisce strumenti per facilitare la transazione (richiesta di acquisto, approvazione del venditore, pagamento sicuro tramite il provider di pagamento, generazione documentale) ma resta estraneo al rapporto contrattuale.",
-          "L'Acquirente effettua una richiesta di acquisto tramite la piattaforma. Il Venditore può approvare o rifiutare la richiesta. Nessun pagamento è dovuto fino all'approvazione del Venditore.",
-          "Una volta approvata la richiesta, l'Acquirente versa l'acconto (per ritiro in fiera) o il pagamento integrale (per spedizione o ritiro presso il Venditore) tramite il provider di pagamento integrato. Il versamento al Venditore è gestito come pagamento differito direttamente dal provider di pagamento (Stripe) e rilasciato alla conferma reciproca della consegna. HerpMarket non detiene in alcun momento i fondi.",
-          "Gli acconti versati per il ritiro in fiera non sono rimborsabili in caso di mancato ritiro da parte dell'Acquirente per causa a lui imputabile.",
+          "Il contratto di compravendita si conclude direttamente tra Acquirente e Venditore. HerpMarket fornisce strumenti per facilitare il contatto (richiesta di acquisto, approvazione del venditore, messaggistica, generazione documentale) ma resta estraneo al rapporto contrattuale.",
+          "L'Acquirente effettua una richiesta di acquisto tramite la piattaforma. Il Venditore può approvare o rifiutare la richiesta.",
+          "In questa fase iniziale il pagamento e la consegna sono concordati e regolati direttamente tra Acquirente e Venditore: HerpMarket non incassa né detiene in alcun momento i fondi. È prevista la futura introduzione di un sistema di pagamento integrato che gestirà il versamento al Venditore come pagamento differito rilasciato alla conferma reciproca della consegna; una volta attivo, le presenti condizioni saranno aggiornate di conseguenza.",
+          "Eventuali acconti concordati tra le parti per il ritiro in fiera non sono rimborsabili in caso di mancato ritiro da parte dell'Acquirente per causa a lui imputabile, salvo diverso accordo tra le parti.",
         ],
         en: [
-          "The sale contract is concluded directly between Buyer and Seller. HerpMarket provides tools to facilitate the transaction (purchase request, seller approval, secure payment via the payment provider, document generation) but is not a party to the contractual relationship.",
-          "The Buyer submits a purchase request via the platform. The Seller may approve or decline the request. No payment is due until Seller approval.",
-          "Once approved, the Buyer pays the deposit (for expo pickup) or the full amount (for shipping or seller pickup) via the integrated payment provider. The payout to the Seller is handled as a delayed payout directly by the payment processor (Stripe) and released upon mutual handover confirmation. HerpMarket never holds the funds at any point.",
-          "Deposits paid for expo pickup are non-refundable where the Buyer fails to collect the Specimen for reasons attributable to them.",
+          "The sale contract is concluded directly between Buyer and Seller. HerpMarket provides tools to facilitate contact (purchase request, seller approval, messaging, document generation) but is not a party to the contractual relationship.",
+          "The Buyer submits a purchase request via the platform. The Seller may approve or decline the request.",
+          "In this initial phase, payment and delivery are agreed and settled directly between Buyer and Seller: HerpMarket never collects or holds funds at any point. An integrated payment system is planned for the future, which will handle the payout to the Seller as a delayed payout released upon mutual handover confirmation; once active, these terms will be updated accordingly.",
+          "Any deposits agreed between the parties for expo pickup are non-refundable where the Buyer fails to collect for reasons attributable to them, unless the parties agree otherwise.",
         ],
       },
     },
@@ -7657,13 +7657,13 @@ const TOS_CONTENT = {
       body: {
         it: [
           "HerpMarket non applica attualmente alcuna commissione né ai Venditori né agli Acquirenti. La piattaforma è gratuita.",
-          "I pagamenti tra Acquirenti e Venditori sono elaborati direttamente tramite Stripe Connect: i fondi transitano dall'Acquirente al conto Stripe del Venditore senza essere trattenuti su conti di HerpMarket. HerpMarket non è in possesso dei fondi degli Utenti in nessun momento e non opera come prestatore di servizi di pagamento ai sensi della Direttiva PSD2.",
+          "Allo stato attuale i pagamenti sono concordati e regolati direttamente tra Acquirente e Venditore, al di fuori della piattaforma: HerpMarket non è in possesso dei fondi degli Utenti in nessun momento e non opera come prestatore di servizi di pagamento ai sensi della Direttiva PSD2. È prevista la futura introduzione di un sistema di pagamento integrato (es. Stripe Connect) in cui i fondi transiteranno dall'Acquirente al conto del Venditore senza essere trattenuti da HerpMarket.",
           "HerpMarket può mostrare contenuti commerciali sponsorizzati (banner di partner del settore: produttori di alimenti, terrari, accessori). Tali contenuti sono direttamente venduti da HerpMarket ai singoli sponsor, sono sempre chiaramente identificati con la dicitura «Sponsor» e non comportano l'uso di pixel di tracciamento, cookie pubblicitari o reti pubblicitarie di terze parti.",
           "HerpMarket si riserva il diritto di introdurre in futuro piani a pagamento o commissioni, dandone comunicazione agli Utenti almeno 30 giorni prima dell'entrata in vigore. In tal caso gli Utenti potranno recedere senza penali entro tale termine.",
         ],
         en: [
           "HerpMarket does not currently charge any commission to Sellers or Buyers. The platform is free to use.",
-          "Payments between Buyers and Sellers are processed directly via Stripe Connect: funds flow from the Buyer to the Seller's Stripe account without being held in HerpMarket accounts. HerpMarket never holds User funds and does not operate as a payment service provider under PSD2.",
+          "At present, payments are agreed and settled directly between Buyer and Seller, outside the platform: HerpMarket never holds User funds and does not operate as a payment service provider under PSD2. An integrated payment system (e.g. Stripe Connect) is planned for the future, in which funds will flow from the Buyer to the Seller's account without being held by HerpMarket.",
           "HerpMarket may display sponsored commercial content (banners from industry partners: food, terraria and accessory brands). Such content is sold directly by HerpMarket to individual sponsors, is always clearly identified with a 'Sponsor' label, and does not use tracking pixels, advertising cookies or third-party ad networks.",
           "HerpMarket reserves the right to introduce paid plans or commissions in the future, with at least 30 days' notice to Users. In that case Users may withdraw without penalty within that period.",
         ],
@@ -7734,7 +7734,65 @@ const TOS_CONTENT = {
       },
     },
     {
-      id: "12", title: { it: "Legge applicabile e foro competente", en: "Governing law and jurisdiction" }, review: true,
+      id: "12", title: { it: "Venditori professionali e privati", en: "Professional and private sellers" }, review: false,
+      body: {
+        it: [
+          "Sulla piattaforma operano sia venditori professionali (titolari di Partita IVA che agiscono nell'ambito della propria attività) sia venditori privati (privati che cedono occasionalmente esemplari del proprio allevamento amatoriale). Ai sensi dell'art. 6-bis del Codice del Consumo, HerpMarket indica per ciascun annuncio se il venditore ha dichiarato di agire come professionista o come privato.",
+          "Quando l'acquisto avviene da un venditore privato, le tutele del Codice del Consumo riservate ai contratti tra professionista e consumatore (tra cui il diritto di recesso e la garanzia legale di conformità) non si applicano. Il contratto è regolato dalle norme del Codice Civile sulla compravendita tra privati.",
+          "Ogni venditore è tenuto a dichiarare correttamente la propria qualità. HerpMarket si basa su tale dichiarazione e non ne garantisce l'esattezza; la responsabilità della corretta qualificazione resta in capo al venditore.",
+        ],
+        en: [
+          "Both professional sellers (VAT-registered persons acting within their business) and private sellers (individuals occasionally rehoming animals from their hobby breeding) operate on the platform. In accordance with art. 6-bis of the Italian Consumer Code, HerpMarket indicates for each listing whether the seller has declared they act as a professional or as a private individual.",
+          "When you buy from a private seller, the Consumer Code protections reserved for professional-to-consumer contracts (including the right of withdrawal and the legal guarantee of conformity) do not apply. The contract is governed by the Italian Civil Code rules on sales between private parties.",
+          "Each seller must declare their status correctly. HerpMarket relies on that declaration and does not guarantee its accuracy; responsibility for correct qualification rests with the seller.",
+        ],
+      },
+    },
+    {
+      id: "13", title: { it: "Moderazione dei contenuti", en: "Content moderation" }, review: false,
+      body: {
+        it: [
+          "HerpMarket non effettua un controllo preventivo sistematico degli annunci: gli annunci sono pubblicati immediatamente sotto la piena responsabilità del venditore. Ciò consente un funzionamento agile del marketplace ma comporta che HerpMarket non verifica anticipatamente la liceità, l'accuratezza o la conformità di ciascun annuncio.",
+          "Ai sensi del Regolamento (UE) 2022/2065 (Digital Services Act), HerpMarket adotta misure di moderazione successiva: rimuove o disabilita l'accesso ai contenuti illeciti o contrari ai presenti Termini non appena ne viene a conoscenza, tramite segnalazione degli utenti o di propria iniziativa.",
+          "HerpMarket può, a propria discrezione e senza preavviso, rimuovere annunci, sospendere o chiudere account che violino i presenti Termini, le regole del marketplace o la normativa applicabile, in particolare in materia di tutela degli animali e di specie protette.",
+        ],
+        en: [
+          "HerpMarket does not carry out systematic prior review of listings: listings are published immediately under the seller's full responsibility. This allows the marketplace to run smoothly but means HerpMarket does not check the lawfulness, accuracy or compliance of each listing in advance.",
+          "In accordance with Regulation (EU) 2022/2065 (Digital Services Act), HerpMarket applies after-the-fact moderation: it removes or disables access to illegal content or content contrary to these Terms as soon as it becomes aware of it, whether through user reports or on its own initiative.",
+          "HerpMarket may, at its discretion and without notice, remove listings and suspend or close accounts that breach these Terms, the marketplace rules or applicable law, in particular regarding animal welfare and protected species.",
+        ],
+      },
+    },
+    {
+      id: "14", title: { it: "Segnalazioni e rimozione (notice & takedown)", en: "Reporting and takedown (notice & takedown)" }, review: false,
+      body: {
+        it: [
+          "Ogni utente può segnalare un annuncio che ritiene illecito, ingannevole, contrario al benessere animale o altrimenti in violazione dei presenti Termini, utilizzando la funzione «Segnala questo annuncio» presente in ciascun annuncio, oppure la voce «Segnala un problema» nella pagina Contatti.",
+          "Le segnalazioni vengono esaminate da HerpMarket nel più breve tempo ragionevolmente possibile. Se la segnalazione risulta fondata, l'annuncio viene rimosso o l'accesso ad esso disabilitato e, nei casi più gravi, l'account del venditore può essere sospeso o chiuso.",
+          "HerpMarket si riserva di segnalare alle autorità competenti i contenuti che integrino possibili illeciti, in particolare in materia di traffico di specie protette o maltrattamento di animali. Le segnalazioni manifestamente infondate o abusive possono a loro volta comportare provvedimenti a carico del segnalante.",
+        ],
+        en: [
+          "Any user may report a listing they consider illegal, misleading, contrary to animal welfare or otherwise in breach of these Terms, using the 'Report this listing' function on each listing, or the 'Report a problem' option on the Contact page.",
+          "Reports are reviewed by HerpMarket as soon as reasonably possible. Where a report is well-founded, the listing is removed or access to it disabled and, in more serious cases, the seller's account may be suspended or closed.",
+          "HerpMarket reserves the right to report to the competent authorities any content amounting to possible offences, in particular regarding trafficking of protected species or animal cruelty. Manifestly unfounded or abusive reports may in turn lead to measures against the reporter.",
+        ],
+      },
+    },
+    {
+      id: "15", title: { it: "Trasparenza dei prezzi e pratiche corrette", en: "Price transparency and fair practices" }, review: false,
+      body: {
+        it: [
+          "Il prezzo indicato in ciascun annuncio è stabilito dal venditore. HerpMarket non applica all'acquirente alcuna commissione, costo di «protezione acquirente» o sovrapprezzo occulto: il marketplace è gratuito al momento del lancio e gli eventuali costi di spedizione sono concordati direttamente tra le parti.",
+          "HerpMarket non utilizza tecniche di sollecitazione ingannevoli (cosiddetti «dark pattern»), quali falsi conti alla rovescia, scarsità artificiale o sconti non veritieri. Le eventuali offerte a tempo o a posti limitati riflettono condizioni reali.",
+        ],
+        en: [
+          "The price shown in each listing is set by the seller. HerpMarket charges the buyer no commission, 'buyer protection' fee or hidden surcharge: the marketplace is free at launch, and any shipping costs are agreed directly between the parties.",
+          "HerpMarket does not use deceptive prompts (so-called 'dark patterns'), such as false countdowns, artificial scarcity or untruthful discounts. Any time-limited or limited-spot offers reflect genuine conditions.",
+        ],
+      },
+    },
+    {
+      id: "16", title: { it: "Legge applicabile e foro competente", en: "Governing law and jurisdiction" }, review: true,
       body: {
         it: [
           "I presenti Termini sono regolati dalla legge italiana.",
@@ -7753,7 +7811,7 @@ const TOS_CONTENT = {
 
 const STORE_POLICY_CONTENT = {
   effectiveDate: { it: "1 gennaio 2026", en: "1 January 2026" },
-  version: "1.0 (bozza)",
+  version: "1.0",
   sections: [
     {
       id: "1", title: { it: "Ambito di applicazione", en: "Scope" }, review: false,
@@ -7770,14 +7828,16 @@ const STORE_POLICY_CONTENT = {
       id: "2", title: { it: "Modalità di pagamento", en: "Payment methods" }, review: false,
       body: {
         it: [
-          "I pagamenti devono essere effettuati esclusivamente tramite il sistema di pagamento integrato della piattaforma (Stripe o provider equivalente), che gestisce il versamento al Venditore come pagamento differito rilasciato alla conferma di consegna.",
-          "È espressamente vietato richiedere o effettuare pagamenti al di fuori della piattaforma. Le richieste di pagamento mediante bonifico diretto, PayPal Amici e Familiari, criptovalute o contanti senza fattura sono motivo di sospensione dell'account.",
-          "L'Acquirente può versare un acconto del 10% per bloccare l'Esemplare in vista del ritiro in fiera; il saldo è dovuto al momento del ritiro presso lo stand del Venditore. L'acconto non è rimborsabile in caso di mancato ritiro per causa imputabile all'Acquirente.",
+          "In questa fase iniziale HerpMarket non gestisce i pagamenti: Acquirente e Venditore concordano e regolano direttamente tra loro il pagamento e la consegna. HerpMarket non è parte della transazione, non incassa né detiene in alcun momento i fondi e non opera come prestatore di servizi di pagamento ai sensi della Direttiva PSD2.",
+          "È prevista la futura introduzione di un sistema di pagamento online integrato (Stripe o provider equivalente) che gestirà il versamento al Venditore come pagamento differito rilasciato alla conferma di consegna. Tale sistema sarà offerto come modalità sicura soprattutto per le vendite a distanza (spedizione), ma non sarà obbligatorio: il pagamento di persona, incluso il contante al ritiro in fiera o presso il Venditore, resta sempre ammesso. Le presenti regole saranno aggiornate quando il sistema sarà attivo.",
+          "Per la propria sicurezza, gli utenti sono invitati alla massima prudenza con i pagamenti a distanza. Metodi come PayPal «Amici e Familiari», criptovalute o trasferimenti non documentati non offrono alcuna tutela in caso di controversia: la responsabilità di tali pagamenti ricade interamente sulle parti. Si raccomanda, ove possibile, il pagamento al momento del ritiro di persona (ad es. in fiera).",
+          "Acquirente e Venditore possono liberamente accordarsi su un acconto per riservare l'Esemplare (ad esempio in vista del ritiro in fiera) e sul saldo dovuto alla consegna. Tali accordi intercorrono direttamente tra le parti; HerpMarket non li gestisce né li garantisce.",
         ],
         en: [
-          "Payments must be made exclusively via the platform's integrated payment system (Stripe or equivalent provider), which handles the payout to the Seller as a delayed payout released upon handover confirmation.",
-          "Requesting or making payments outside the platform is strictly prohibited. Requests for direct bank transfer, PayPal Friends & Family, cryptocurrency or undocumented cash payments are grounds for account suspension.",
-          "The Buyer may pay a 10% deposit to reserve the Specimen for expo pickup; the balance is due at the time of pickup at the Seller's stand. The deposit is non-refundable where the Buyer fails to collect for reasons attributable to them.",
+          "In this initial phase HerpMarket does not handle payments: the Buyer and Seller agree and settle payment and delivery directly between themselves. HerpMarket is not a party to the transaction, never collects or holds funds at any point, and does not operate as a payment service provider under PSD2.",
+          "An integrated online payment system (Stripe or equivalent provider) is planned for the future, which will handle the payout to the Seller as a delayed payout released upon handover confirmation. It will be offered as a secure option especially for remote sales (shipping), but will not be mandatory: paying in person, including cash at expo pickup or at the Seller's, is always allowed. These rules will be updated when the system is active.",
+          "For their own safety, users are urged to be cautious with remote payments. Methods such as PayPal 'Friends & Family', cryptocurrency or undocumented transfers offer no protection in a dispute: responsibility for such payments rests entirely with the parties. Where possible, paying at the time of in-person pickup (e.g. at an expo) is recommended.",
+          "The Buyer and Seller may freely agree on a deposit to reserve the Specimen (for example ahead of expo pickup) and on the balance due at handover. Such arrangements are made directly between the parties; HerpMarket does not handle or guarantee them.",
         ],
       },
     },
@@ -7874,7 +7934,7 @@ const STORE_POLICY_CONTENT = {
 
 const PRIVACY_CONTENT = {
   effectiveDate: { it: "1 gennaio 2026", en: "1 January 2026" },
-  version: "1.0 (bozza)",
+  version: "1.0",
   sections: [
     {
       id: "1", title: { it: "Titolare del trattamento", en: "Data controller" }, review: true,
@@ -8177,18 +8237,6 @@ function LegalDoc({ doc, title, t, go, lang: outerLang }) {
           </section>
         ))}
       </article>
-
-      {/* Final disclaimer */}
-      <div className="mx-5 md:mx-8 mt-12 bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
-        <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
-          {outerLang === "it" ? "Versione preliminare" : "Preliminary version"}
-        </div>
-        <p className="text-xs text-stone-400 leading-relaxed">
-          {outerLang === "it"
-            ? "Questo documento è una bozza redatta come base di lavoro. Le sezioni contrassegnate con ⚠ richiedono revisione da parte di un avvocato italiano prima del lancio operativo della piattaforma. I riferimenti normativi sono al diritto italiano ed europeo vigente alla data di stesura."
-            : "This document is a working draft. Sections marked ⚠ require review by an Italian lawyer before the platform goes live. Legal references are to Italian and EU law as of the drafting date."}
-        </p>
-      </div>
     </div>
   );
 }
