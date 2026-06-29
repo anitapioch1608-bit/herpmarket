@@ -119,9 +119,12 @@ export async function fetchListings(filter = {}) {
 }
 
 export async function fetchListingsBySeller(sellerName) {
+  // Quote the value so names containing spaces/commas/parens don't break the
+  // PostgREST .or() filter syntax (which is comma-delimited).
+  const safe = `"${String(sellerName).replace(/"/g, '')}"`;
   const { data, error } = await supabase.from('listings')
     .select('*, sellers!inner(name, store_name, verified, rating, review_count, country, owner_id)')
-    .or(`name.eq.${sellerName},store_name.eq.${sellerName}`, { foreignTable: 'sellers' })
+    .or(`name.eq.${safe},store_name.eq.${safe}`, { foreignTable: 'sellers' })
     .eq('status', 'active');
   if (error) throw error;
   return (data || []).map(mapListing);

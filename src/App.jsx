@@ -701,15 +701,10 @@ const SPECIES_TRAITS = {
 
 /* Map each top-level category to the species (and their subspecies labels)
    that belong to it. Drives the dynamic trait picker in advanced search. */
-const CATEGORY_SPECIES = {
-  geckos:     ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Rhacodactylus leachianus", "Mniarogekko chahoua", "Correlophus sarasinorum", "Phelsuma grandis", "Phelsuma laticauda", "Gekko gecko", "Eublepharis macularius", "Hemitheconyx caudicinctus", "Paroedura picta", "Coleonyx variegatus"],
-  snakes:     ["Python regius", "Python brongersmai", "Morelia viridis", "Morelia spilota", "Antaresia childreni", "Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Pituophis catenifer", "Thamnophis sirtalis", "Boa constrictor", "Eryx colubrinus", "Epicrates cenchria"],
-  lizards:    ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii", "Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis", "Takydromus smaragdinus", "Varanus acanthurus", "Varanus exanthematicus", "Salvator merianae"],
-  chameleons: ["Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii", "Furcifer lateralis", "Brookesia"],
-  tortoises:  ["Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii", "Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius", "Stigmochelys pardalis", "Trachemys scripta", "Graptemys", "Sternotherus odoratus"],
-  amphibians: ["Dendrobates tinctorius", "Dendrobates auratus", "Phyllobates terribilis", "Agalychnis callidryas", "Ceratophrys ornata", "Ranoidea caerulea", "Ambystoma mexicanum", "Pleurodeles waltl"],
-  inverts:    ["Grammostola pulchra", "Brachypelma hamorii", "Caribena versicolor", "Tliltocatl albopilosus", "Poecilotheria", "Pandinus imperator", "Heterometrus", "Hierodula", "Sphodromantis", "Idolomantis diabolica", "Archispirostreptus gigas", "Scolopendra", "Porcellio scaber", "Armadillidium"],
-};
+// CATEGORY_SPECIES is derived from CATEGORY_SUBCATS below (single source of
+// truth) so the search filter and the sell/edit forms always share the same
+// species list and never drift apart.
+
 
 /* Category → subcategory → species. Subcategories group species so the list
    stays navigable as it grows to hundreds. Both the sell form and the search
@@ -753,6 +748,18 @@ const CATEGORY_SUBCATS = {
     { id: "inv_isopods",    it: "Isopodi",              en: "Isopods",           species: ["Porcellio scaber", "Armadillidium"] },
   ],
 };
+
+// Derived: flat species list per category (used by the search filter). Built
+// from CATEGORY_SUBCATS so adding a species to a subcategory automatically makes
+// it searchable too — no second list to keep in sync.
+const CATEGORY_SPECIES = Object.fromEntries(
+  Object.entries(CATEGORY_SUBCATS).map(([cat, subs]) => {
+    const seen = new Set();
+    const list = [];
+    subs.forEach(sc => (sc.species || []).forEach(sp => { if (!seen.has(sp)) { seen.add(sp); list.push(sp); } }));
+    return [cat, list];
+  })
+);
 
 /* Helper: all subcategories for a category (or empty array) */
 const initialsOf = (n) => (n || "").trim().split(/\s+/).map(w => w[0] || "").slice(0, 2).join("").toUpperCase() || "?";
@@ -4036,7 +4043,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [success, setSuccess] = useState(false);
   const [createdListing, setCreatedListing] = useState(null);
   const [tosAccepted, setTosAccepted] = useState(isEdit);   // already accepted when first published
-  const [selectedTraits, setSelectedTraits] = useState(editListing?.traits || []);
+  const [selectedTraits, setSelectedTraits] = useState(
+    (editListing?.traits || []).map(tr => typeof tr === "string" ? tr : tr?.name).filter(Boolean)
+  );
   const [customTrait, setCustomTrait] = useState("");
   const addCustomTrait = () => {
     const v = customTrait.trim();
@@ -4049,7 +4058,16 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [sex, setSex] = useState(editListing?.sex || "M");
   const [born, setBorn] = useState(editListing?.birthDate || "");
   const [weight, setWeight] = useState(editListing?.weight || "");
-  const [bornPrecision, setBornPrecision] = useState("month"); // "day" | "month" | "year"
+  // Pick the date-precision that matches the stored birthDate, so the right
+  // input type renders with a valid value (a "month" input rejects "YYYY-MM-DD").
+  const detectBornPrecision = (v) => {
+    const s = String(v || "").trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return "day";
+    if (/^\d{4}-\d{2}$/.test(s)) return "month";
+    if (/^\d{4}$/.test(s)) return "year";
+    return "month";
+  };
+  const [bornPrecision, setBornPrecision] = useState(isEdit ? detectBornPrecision(editListing?.birthDate) : "month"); // "day" | "month" | "year"
   const [isCites, setIsCites] = useState(!!editListing?.citesListed);
   const [desc, setDesc] = useState(editListing?.desc || "");
   const [price, setPrice] = useState(editListing?.price != null ? String(editListing.price) : "");
@@ -6097,7 +6115,7 @@ function EditStoreScreen({ t, lang, go, user }) {
             </button>
 
             {seller?.name && (
-              <button onClick={() => go("seller", seller.name)}
+              <button onClick={() => go("seller", seller.store_name || seller.name)}
                       className="w-full py-2.5 rounded-lg text-xs font-bold text-stone-400 hover:text-amber-400 transition-colors">
                 {t.spView} →
               </button>
@@ -7076,6 +7094,18 @@ function UploadRow({ label, done, onFile, t, busy }) {
    ═════════════════════════════════════════════════════════════════ */
 function BreedingProjectsScreen({ t, go, lang }) {
   const [notified, setNotified] = useState(false);
+  const [notifyBusy, setNotifyBusy] = useState(false);
+  const [notifyErr, setNotifyErr] = useState("");
+  const requestNotify = async () => {
+    setNotifyBusy(true); setNotifyErr("");
+    try {
+      const api = await loadApi();
+      await api.submitSignupRequest({ kind: "genetics_interest", message: "Wants notification when Genetics & breeding projects launches" });
+      setNotified(true);
+    } catch (e) {
+      setNotifyErr(lang === "it" ? "Qualcosa è andato storto. Riprova." : "Something went wrong. Please try again.");
+    } finally { setNotifyBusy(false); }
+  };
   const features = [t.breedingFeat1, t.breedingFeat2, t.breedingFeat3, t.breedingFeat4];
   return (
     <div className="max-w-2xl mx-auto w-full pb-24">
@@ -7144,10 +7174,14 @@ function BreedingProjectsScreen({ t, go, lang }) {
             ✓ {lang === "it" ? "Ti avviseremo appena sarà pronto." : "We'll let you know as soon as it's ready."}
           </p>
         ) : (
-          <button onClick={() => setNotified(true)}
-                  className="w-full mt-5 py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors">
-            {t.breedingNotify}
-          </button>
+          <>
+            <button onClick={requestNotify} disabled={notifyBusy}
+                    className="w-full mt-5 py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors inline-flex items-center justify-center gap-2">
+              {notifyBusy && <Loader2 size={16} className="animate-spin" />}
+              {notifyBusy ? (lang === "it" ? "Invio…" : "Sending…") : t.breedingNotify}
+            </button>
+            {notifyErr && <p className="text-center text-rose-400 text-xs mt-2 font-bold">{notifyErr}</p>}
+          </>
         )}
       </div>
     </div>
