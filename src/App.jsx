@@ -7451,12 +7451,12 @@ const TOS_CONTENT = {
       id: "1", title: { it: "Premesse e definizioni", en: "Background and definitions" }, review: false,
       body: {
         it: [
-          "HerpMarket è un marketplace online che mette in contatto allevatori e acquirenti di rettili, anfibi e invertebrati nati in cattività. La piattaforma è gestita da [DENOMINAZIONE SOCIETARIA DA INDICARE], P.IVA [DA INDICARE], con sede in [DA INDICARE], Italia.",
+          "HerpMarket è un marketplace online che mette in contatto allevatori e acquirenti di rettili, anfibi e invertebrati nati in cattività. La piattaforma è gestita da HerpMarket, con sede in Italia. I dati identificativi completi del titolare (denominazione, P.IVA e sede) saranno indicati qui non appena disponibili.",
           "Ai sensi del D.Lgs. 70/2003, HerpMarket opera come prestatore di servizi della società dell'informazione e fornitore di servizio di hosting attivo. HerpMarket non è parte dei contratti di compravendita conclusi tra Utenti e non assume la posizione di venditore.",
           "«Utente» indica qualunque persona fisica o giuridica che acceda alla piattaforma. «Venditore» indica l'Utente che pubblica un annuncio. «Acquirente» indica l'Utente che richiede l'acquisto di un Esemplare. «Esemplare» indica l'animale oggetto dell'annuncio.",
         ],
         en: [
-          "HerpMarket is an online marketplace connecting breeders and buyers of captive-bred reptiles, amphibians and invertebrates. The platform is operated by [COMPANY NAME TBD], VAT [TBD], registered in [TBD], Italy.",
+          "HerpMarket is an online marketplace connecting breeders and buyers of captive-bred reptiles, amphibians and invertebrates. The platform is operated by HerpMarket, based in Italy. The operator's full identifying details (legal name, VAT number and registered address) will be shown here as soon as they are available.",
           "Pursuant to Italian Legislative Decree 70/2003, HerpMarket operates as an information-society service provider and active hosting provider. HerpMarket is not a party to sale contracts concluded between Users and does not act as seller.",
           "'User' means any natural or legal person accessing the platform. 'Seller' means the User who publishes a listing. 'Buyer' means the User who requests to purchase a Specimen. 'Specimen' means the animal that is the subject of the listing.",
         ],
@@ -7623,12 +7623,12 @@ const TOS_CONTENT = {
       body: {
         it: [
           "I presenti Termini sono regolati dalla legge italiana.",
-          "Per ogni controversia derivante dai presenti Termini è competente in via esclusiva il Foro di [DA INDICARE], salvo il foro inderogabile del consumatore di cui all'art. 66-bis del Codice del Consumo.",
+          "Per ogni controversia derivante dai presenti Termini è competente in via esclusiva il Foro di Torino, salvo il foro inderogabile del consumatore di cui all'art. 66-bis del Codice del Consumo.",
           "La versione italiana dei presenti Termini è quella giuridicamente vincolante. Eventuali traduzioni sono fornite a titolo di mera cortesia.",
         ],
         en: [
           "These Terms are governed by Italian law.",
-          "Any dispute arising from these Terms is subject to the exclusive jurisdiction of the Court of [TBD], without prejudice to the consumer's mandatory forum under art. 66-bis of the Italian Consumer Code.",
+          "Any dispute arising from these Terms is subject to the exclusive jurisdiction of the Court of Turin, without prejudice to the consumer's mandatory forum under art. 66-bis of the Italian Consumer Code.",
           "The Italian version of these Terms is the legally binding version. Translations are provided as a courtesy only.",
         ],
       },
@@ -7765,11 +7765,11 @@ const PRIVACY_CONTENT = {
       id: "1", title: { it: "Titolare del trattamento", en: "Data controller" }, review: true,
       body: {
         it: [
-          "Titolare del trattamento dei dati personali è [DENOMINAZIONE SOCIETARIA DA INDICARE], P.IVA [DA INDICARE], con sede in [DA INDICARE], Italia, indirizzo email privacy@herpmarket.it.",
+          "Titolare del trattamento dei dati personali è HerpMarket, con sede in Italia, indirizzo email privacy@herpmarket.it. I dati identificativi completi del titolare (denominazione, P.IVA e sede) saranno indicati qui non appena disponibili.",
           "Per esercitare i tuoi diritti o per qualunque chiarimento sul trattamento dei tuoi dati, puoi contattarci all'indirizzo email indicato. Risponderemo entro 30 giorni, come previsto dall'art. 12 GDPR.",
         ],
         en: [
-          "Data controller is [COMPANY NAME TBD], VAT [TBD], registered in [TBD], Italy, email privacy@herpmarket.it.",
+          "Data controller is HerpMarket, based in Italy, email privacy@herpmarket.it. The controller's full identifying details (legal name, VAT number and registered address) will be shown here as soon as they are available.",
           "To exercise your rights or for any clarification, contact us at the email above. We respond within 30 days as required by Art. 12 GDPR.",
         ],
       },
@@ -7830,7 +7830,7 @@ const PRIVACY_CONTENT = {
           "• Supabase (Supabase Inc., USA / sede UE Francoforte) — database e autenticazione. I dati restano memorizzati nell'Unione Europea (regione eu-central-1).",
           "• Stripe (Stripe Payments Europe Ltd., Irlanda) — elaborazione pagamenti tra Acquirenti e Venditori. Stripe agisce come titolare autonomo per gli aspetti di propria competenza.",
           "• Vercel (Vercel Inc., USA) — hosting dell'applicazione web. Vercel è certificata sotto il Data Privacy Framework UE-USA.",
-          "• [Eventuale provider email transazionale, es. Resend / Postmark — DA INDICARE]",
+          "• Resend (Resend, Inc., USA) — invio di email transazionali (es. conferme, reimpostazione password, notifiche). Le email vengono inviate dal dominio verificato herpmarket.it.",
           "Non vendiamo né condividiamo i tuoi dati personali con terzi per scopi di marketing. I dati possono essere condivisi con le autorità competenti su loro richiesta motivata (es. Polizia Postale, autorità CITES, autorità giudiziaria).",
         ],
         en: [
@@ -7838,7 +7838,7 @@ const PRIVACY_CONTENT = {
           "• Supabase (Supabase Inc., USA / EU seat Frankfurt) — database and authentication. Data is stored in the European Union (eu-central-1 region).",
           "• Stripe (Stripe Payments Europe Ltd., Ireland) — payment processing between Buyers and Sellers. Stripe acts as autonomous controller for its own areas.",
           "• Vercel (Vercel Inc., USA) — web application hosting. Vercel is certified under the EU-US Data Privacy Framework.",
-          "• [Possible transactional email provider, e.g. Resend / Postmark — TBD]",
+          "• Resend (Resend, Inc., USA) — transactional email delivery (e.g. confirmations, password resets, notifications). Emails are sent from the verified herpmarket.it domain.",
           "We do not sell or share your personal data with third parties for marketing. Data may be shared with competent authorities upon reasoned request (e.g. Postal Police, CITES authorities, judicial authority).",
         ],
       },
@@ -8055,12 +8055,6 @@ function LegalDoc({ doc, title, t, go, lang: outerLang }) {
             <header className="flex items-baseline gap-3 mb-3">
               <span className="font-display text-stone-600 text-2xl tracking-tight">{s.id}</span>
               <h2 className="font-display text-stone-100 text-xl tracking-tight leading-tight">{s.title[docLang]}</h2>
-              {s.review && (
-                <span title={outerLang === "it" ? "Richiede revisione legale prima del lancio" : "Requires legal review before launch"}
-                      className="ml-auto text-[9px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 ring-1 ring-amber-500/20 px-1.5 py-0.5 rounded">
-                  ⚠ {outerLang === "it" ? "Revisione" : "Review"}
-                </span>
-              )}
             </header>
             <div className="space-y-3 text-sm text-stone-300 leading-relaxed pl-1">
               {s.body[docLang].map((p, i) => <p key={i}>{p}</p>)}
