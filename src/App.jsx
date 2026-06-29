@@ -718,36 +718,36 @@ const CATEGORY_SPECIES = {
    `null` species list on a subcategory = "coming soon / many species". */
 const CATEGORY_SUBCATS = {
   geckos: [
-    { id: "geckos_arboreal", it: "Gechi arboricoli", en: "Arboreal geckos", species: ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Rhacodactylus leachianus", "Mniarogekko chahoua", "Correlophus sarasinorum", "Phelsuma grandis", "Phelsuma laticauda", "Gekko gecko"] },
-    { id: "geckos_ground",   it: "Gechi terricoli",  en: "Ground geckos",   species: ["Eublepharis macularius", "Hemitheconyx caudicinctus", "Paroedura picta", "Coleonyx variegatus"] },
+    { id: "geckos_arboreal", it: "Gechi arboricoli", en: "Arboreal geckos", species: ["Correlophus ciliatus", "Rhacodactylus auriculatus", "Rhacodactylus leachianus", "Mniarogekko chahoua", "Correlophus sarasinorum", "Phelsuma grandis", "Phelsuma laticauda", "Phelsuma klemmeri", "Phelsuma standingi", "Lygodactylus williamsi", "Strophurus ciliaris", "Uroplatus sikorae", "Gekko gecko"] },
+    { id: "geckos_ground",   it: "Gechi terricoli",  en: "Ground geckos",   species: ["Eublepharis macularius", "Hemitheconyx caudicinctus", "Paroedura picta", "Coleonyx variegatus", "Nephrurus levis", "Underwoodisaurus milii", "Goniurosaurus luii", "Goniurosaurus hainanensis"] },
   ],
   snakes: [
-    { id: "snakes_pythons",   it: "Pitoni",     en: "Pythons",     species: ["Python regius", "Python brongersmai", "Morelia viridis", "Morelia spilota", "Antaresia childreni"] },
-    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Pituophis catenifer", "Thamnophis sirtalis"] },
-    { id: "snakes_boas",      it: "Boa",        en: "Boas",        species: ["Boa constrictor", "Eryx colubrinus", "Epicrates cenchria"] },
+    { id: "snakes_pythons",   it: "Pitoni",     en: "Pythons",     species: ["Python regius", "Python brongersmai", "Python bivittatus", "Morelia viridis", "Morelia spilota", "Antaresia childreni"] },
+    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Pantherophis obsoletus", "Pantherophis emoryi", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Lampropeltis californiae", "Pituophis catenifer", "Thamnophis sirtalis", "Zamenis longissimus", "Elaphe dione", "Elaphe schrenckii", "Gonyosoma oxycephalum"] },
+    { id: "snakes_boas",      it: "Boa",        en: "Boas",        species: ["Boa constrictor", "Boa imperator", "Eryx colubrinus", "Epicrates cenchria"] },
   ],
   lizards: [
-    { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Intellagama lesueurii"] },
-    { id: "lizards_skinks",  it: "Scinchi",  en: "Skinks",   species: ["Tiliqua scincoides", "Tiliqua gigas", "Corucia zebrata", "Tribolonotus gracilis"] },
+    { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Uromastyx geyri", "Uromastyx ocellata", "Chlamydosaurus kingii", "Intellagama lesueurii"] },
+    { id: "lizards_skinks",  it: "Scinchi",  en: "Skinks",   species: ["Tiliqua scincoides", "Tiliqua gigas", "Tiliqua rugosa", "Corucia zebrata", "Tribolonotus gracilis"] },
     { id: "lizards_other",   it: "Altri sauri", en: "Other lizards", species: ["Takydromus smaragdinus"] },
-    { id: "lizards_monitors",it: "Varani",   en: "Monitors", species: ["Varanus acanthurus", "Varanus exanthematicus"] },
+    { id: "lizards_monitors",it: "Varani",   en: "Monitors", species: ["Varanus acanthurus", "Varanus exanthematicus", "Varanus niloticus", "Varanus salvator"] },
     { id: "lizards_tegus",   it: "Tegu e altri", en: "Tegus & others", species: ["Salvator merianae"] },
   ],
   chameleons: [
-    { id: "cham_old",  it: "Camaleonti del Vecchio Mondo", en: "Old World chameleons", species: ["Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii", "Furcifer lateralis", "Brookesia"] },
+    { id: "cham_old",  it: "Camaleonti del Vecchio Mondo", en: "Old World chameleons", species: ["Furcifer pardalis", "Chamaeleo calyptratus", "Trioceros jacksonii", "Trioceros quadricornis", "Trioceros melleri", "Furcifer lateralis", "Furcifer oustaleti", "Rieppeleon brevicaudatus", "Brookesia"] },
   ],
   tortoises: [
-    { id: "tort_mediterranean", it: "Testuggini mediterranee", en: "Mediterranean tortoises", species: ["Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii"] },
-    { id: "tort_tropical",      it: "Testuggini tropicali",    en: "Tropical tortoises",      species: ["Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius", "Stigmochelys pardalis"] },
-    { id: "tort_aquatic",       it: "Tartarughe acquatiche",   en: "Aquatic turtles",         species: ["Trachemys scripta", "Graptemys", "Sternotherus odoratus"] },
+    { id: "tort_mediterranean", it: "Testuggini mediterranee", en: "Mediterranean tortoises", species: ["Testudo hermanni", "Testudo graeca", "Testudo marginata", "Testudo horsfieldii", "Emys orbicularis"] },
+    { id: "tort_tropical",      it: "Testuggini tropicali",    en: "Tropical tortoises",      species: ["Centrochelys sulcata", "Geochelone elegans", "Chelonoidis carbonarius", "Stigmochelys pardalis", "Kinixys homeana"] },
+    { id: "tort_aquatic",       it: "Tartarughe acquatiche",   en: "Aquatic turtles",         species: ["Trachemys scripta", "Graptemys", "Sternotherus odoratus", "Pelusios castaneus"] },
   ],
   amphibians: [
-    { id: "amph_frogs",       it: "Rane e rospi",  en: "Frogs & toads",  species: ["Dendrobates tinctorius", "Dendrobates auratus", "Phyllobates terribilis", "Agalychnis callidryas", "Ceratophrys ornata", "Ranoidea caerulea"] },
-    { id: "amph_salamanders", it: "Salamandre e tritoni", en: "Salamanders & newts", species: ["Ambystoma mexicanum", "Pleurodeles waltl"] },
+    { id: "amph_frogs",       it: "Rane e rospi",  en: "Frogs & toads",  species: ["Dendrobates tinctorius", "Dendrobates auratus", "Dendrobates leucomelas", "Ranitomeya imitator", "Phyllobates terribilis", "Agalychnis callidryas", "Ceratophrys ornata", "Ranoidea caerulea", "Bombina orientalis", "Theloderma corticale"] },
+    { id: "amph_salamanders", it: "Salamandre e tritoni", en: "Salamanders & newts", species: ["Ambystoma mexicanum", "Pleurodeles waltl", "Cynops orientalis"] },
   ],
   inverts: [
-    { id: "inv_tarantulas", it: "Tarantole",            en: "Tarantulas",        species: ["Grammostola pulchra", "Brachypelma hamorii", "Caribena versicolor", "Tliltocatl albopilosus", "Poecilotheria"] },
-    { id: "inv_scorpions",  it: "Scorpioni",            en: "Scorpions",         species: ["Pandinus imperator", "Heterometrus"] },
+    { id: "inv_tarantulas", it: "Tarantole",            en: "Tarantulas",        species: ["Grammostola pulchra", "Grammostola rosea", "Grammostola pulchripes", "Brachypelma hamorii", "Brachypelma boehmei", "Brachypelma emilia", "Caribena versicolor", "Tliltocatl albopilosus", "Tliltocatl vagans", "Chromatopelma cyaneopubescens", "Psalmopoeus irminia", "Poecilotheria"] },
+    { id: "inv_scorpions",  it: "Scorpioni",            en: "Scorpions",         species: ["Pandinus imperator", "Heterometrus", "Hadrurus arizonensis"] },
     { id: "inv_mantids",    it: "Mantidi",              en: "Mantids",           species: ["Hierodula", "Sphodromantis", "Idolomantis diabolica"] },
     { id: "inv_myriapods",  it: "Millepiedi/Centopiedi",en: "Milli/Centipedes",  species: ["Archispirostreptus gigas", "Scolopendra"] },
     { id: "inv_isopods",    it: "Isopodi",              en: "Isopods",           species: ["Porcellio scaber", "Armadillidium"] },
@@ -848,6 +848,60 @@ const SPECIES_LABELS = {
   "Scolopendra":               { it: "Scolopendra",          en: "Centipede" },
   "Porcellio scaber":          { it: "Isopode (Porcellio scaber)", en: "Rough woodlouse (isopod)" },
   "Armadillidium":             { it: "Isopode (Armadillidium)", en: "Pill woodlouse (isopod)" },
+
+  // ── Added for expo coverage (Verona 2026) ──
+  // Geckos
+  "Nephrurus levis":           { it: "Geco coda a nodo liscio", en: "Smooth knob-tailed gecko" },
+  "Underwoodisaurus milii":    { it: "Geco coda grossa australiano", en: "Thick-tailed gecko" },
+  "Phelsuma klemmeri":         { it: "Geco diurno di Klemmer", en: "Klemmer's day gecko" },
+  "Phelsuma standingi":        { it: "Geco diurno di Standing", en: "Standing's day gecko" },
+  "Strophurus ciliaris":       { it: "Geco dalla coda spinosa", en: "Northern spiny-tailed gecko" },
+  "Goniurosaurus luii":        { it: "Geco delle caverne di Lui", en: "Lui's cave gecko" },
+  "Goniurosaurus hainanensis": { it: "Geco delle caverne di Hainan", en: "Hainan cave gecko" },
+  "Lygodactylus williamsi":    { it: "Geco diurno blu elettrico", en: "Electric blue day gecko" },
+  "Uroplatus sikorae":         { it: "Geco coda a foglia muschiato", en: "Mossy leaf-tailed gecko" },
+  // Snakes
+  "Zamenis longissimus":       { it: "Saettone / colubro di Esculapio", en: "Aesculapian snake" },
+  "Elaphe dione":              { it: "Serpente ratto di Dione", en: "Dione's rat snake" },
+  "Elaphe schrenckii":         { it: "Serpente ratto dell'Amur", en: "Amur rat snake" },
+  "Pantherophis obsoletus":    { it: "Serpente ratto nero", en: "Black rat snake" },
+  "Pantherophis emoryi":       { it: "Serpente ratto delle pianure", en: "Great Plains rat snake" },
+  "Lampropeltis californiae":  { it: "Serpente reale della California", en: "California kingsnake" },
+  "Boa imperator":             { it: "Boa comune (imperator)", en: "Common/Central American boa" },
+  "Python bivittatus":         { it: "Pitone delle rocce birmano", en: "Burmese python" },
+  "Gonyosoma oxycephalum":     { it: "Serpente ratto verde codarossa", en: "Red-tailed green rat snake" },
+  // Lizards
+  "Uromastyx geyri":           { it: "Uromastice del Sahara", en: "Saharan uromastyx" },
+  "Uromastyx ocellata":        { it: "Uromastice ocellato", en: "Ocellated uromastyx" },
+  "Tiliqua rugosa":            { it: "Scinco lingua blu shingleback", en: "Shingleback skink" },
+  "Varanus niloticus":         { it: "Varano del Nilo", en: "Nile monitor" },
+  "Varanus salvator":          { it: "Varano acquatico", en: "Asian water monitor" },
+  "Chlamydosaurus kingii":     { it: "Drago con collare", en: "Frilled dragon" },
+  // Chameleons
+  "Trioceros quadricornis":    { it: "Camaleonte a quattro corna", en: "Four-horned chameleon" },
+  "Trioceros melleri":         { it: "Camaleonte di Meller", en: "Meller's chameleon" },
+  "Rieppeleon brevicaudatus":  { it: "Camaleonte pigmeo barbuto", en: "Bearded pygmy chameleon" },
+  "Furcifer oustaleti":        { it: "Camaleonte di Oustalet", en: "Oustalet's chameleon" },
+  // Tortoises & turtles
+  "Kinixys homeana":           { it: "Testuggine cardine di Home", en: "Home's hinge-back tortoise" },
+  "Emys orbicularis":          { it: "Testuggine palustre europea", en: "European pond turtle" },
+  "Pelusios castaneus":        { it: "Tartaruga dal collo laterale africana", en: "West African mud turtle" },
+  // Amphibians
+  "Dendrobates leucomelas":    { it: "Rana freccia gialla e nera", en: "Yellow-banded poison frog" },
+  "Ranitomeya imitator":       { it: "Rana freccia imitatrice", en: "Mimic poison frog" },
+  "Cynops orientalis":         { it: "Tritone ventre di fuoco cinese", en: "Chinese fire-belly newt" },
+  "Bombina orientalis":        { it: "Ululone ventre di fuoco orientale", en: "Oriental fire-bellied toad" },
+  "Theloderma corticale":      { it: "Rana muschiata vietnamita", en: "Vietnamese mossy frog" },
+  // Invertebrates
+  "Brachypelma boehmei":       { it: "Tarantola ginocchia di fuoco", en: "Mexican fireleg tarantula" },
+  "Brachypelma emilia":        { it: "Tarantola gamba rossa messicana", en: "Mexican redleg tarantula" },
+  "Tliltocatl vagans":         { it: "Tarantola rossa messicana", en: "Mexican red rump tarantula" },
+  "Grammostola rosea":         { it: "Tarantola rosa cilena", en: "Chilean rose tarantula" },
+  "Grammostola pulchripes":    { it: "Tarantola ginocchia dorate", en: "Chaco golden knee tarantula" },
+  "Chromatopelma cyaneopubescens": { it: "Tarantola verde bottiglia blu", en: "Green bottle blue tarantula" },
+  "Caribena versicolor":       { it: "Tarantola versicolor di Antille", en: "Antilles pinktoe tarantula" },
+  "Psalmopoeus irminia":       { it: "Tarantola velluto venezuelana", en: "Venezuelan suntiger tarantula" },
+  "Hadrurus arizonensis":      { it: "Scorpione gigante del deserto", en: "Desert hairy scorpion" },
 };
 
 /* Generic, safe trait sets per category — used when a specific species has no
@@ -1457,6 +1511,7 @@ export default function HerpMarket() {
       case "expo":      return <ExpoDetail expo={viewData} {...props} />;
       case "seller":    return <SellerProfile sellerName={viewData} {...props} />;
       case "sell":      return user ? <SellScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
+      case "editlisting": return user ? <SellScreen {...props} editListing={viewData} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "chat":      return user ? <ChatList {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "thread":    return user ? <ChatThread chat={viewData} {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
@@ -3223,6 +3278,18 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
       {txState === "idle" && !a.auction && (
         <Section title={t.deliveryChoose}>
           <div className="space-y-2.5">
+            {/* How payment works today — automatic online checkout is coming. */}
+            <div className="bg-sky-500/5 ring-1 ring-sky-500/20 rounded-xl p-3.5 flex items-start gap-3">
+              <Info size={16} className="text-sky-400 shrink-0 mt-0.5" />
+              <div className="text-[11px] text-stone-300 leading-relaxed">
+                <span className="font-bold text-stone-100">
+                  {lang === "it" ? "Pagamenti online automatici in arrivo." : "Automatic online payments coming soon."}
+                </span>{" "}
+                {lang === "it"
+                  ? "Per ora, contatta il venditore tramite messaggio per concordare pagamento e consegna direttamente con lui."
+                  : "For now, message the seller to arrange payment and delivery directly with them."}
+              </div>
+            </div>
             {/* Buy & ship */}
             {canShip ? (
               <button onClick={() => setDeliveryMode("ship")}
@@ -3320,8 +3387,8 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         <div className="max-w-3xl mx-auto flex gap-2">
           {isMine ? (
             <div className="flex-1 flex gap-2">
-              <button onClick={openOwnerEdit}
-                      className={`flex-1 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors ${ownerMode === "edit" ? "bg-amber-500 text-stone-950" : "bg-stone-800 hover:bg-stone-700 text-stone-100"}`}>
+              <button onClick={() => go("editlisting", a)}
+                      className="flex-1 font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-1.5 bg-stone-800 hover:bg-stone-700 text-stone-100 transition-colors">
                 <SettingsIcon size={16} />{t.mlEdit}
               </button>
               {ownerBucket === "active" && (
@@ -3372,37 +3439,6 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           <div onClick={e => e.stopPropagation()}
                className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85vh] overflow-y-auto hide-scrollbar anim-up mb-16 md:mb-0">
             {ownerErr && <div className="text-xs font-bold text-rose-400 mb-3">{ownerErr}</div>}
-
-            {ownerMode === "edit" && (
-              <div className="space-y-3">
-                <h3 className="font-display text-lg text-stone-50 mb-1">{t.mlEdit}</h3>
-                <div>
-                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{lang === "it" ? "Titolo annuncio" : "Listing title"}</div>
-                  <input type="text" className="form-input" value={oTitle} onChange={e => setOTitle(e.target.value)}
-                         placeholder={lang === "it" ? "es. Crested Gecko Lily White femmina" : "e.g. Female Lily White Crested Gecko"} />
-                </div>
-                {ownerBucket === "active" && (
-                  <div>
-                    <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
-                    <div className="flex items-center gap-2 max-w-[160px]">
-                      <span className="text-stone-400 text-sm shrink-0">€</span>
-                      <input type="number" min="0" className="form-input flex-1" value={oPrice} onChange={e => setOPrice(e.target.value)} />
-                    </div>
-                  </div>
-                )}
-                <div>
-                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.description}</div>
-                  <textarea rows="4" className="form-input resize-none" value={oDesc} onChange={e => setODesc(e.target.value)} />
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <button onClick={() => setOwnerMode(null)} className="flex-1 py-3 rounded-lg text-sm font-bold bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors">{t.cancel || (lang === "it" ? "Annulla" : "Cancel")}</button>
-                  <button onClick={saveOwnerEdit} disabled={ownerBusy}
-                          className="flex-[2] py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors">
-                    {ownerBusy ? t.processing : t.mlSave}
-                  </button>
-                </div>
-              </div>
-            )}
 
             {ownerMode === "sold" && (
               <MarkSoldPanel listing={a} t={t} lang={lang} busy={ownerBusy} user={user}
@@ -3976,6 +4012,18 @@ const CITES_SPECIES = new Set([
   "Agalychnis callidryas", "Ambystoma mexicanum",
   // Invertebrates
   "Brachypelma hamorii", "Tliltocatl albopilosus", "Poecilotheria", "Pandinus imperator",
+  // ── Added for expo coverage — VERIFY each against official EU CITES annexes ──
+  "Lygodactylus williamsi",            // CITES Appendix I / EU Annex A (confirmed)
+  "Phelsuma klemmeri", "Phelsuma standingi", // Phelsuma genus = App II
+  "Uroplatus sikorae",                 // Uroplatus genus = App II
+  "Python bivittatus",                 // App II
+  "Uromastyx geyri", "Uromastyx ocellata", // Uromastyx genus = App II
+  "Varanus niloticus", "Varanus salvator",  // Varanus = App II
+  "Trioceros quadricornis", "Trioceros melleri", "Furcifer oustaleti", "Rieppeleon brevicaudatus", // chameleons = App II
+  "Kinixys homeana",                   // App II
+  "Emys orbicularis",                  // EU-protected (not CITES, but restricted)
+  "Dendrobates leucomelas", "Ranitomeya imitator", // dart frogs = App II
+  "Brachypelma boehmei", "Brachypelma emilia", "Tliltocatl vagans", // Brachypelma/Tliltocatl = App II
 ]);
 
 // Case-insensitive CITES check — a manually typed "testudo hermanni" must still
@@ -3983,11 +4031,12 @@ const CITES_SPECIES = new Set([
 const CITES_SPECIES_LOWER = new Set([...CITES_SPECIES].map(s => s.toLowerCase()));
 const isCitesSpecies = (name) => !!name && CITES_SPECIES_LOWER.has(name.trim().toLowerCase());
 
-function SellScreen({ t, lang, go, user }) {
+function SellScreen({ t, lang, go, user, editListing }) {
+  const isEdit = !!editListing;
   const [success, setSuccess] = useState(false);
   const [createdListing, setCreatedListing] = useState(null);
-  const [tosAccepted, setTosAccepted] = useState(false);
-  const [selectedTraits, setSelectedTraits] = useState([]);
+  const [tosAccepted, setTosAccepted] = useState(isEdit);   // already accepted when first published
+  const [selectedTraits, setSelectedTraits] = useState(editListing?.traits || []);
   const [customTrait, setCustomTrait] = useState("");
   const addCustomTrait = () => {
     const v = customTrait.trim();
@@ -3995,24 +4044,28 @@ function SellScreen({ t, lang, go, user }) {
     if (!selectedTraits.includes(v)) setSelectedTraits(prev => [...prev, v]);
     setCustomTrait("");
   };
-  // Captured listing fields
-  const [title, setTitle] = useState("");
-  const [sex, setSex] = useState("M");
-  const [born, setBorn] = useState("");
-  const [weight, setWeight] = useState("");
+  // Captured listing fields — pre-filled from editListing when editing.
+  const [title, setTitle] = useState(editListing?.title || "");
+  const [sex, setSex] = useState(editListing?.sex || "M");
+  const [born, setBorn] = useState(editListing?.birthDate || "");
+  const [weight, setWeight] = useState(editListing?.weight || "");
   const [bornPrecision, setBornPrecision] = useState("month"); // "day" | "month" | "year"
-  const [isCites, setIsCites] = useState(false);
-  const [desc, setDesc] = useState("");
-  const [price, setPrice] = useState("");
-  const [saleMode, setSaleMode] = useState("fixed");   // "fixed" | "auction"
+  const [isCites, setIsCites] = useState(!!editListing?.citesListed);
+  const [desc, setDesc] = useState(editListing?.desc || "");
+  const [price, setPrice] = useState(editListing?.price != null ? String(editListing.price) : "");
+  const [saleMode, setSaleMode] = useState("fixed");   // "fixed" | "auction" — editing keeps fixed
   const [startPrice, setStartPrice] = useState("");
   const [reserve, setReserve] = useState("");
   const [durationDays, setDurationDays] = useState(5);
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
   // Photos (min 1, max 3). Files are uploaded to Supabase Storage on publish.
+  // When editing, seed with the already-uploaded image URLs (no File object —
+  // these are kept as-is unless the user removes/replaces them).
   const MAX_PHOTOS = 3;
-  const [photos, setPhotos] = useState([]); // [{ file, url }]
+  const [photos, setPhotos] = useState(
+    isEdit ? (editListing.images || (editListing.image ? [editListing.image] : [])).map(u => ({ url: u, existing: true })) : []
+  );
   const [dragOver, setDragOver] = useState(false);
   const [photoError, setPhotoError] = useState(false);
   const fileInputRef = useRef(null);
@@ -4029,14 +4082,14 @@ function SellScreen({ t, lang, go, user }) {
   const removePhoto = (idx) => {
     setPhotos(prev => {
       const p = prev[idx];
-      if (p) URL.revokeObjectURL(p.url);
+      if (p && p.file && !p.existing) URL.revokeObjectURL(p.url);  // only blob URLs from new picks
       return prev.filter((_, i) => i !== idx);
     });
   };
-  // Revoke any remaining preview URLs when leaving the screen.
+  // Revoke any remaining preview URLs when leaving the screen (new picks only).
   const photosRef = useRef(photos);
   useEffect(() => { photosRef.current = photos; }, [photos]);
-  useEffect(() => () => { photosRef.current.forEach(p => URL.revokeObjectURL(p.url)); }, []);
+  useEffect(() => () => { photosRef.current.forEach(p => { if (p.file && !p.existing) URL.revokeObjectURL(p.url); }); }, []);
   const monthsSince = (val) => {
     const s = String(val || "").trim();
     if (!s) return null;
@@ -4074,17 +4127,25 @@ function SellScreen({ t, lang, go, user }) {
     try {
       const api = await loadApi();
       const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
-      // Free-tier cap: 5 listings. Pro sellers are unlimited.
-      const mySeller = await api.fetchMySeller(user.id);
-      if (!mySeller?.pro) {
-        const count = await api.countMyListings(user.id);
-        if (count >= FREE_LISTING_LIMIT) {
-          setSaving(false);
-          setSaveErr(t.proCapReached);
-          return;
+      // Free-tier cap applies only to NEW listings; editing an existing one is
+      // always allowed (it doesn't add to the count).
+      if (!isEdit) {
+        const mySeller = await api.fetchMySeller(user.id);
+        if (!mySeller?.pro) {
+          const count = await api.countMyListings(user.id);
+          if (count >= FREE_LISTING_LIMIT) {
+            setSaving(false);
+            setSaveErr(t.proCapReached);
+            return;
+          }
         }
       }
-      const urls = await api.uploadListingPhotos(photos.map(p => p.file), user.id);
+      // Photos: existing ones already have a URL; only NEW picks have a .file
+      // to upload. Preserve order so the first photo stays the cover.
+      const newFiles = photos.filter(p => p.file).map(p => p.file);
+      const uploadedUrls = newFiles.length ? await api.uploadListingPhotos(newFiles, user.id) : [];
+      let ui = 0;
+      const urls = photos.map(p => p.existing ? p.url : uploadedUrls[ui++]).filter(Boolean);
       const traits = selectedTraits.map(n => {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
@@ -4103,7 +4164,7 @@ function SellScreen({ t, lang, go, user }) {
           highBidder: null,
         };
       }
-      const created = await api.createListing({
+      const fields = {
         species: speciesVal, common, title: headline, category: catId,
         traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
         sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
@@ -4112,6 +4173,16 @@ function SellScreen({ t, lang, go, user }) {
         country, region, city: null,
         sire: null, dam: null, desc: desc.trim(),
         image: urls[0] || null, images: urls,
+      };
+      if (isEdit) {
+        // Update the existing listing. Don't touch shipping/expo/auction here —
+        // edit keeps the listing's current sale type and delivery options.
+        const updated = await api.updateListing(editListing.id, fields);
+        go("detail", updated || { ...editListing, ...fields });
+        return;
+      }
+      const created = await api.createListing({
+        ...fields,
         shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction,
       }, seller.id);
@@ -4124,16 +4195,17 @@ function SellScreen({ t, lang, go, user }) {
     }
   };
   // Cascading category → subcategory → species
-  const [catId, setCatId] = useState("");
+  const [catId, setCatId] = useState(editListing?.category || "");
   const [subcatId, setSubcatId] = useState("");
-  const [speciesVal, setSpeciesVal] = useState("");
+  const [speciesVal, setSpeciesVal] = useState(editListing?.species || "");
   // Country → region
-  const [country, setCountry] = useState("IT");
-  const [region, setRegion] = useState("");   // empty until chosen/prefilled — prevents silent wrong default
+  const [country, setCountry] = useState(editListing?.country || "IT");
+  const [region, setRegion] = useState(editListing?.region || "");   // empty until chosen/prefilled — prevents silent wrong default
 
-  // Pre-fill location from the breeder's saved store profile (they can still change it).
+  // Pre-fill location from the breeder's saved store profile (they can still
+  // change it). Skip when editing — keep the listing's existing location.
   useEffect(() => {
-    if (!user?.id) return;
+    if (isEdit || !user?.id) return;
     let on = true;
     loadApi().then(api => api.fetchMySeller(user.id)).then(s => {
       if (!on || !s) return;
@@ -4144,10 +4216,29 @@ function SellScreen({ t, lang, go, user }) {
   }, [user?.id]);
 
   // Reset chosen traits when the category or species changes (list is species-specific now).
-  useEffect(() => { setSelectedTraits([]); }, [catId, speciesVal]);
+  // Skip the very first run when editing, so pre-filled traits aren't wiped.
+  const didMountTraits = useRef(false);
+  useEffect(() => {
+    if (isEdit && !didMountTraits.current) { didMountTraits.current = true; return; }
+    setSelectedTraits([]);
+  }, [catId, speciesVal]);
+
+  // On edit, the listing stores category + species but not the subcategory step.
+  // Derive the subcategory that contains this species so the cascade shows the
+  // species dropdown correctly (otherwise it'd look empty). Runs once on mount.
+  useEffect(() => {
+    if (!isEdit || subcatId || !catId || !speciesVal) return;
+    for (const sc of subcatsFor(catId)) {
+      if (speciesForSubcat(catId, sc.id).includes(speciesVal)) { setSubcatId(sc.id); break; }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Pre-tick CITES (and force a full birth date) when the chosen species is on our list.
+  // Skip the first run when editing so we keep the listing's stored CITES value.
+  const didMountCites = useRef(false);
   useEffect(() => {
+    if (isEdit && !didMountCites.current) { didMountCites.current = true; return; }
     const c = isCitesSpecies(speciesVal);
     setIsCites(c);
     if (c) setBornPrecision("day");
@@ -4189,9 +4280,10 @@ function SellScreen({ t, lang, go, user }) {
   return (
     <div className="max-w-2xl mx-auto w-full pb-24">
       <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800">
-        <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight">{t.sell}</h1>
+        <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight">{isEdit ? (lang === "it" ? "Modifica annuncio" : "Edit listing") : t.sell}</h1>
         <p className="text-xs text-stone-400 mt-1">
-          {lang === "it" ? "Compila i dettagli del tuo esemplare." : "Fill in your animal's details."}
+          {isEdit ? (lang === "it" ? "Aggiorna i dettagli del tuo esemplare." : "Update your animal's details.")
+                  : (lang === "it" ? "Compila i dettagli del tuo esemplare." : "Fill in your animal's details.")}
         </p>
       </header>
 
@@ -4414,7 +4506,8 @@ function SellScreen({ t, lang, go, user }) {
         {/* ─── Delivery options ─── */}
         <DeliverySection lang={lang} t={t} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0} />
 
-        {/* Terms acceptance — marketplace rules confirmed at point of listing */}
+        {/* Terms acceptance — only needed for a brand-new listing. */}
+        {!isEdit && (
         <label className="flex items-start gap-3 bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-4 cursor-pointer">
           <input type="checkbox" checked={tosAccepted} onChange={() => setTosAccepted(!tosAccepted)}
                  className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
@@ -4428,6 +4521,7 @@ function SellScreen({ t, lang, go, user }) {
               : ", in particular the seller rules, and confirm I am the lawful keeper of this animal."}
           </span>
         </label>
+        )}
 
         {saveErr && (
           <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5 mt-2"><Info size={12} />{saveErr}</p>
@@ -4435,7 +4529,8 @@ function SellScreen({ t, lang, go, user }) {
         <button onClick={handlePublish} disabled={saving || !tosAccepted}
                 className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-bold py-3.5 rounded-lg text-sm transition-colors mt-4 inline-flex items-center justify-center gap-2">
           {saving && <Loader2 size={16} className="animate-spin" />}
-          {saving ? (photos.length > 0 ? t.uploadingPhotos : t.publishing) : t.publishListing}
+          {saving ? (photos.some(p => p.file) ? t.uploadingPhotos : t.publishing)
+                  : (isEdit ? (lang === "it" ? "Salva modifiche" : "Save changes") : t.publishListing)}
         </button>
         {saving && photos.length > 0 && (
           <p className="text-[11px] text-stone-500 text-center mt-2">{t.uploadingHint}</p>
@@ -5417,7 +5512,7 @@ function MyListingsScreen({ t, lang, go, user }) {
                         <ArrowUpDown size={11} />{t.auctionLive}
                       </span>
                     ) : (
-                      <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                      <button onClick={() => go("editlisting", l)}
                               className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
                         {t.mlEdit}
                       </button>
@@ -5430,7 +5525,7 @@ function MyListingsScreen({ t, lang, go, user }) {
                 )}
                 {(bucket(l) === "held" || bucket(l) === "breeder") && (
                   <>
-                    <button onClick={() => (editId === l.id ? setEditId(null) : startEdit(l))}
+                    <button onClick={() => go("editlisting", l)}
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 ring-1 ring-stone-700 text-stone-200 hover:bg-stone-700 transition-colors">
                       {t.mlEdit}
                     </button>
@@ -5757,7 +5852,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
 
         <FormBlock label={t.sex}>
           <select className="form-input" value={sex} onChange={e => setSex(e.target.value)}>
-            <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="U">{t.unsexed}</option>
+            <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="P">{t.pair}</option><option value="U">{t.unsexed}</option>
           </select>
         </FormBlock>
 
