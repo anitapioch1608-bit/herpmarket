@@ -2768,8 +2768,8 @@ function ToggleChip({ active, onClick, children }) {
 }
 function BottomSheet({ title, onClose, children, footer }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()}
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div onMouseDown={e => e.stopPropagation()}
            className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[85vh] anim-up overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
           <h3 className="font-display text-lg text-stone-50">{title}</h3>
@@ -3086,8 +3086,8 @@ function ReportSheet({ listing = null, t, lang, user = null, onClose }) {
     } finally { setBusy(false); }
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={() => !busy && onClose()}>
-      <div onClick={e => e.stopPropagation()}
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose(); }}>
+      <div onMouseDown={e => e.stopPropagation()}
            className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[88vh] anim-up">
         <div className="flex items-center justify-between p-5 pb-3 shrink-0">
           <h3 className="font-display text-lg text-stone-50">{t.reportTitle}</h3>
@@ -3241,7 +3241,38 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   /* ─── Buyer actions ─── */
   const handleRequest = () => {
     if (!requireAuth(t.loginToReserve, () => {})) return;
+    // Show the requested state immediately (optimistic), then actually deliver
+    // the request to the seller via the chat system + notify the platform.
     setTxState("requested");
+    (async () => {
+      try {
+        const api = await loadApi();
+        const sellerId = a.sellerId || a.seller_id;
+        if (sellerId && a.id && user?.id) {
+          // Open (or reuse) the thread and post an automatic first message so it
+          // lands in the seller's Messages inbox — the seller's actual signal.
+          const thread = await api.getOrCreateThread(a.id, sellerId, user.id);
+          const what = a.title || a.common || a.species || "this animal";
+          const autoMsg = isExpoFlow
+            ? (lang === "it"
+                ? `Ciao! Sono interessato/a a "${what}" per il ritiro in fiera. È ancora disponibile?`
+                : `Hi! I'm interested in "${what}" for expo pickup. Is it still available?`)
+            : (lang === "it"
+                ? `Ciao! Sono interessato/a ad acquistare "${what}". È ancora disponibile?`
+                : `Hi! I'm interested in buying "${what}". Is it still available?`);
+          await api.sendMessage(thread.id, user.id, autoMsg);
+        }
+        // Also notify the platform so there's an email trail of buyer interest.
+        await api.submitSignupRequest({
+          kind: "purchase_interest",
+          plan: isExpoFlow ? "Expo pickup request" : "Buy request",
+          message: `Buyer requested "${a.title || a.common || a.species}" (listing ${a.id}).`,
+        });
+      } catch (e) {
+        // Non-fatal for the UI state, but let the buyer know to message directly.
+        setOwnerDone("");
+      }
+    })();
   };
   const handleCancelRequest = () => setTxState("idle");
   const handlePay = () => setShowCheckout(true);
@@ -6450,8 +6481,9 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4" onClick={() => setModal(null)}>
-      <div onClick={e => e.stopPropagation()}
+    <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4"
+         onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
+      <div onMouseDown={e => e.stopPropagation()}
            className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up max-h-[92vh] overflow-y-auto hide-scrollbar">
         {/* Header */}
         <div className="relative p-6 pb-4 bg-gradient-to-br from-stone-900 to-stone-950 border-b border-stone-800">
