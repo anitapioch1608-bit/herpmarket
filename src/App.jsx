@@ -3058,42 +3058,46 @@ function ReportSheet({ listing = null, t, lang, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={() => !busy && onClose()}>
       <div onClick={e => e.stopPropagation()}
-           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85vh] overflow-y-auto anim-up">
-        <div className="flex items-center justify-between mb-4">
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[88vh] anim-up">
+        <div className="flex items-center justify-between p-5 pb-3 shrink-0">
           <h3 className="font-display text-lg text-stone-50">{t.reportTitle}</h3>
           <button onClick={onClose} className="text-stone-500 hover:text-stone-300"><X size={18} /></button>
         </div>
         {done ? (
-          <div className="text-center py-6">
+          <div className="text-center px-5 py-6">
             <CheckCircle size={32} className="text-emerald-400 mx-auto mb-3" />
             <p className="text-sm text-stone-200">{t.reportThanks}</p>
             <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-lg text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-100 transition-colors">OK</button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {listing && (
-              <p className="text-[11px] text-stone-500 bg-stone-950/50 rounded-lg px-3 py-2 truncate">
-                {listing.title || listing.common || listing.species}
-              </p>
-            )}
-            <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportReasonLabel}</div>
-              <select className="form-input" value={reason} onChange={e => setReason(e.target.value)}>
-                {reasons.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
+          <>
+            <div className="px-5 overflow-y-auto flex-1 space-y-4">
+              {listing && (
+                <p className="text-[11px] text-stone-500 bg-stone-950/50 rounded-lg px-3 py-2 truncate">
+                  {listing.title || listing.common || listing.species}
+                </p>
+              )}
+              <div>
+                <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportReasonLabel}</div>
+                <select className="form-input" value={reason} onChange={e => setReason(e.target.value)}>
+                  {reasons.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div>
+                <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportNoteLabel}</div>
+                <textarea rows="2" className="form-input resize-none" value={note} onChange={e => setNote(e.target.value)}
+                          placeholder={t.reportNotePlaceholder} />
+              </div>
+              {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
             </div>
-            <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportNoteLabel}</div>
-              <textarea rows="3" className="form-input resize-none" value={note} onChange={e => setNote(e.target.value)}
-                        placeholder={t.reportNotePlaceholder} />
+            <div className="p-5 pt-3 shrink-0 border-t border-stone-800/60">
+              <button onClick={send} disabled={busy}
+                      className="w-full py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors inline-flex items-center justify-center gap-2">
+                {busy && <Loader2 size={16} className="animate-spin" />}
+                {busy ? t.reportSending : t.reportSend}
+              </button>
             </div>
-            {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
-            <button onClick={send} disabled={busy}
-                    className="w-full py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors inline-flex items-center justify-center gap-2">
-              {busy && <Loader2 size={16} className="animate-spin" />}
-              {busy ? t.reportSending : t.reportSend}
-            </button>
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -6700,6 +6704,18 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   // table (i.e. every real breeder account). Demo entries keep their rich data.
   const [liveSeller, setLiveSeller] = useState(null);
   const [liveReviews, setLiveReviews] = useState(null);
+  const [liveListings, setLiveListings] = useState(null);
+  // Fetch this seller's active listings straight from the DB (matches on
+  // personal name OR store name), so the store is correct even when the
+  // listings aren't in the current homepage feed.
+  useEffect(() => {
+    if (!sellerName || SELLERS[sellerName]) return;
+    let on = true;
+    loadApi().then(api => api.fetchListingsBySeller(sellerName))
+      .then(rows => { if (on) setLiveListings(rows || []); })
+      .catch(() => { if (on) setLiveListings([]); });
+    return () => { on = false; };
+  }, [sellerName]);
   useEffect(() => {
     if (!sellerName || SELLERS[sellerName]) return;
     let on = true;
@@ -6723,7 +6739,9 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   if (!sellerName) return null;
 
   const seller = SELLERS[sellerName] || liveSeller;
-  const sellerListings = (listingsData || LISTINGS).filter(l => l.seller === sellerName);
+  const sellerListings = liveListings != null
+    ? liveListings
+    : (listingsData || LISTINGS).filter(l => l.seller === sellerName || l.sellerRealName === sellerName);
 
   // Fallback minimal data if seller missing from SELLERS table
   const data = seller || {
