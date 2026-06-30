@@ -1190,6 +1190,27 @@ function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().
     .sort((a, b) => a.dateISO.localeCompare(b.dateISO));
 }
 
+// Featured expos for the home page: pin the flagship shows (Verona, then the
+// next upcoming Hamm edition) at the front, then fill the rest with the next
+// soonest upcoming expos. Returns `count` expos, de-duplicated.
+function getFeaturedExpos(count = 3, allExpos = EXPOS, todayISO = new Date().toISOString().slice(0, 10)) {
+  const upcoming = getUpcomingExpos(allExpos, todayISO);
+  const featured = [];
+  const pushUnique = (expo) => {
+    if (expo && !featured.some(e => e.id === expo.id)) featured.push(expo);
+  };
+  // 1) Verona (the launch expo) if it's still upcoming.
+  pushUnique(upcoming.find(e => e.name && e.name.toLowerCase().includes("verona")));
+  // 2) The next upcoming Hamm edition.
+  pushUnique(upcoming.find(e => e.name && e.name.toLowerCase().includes("hamm")));
+  // 3) Fill remaining slots with the next soonest upcoming expos.
+  for (const e of upcoming) {
+    if (featured.length >= count) break;
+    pushUnique(e);
+  }
+  return featured.slice(0, count);
+}
+
 const SELLERS = {};  // demo sellers removed — real breeder pages load from Supabase
 
 const CHATS = [];  // demo chats removed — real threads load from Supabase
@@ -2127,7 +2148,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {getUpcomingExpos().slice(0, 3).map((expo, i) => {
+          {getFeaturedExpos(3).map((expo, i) => {
             const expoAnimalsCount = (listingsData || LISTINGS).filter(l => (l.expoIds && l.expoIds.includes(expo.id)) || l.expoId === expo.id).length;
             return (
               <button key={expo.id}
@@ -2758,7 +2779,8 @@ function BottomSheet({ title, onClose, children, footer }) {
           {children}
         </div>
         {footer && (
-          <div className="shrink-0 px-5 py-3 border-t border-stone-800 bg-stone-900">
+          <div className="shrink-0 px-5 pt-3 border-t border-stone-800 bg-stone-900"
+               style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
             {footer}
           </div>
         )}
@@ -3106,7 +3128,8 @@ function ReportSheet({ listing = null, t, lang, user = null, onClose }) {
               )}
               {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
             </div>
-            <div className="p-5 pt-3 shrink-0 border-t border-stone-800/60">
+            <div className="p-5 pt-3 shrink-0 border-t border-stone-800/60"
+                 style={{ paddingBottom: "calc(1.25rem + env(safe-area-inset-bottom))" }}>
               <button onClick={send} disabled={busy}
                       className="w-full py-3 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 transition-colors inline-flex items-center justify-center gap-2">
                 {busy && <Loader2 size={16} className="animate-spin" />}
