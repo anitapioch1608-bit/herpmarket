@@ -482,7 +482,7 @@ export async function fetchMyThreads(userId) {
       listing: thr.listings ? mapListing(thr.listings) : null,
       lastMsg: last ? last.body : "",
       lastAt: last ? last.created_at : thr.created_at,
-      unread: msgs.filter(m => m.sender_id !== userId).length, // refined later with read_at
+      unread: msgs.filter(m => m.sender_id !== userId && !m.read_at).length,
     };
   }).sort((a, b) => new Date(b.lastAt) - new Date(a.lastAt));
 }
@@ -492,6 +492,39 @@ export async function fetchMessages(threadId) {
     .select('*').eq('thread_id', threadId).order('created_at', { ascending: true });
   if (error) throw error;
   return data || [];
+}
+
+// Mark every message in a thread that was sent by the OTHER party as read
+// (sets read_at = now where it's still null). Called when you open a thread.
+export async function markThreadRead(threadId, userId) {
+  if (!threadId || !userId) return;
+  const { error } = await supabase.from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('thread_id', threadId)
+    .neq('sender_id', userId)
+    .is('read_at', null);
+  if (error) throw error;
+}
+
+// Total number of unread messages across all my threads (for the nav badge):
+// messages sent by someone else, in a thread I'm part of, with no read_at.
+export async function fetchUnreadCount(userId) {
+  if (!userId) return 0;
+  // Threads where I'm the buyer, or where I own the seller profile.
+  const { data: sellerRows } = await supabase.from('sellers').select('id').eq('owner_id', userId);
+  const sellerIds = (sellerRows || []).map(s => s.id);
+  let orParts = [`buyer_id.eq.${userId}`];
+  if (sellerIds.length) orParts.push(`seller_id.in.(${sellerIds.join(',')})`);
+  const { data: threads } = await supabase.from('threads').select('id').or(orParts.join(','));
+  const threadIds = (threads || []).map(t => t.id);
+  if (!threadIds.length) return 0;
+  const { count, error } = await supabase.from('messages')
+    .select('id', { count: 'exact', head: true })
+    .in('thread_id', threadIds)
+    .neq('sender_id', userId)
+    .is('read_at', null);
+  if (error) return 0;
+  return count || 0;
 }
 
 export async function sendMessage(threadId, senderId, body) {

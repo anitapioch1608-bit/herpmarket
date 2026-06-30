@@ -1379,6 +1379,19 @@ export default function HerpMarket() {
 
   // Auth state — null = logged out
   const [user, setUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const refreshUnread = useCallback(async () => {
+    if (!user?.id) { setUnreadCount(0); return; }
+    try { const api = await loadApi(); setUnreadCount(await api.fetchUnreadCount(user.id)); }
+    catch { /* ignore */ }
+  }, [user?.id]);
+  // Keep the unread badge fresh: on login, every 30s, and when the chat list opens.
+  useEffect(() => {
+    if (!user?.id) { setUnreadCount(0); return; }
+    refreshUnread();
+    const iv = setInterval(refreshUnread, 30000);
+    return () => clearInterval(iv);
+  }, [user?.id, refreshUnread]);
   const [authModal, setAuthModal] = useState(null); // null | { mode: "login"|"signup", reason: string|null, after: fn|null }
   const [recovery, setRecovery] = useState(false);   // true while in a password-recovery session
   // Site-wide access gate (private pre-launch). Unlocked state persists locally.
@@ -1573,8 +1586,8 @@ export default function HerpMarket() {
       case "seller":    return <SellerProfile sellerName={viewData} {...props} />;
       case "sell":      return user ? <SellScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "editlisting": return user ? <SellScreen {...props} editListing={viewData} /> : <AuthGate reason={t.loginToSell} {...props} />;
-      case "chat":      return user ? <ChatList {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
-      case "thread":    return user ? <ChatThread chat={viewData} {...props} user={user} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "chat":      return user ? <ChatList {...props} user={user} onOpen={refreshUnread} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "thread":    return user ? <ChatThread chat={viewData} {...props} user={user} onRead={refreshUnread} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "mylistings": return user ? <MyListingsScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "addanimal": return user ? <AddAnimalScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
@@ -1627,7 +1640,7 @@ export default function HerpMarket() {
           <SideBtn icon={<Home size={18} />} label={t.home}    active={view === "home"}     onClick={() => go("home")} />
           <SideBtn icon={<Search size={18} />} label={t.search} active={view === "search"}  onClick={goToSearchFresh} />
           <SideBtn icon={<PlusCircle size={18} />} label={t.sell} active={view === "sell"} onClick={() => go("sell")} />
-          <SideBtn icon={<MessageCircle size={18} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
+          <SideBtn icon={<MessageCircle size={18} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} badge={unreadCount} />
           <SideBtn icon={<User size={18} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
         </nav>
         {/* Login / user block in sidebar */}
@@ -1671,7 +1684,7 @@ export default function HerpMarket() {
           <TabBtn icon={<Home size={20} />} label={t.home}    active={view === "home"}    onClick={() => go("home")} />
           <TabBtn icon={<Search size={20} />} label={t.search} active={view === "search"} onClick={goToSearchFresh} />
           <TabBtn icon={<PlusCircle size={22} />} label={t.sell} active={view === "sell"} onClick={() => { if (requireAuth(t.loginToSell, () => go("sell"))) go("sell"); }} accent />
-          <TabBtn icon={<MessageCircle size={20} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} />
+          <TabBtn icon={<MessageCircle size={20} />} label={t.chat} active={view === "chat" || view === "thread"} onClick={() => go("chat")} badge={unreadCount} />
           <TabBtn icon={<User size={20} />} label={t.profile} active={profileViews.includes(view)} onClick={() => go("profile")} />
         </nav>
       </div>
@@ -1801,22 +1814,31 @@ function Brand({ t, lang, setLang }) {
   );
 }
 
-function SideBtn({ icon, label, active, onClick }) {
+function SideBtn({ icon, label, active, onClick, badge = 0 }) {
   return (
     <button onClick={onClick}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
               active ? "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20" : "text-stone-400 hover:text-stone-100 hover:bg-stone-800/50"
             }`}>
-      {icon}<span>{label}</span>
+      <span className="relative inline-flex">
+        {icon}
+        {badge > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-stone-950 text-[9px] font-black min-w-[15px] h-[15px] px-1 rounded-full flex items-center justify-center">{badge > 9 ? "9+" : badge}</span>
+        )}
+      </span>
+      <span>{label}</span>
     </button>
   );
 }
 
-function TabBtn({ icon, label, active, onClick, accent }) {
+function TabBtn({ icon, label, active, onClick, accent, badge = 0 }) {
   return (
     <button onClick={onClick} className="flex flex-col items-center gap-0.5 px-2 py-1">
-      <div className={`${accent && active ? "bg-amber-500 text-stone-950" : accent ? "bg-amber-500/10 text-amber-400" : ""} ${accent ? "p-1.5 rounded-full" : ""} ${!accent && active ? "text-amber-400" : !accent ? "text-stone-500" : ""} transition-all`}>
+      <div className={`relative ${accent && active ? "bg-amber-500 text-stone-950" : accent ? "bg-amber-500/10 text-amber-400" : ""} ${accent ? "p-1.5 rounded-full" : ""} ${!accent && active ? "text-amber-400" : !accent ? "text-stone-500" : ""} transition-all`}>
         {icon}
+        {badge > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-stone-950 text-[9px] font-black min-w-[15px] h-[15px] px-1 rounded-full flex items-center justify-center">{badge > 9 ? "9+" : badge}</span>
+        )}
       </div>
       <span className={`text-[9px] font-semibold tracking-wide ${active ? "text-amber-400" : "text-stone-500"}`}>{label}</span>
     </button>
@@ -5123,7 +5145,7 @@ function ChatList({ t, go, user }) {
   );
 }
 
-function ChatThread({ chat, t, lang, go, user }) {
+function ChatThread({ chat, t, lang, go, user, onRead }) {
   const target = chat?.listing || {};
   const [threadId, setThreadId] = useState(chat?.id && chat.id !== 99 ? chat.id : null);
   const [messages, setMessages] = useState([]);
@@ -5150,6 +5172,8 @@ function ChatThread({ chat, t, lang, go, user }) {
         }
         const msgs = await api.fetchMessages(tid);
         if (on) { setMessages(msgs); setLoading(false); }
+        // Mark the other party's messages as read now that the thread is open.
+        try { await api.markThreadRead(tid, user.id); if (on && onRead) onRead(); } catch {}
       } catch (e) { if (on) { setErr(e?.message || "Error"); setLoading(false); } }
     })();
     return () => { on = false; };
