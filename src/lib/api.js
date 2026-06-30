@@ -747,7 +747,7 @@ export async function submitSignupRequest({ kind, plan = null, billing = null, m
 //   reason   — short category, e.g. "Prohibited species", "Scam/fraud"
 //   listing  — optional { id, title, species } of the reported listing
 //   note     — optional free-text detail from the reporter
-export async function submitReport({ reason, listing = null, note = "" } = {}) {
+export async function submitReport({ reason, listing = null, note = "", contactEmail = null } = {}) {
   let user_id = null, email = null, name = null;
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -760,10 +760,14 @@ export async function submitReport({ reason, listing = null, note = "" } = {}) {
     }
   } catch { /* logged-out reporter — still accept the report */ }
 
+  // For logged-out reporters, use the optional email they typed (if any).
+  if (!email && contactEmail) email = contactEmail;
+
   const ref = listing
     ? `Listing: ${listing.title || listing.common || listing.species || "—"} (id ${listing.id})`
     : "General report (no specific listing)";
-  const message = [ref, note && `Note: ${note}`].filter(Boolean).join("\n");
+  const contactLine = (!user_id && contactEmail) ? `Reporter email (not logged in): ${contactEmail}` : null;
+  const message = [ref, note && `Note: ${note}`, contactLine].filter(Boolean).join("\n");
 
   const { error } = await supabase.from('signup_requests').insert({
     kind: "report", plan: reason || "Report", billing: null,

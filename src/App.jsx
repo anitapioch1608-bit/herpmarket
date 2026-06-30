@@ -45,6 +45,9 @@ const I18N = {
     reportSending: "Invio…",
     reportThanks: "Grazie. Abbiamo ricevuto la tua segnalazione e la esamineremo.",
     reportReasons: ["Specie vietata o illegale", "Possibile truffa o frode", "Animale non sano / maltrattamento", "Annuncio ingannevole o spam", "Contenuto inappropriato", "Altro"],
+    reportEmailLabel: "La tua email (facoltativo)",
+    reportEmailPlaceholder: "tu@esempio.it",
+    reportEmailHint: "Lasciala se vuoi che ti ricontattiamo per chiarimenti.",
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     heroTitle: "Rettili e animali esotici, dagli appassionati italiani.",
@@ -301,6 +304,9 @@ const I18N = {
     reportSending: "Sending…",
     reportThanks: "Thank you. We've received your report and will review it.",
     reportReasons: ["Prohibited or illegal species", "Possible scam or fraud", "Unhealthy animal / welfare concern", "Misleading listing or spam", "Inappropriate content", "Other"],
+    reportEmailLabel: "Your email (optional)",
+    reportEmailPlaceholder: "you@example.com",
+    reportEmailHint: "Leave it if you'd like us to follow up with you.",
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
     heroTitle: "Reptiles & exotic animals, from enthusiasts across Italy.",
@@ -3034,10 +3040,11 @@ function CrossBorderNotice({ sellerCountry, t, lang, buyerCountry = "IT" }) {
 /* Reusable report sheet — used by listing detail (with a listing) and the
    contact page (general report, no listing). Reuses api.submitReport, which
    feeds the same email-notify pipeline as plan/genetics requests. */
-function ReportSheet({ listing = null, t, lang, onClose }) {
+function ReportSheet({ listing = null, t, lang, user = null, onClose }) {
   const reasons = t.reportReasons || [];
   const [reason, setReason] = useState(reasons[0] || "Other");
   const [note, setNote] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
@@ -3049,6 +3056,7 @@ function ReportSheet({ listing = null, t, lang, onClose }) {
         reason,
         listing: listing ? { id: listing.id, title: listing.title, common: listing.common, species: listing.species } : null,
         note: note.trim(),
+        contactEmail: user ? null : contactEmail.trim(),
       });
       setDone(true);
     } catch (e) {
@@ -3088,6 +3096,14 @@ function ReportSheet({ listing = null, t, lang, onClose }) {
                 <textarea rows="2" className="form-input resize-none" value={note} onChange={e => setNote(e.target.value)}
                           placeholder={t.reportNotePlaceholder} />
               </div>
+              {!user && (
+                <div>
+                  <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.reportEmailLabel}</div>
+                  <input type="email" className="form-input" value={contactEmail} onChange={e => setContactEmail(e.target.value)}
+                         placeholder={t.reportEmailPlaceholder} />
+                  <p className="text-[10px] text-stone-600 mt-1">{t.reportEmailHint}</p>
+                </div>
+              )}
               {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
             </div>
             <div className="p-5 pt-3 shrink-0 border-t border-stone-800/60">
@@ -3314,17 +3330,17 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         <p className="text-sm text-stone-300 leading-relaxed">{a.desc}</p>
       </Section>
 
-      {/* Parentage */}
-      <Section title={t.parentage}>
-        {a.sire || a.dam ? (
+      {/* Parentage — only shown when the seller has linked a parent. Hidden
+          otherwise (there's no parent-linking field yet, so "Unknown" would
+          just look broken). */}
+      {(a.sire || a.dam) && (
+        <Section title={t.parentage}>
           <div className="grid grid-cols-2 gap-2">
             <ParentCard role="sire" label={t.sire}>{a.sire || t.unknown}</ParentCard>
             <ParentCard role="dam"  label={t.dam}>{a.dam || t.unknown}</ParentCard>
           </div>
-        ) : (
-          <p className="text-sm text-stone-500 italic font-display">{t.unknown}</p>
-        )}
-      </Section>
+        </Section>
+      )}
 
       {/* Listing timestamps — trust signals */}
       {(a.createdAt || a.updatedAt) && (
@@ -3509,7 +3525,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         </div>
       )}
 
-      {showReport && <ReportSheet listing={a} t={t} lang={lang} onClose={() => setShowReport(false)} />}
+      {showReport && <ReportSheet listing={a} t={t} lang={lang} user={user} onClose={() => setShowReport(false)} />}
 
       {/* Sticky action bar — Edit for my own listing; otherwise Message + CTA. */}
       <div className="fixed md:absolute bottom-16 md:bottom-0 inset-x-0 z-30 bg-stone-950/95 backdrop-blur-xl border-t border-stone-800 px-4 py-3">
@@ -7554,7 +7570,7 @@ function PlaceholderScreen({ title, icon, badge, t, go, lang }) {
   );
 }
 
-function AboutContact({ t, go, lang }) {
+function AboutContact({ t, go, lang, user }) {
   const [showReport, setShowReport] = useState(false);
   return (
     <div className="max-w-2xl mx-auto w-full pb-10">
@@ -7590,7 +7606,7 @@ function AboutContact({ t, go, lang }) {
           </div>
         </button>
       </div>
-      {showReport && <ReportSheet t={t} lang={lang} onClose={() => setShowReport(false)} />}
+      {showReport && <ReportSheet t={t} lang={lang} user={user} onClose={() => setShowReport(false)} />}
     </div>
   );
 }
