@@ -2282,7 +2282,7 @@ function AllExposModal({ onClose, go, t, lang }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={onClose}>
       <div onClick={e => e.stopPropagation()}
-           className="w-full md:max-w-2xl bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl max-h-[88vh] flex flex-col anim-up">
+           className="w-full md:max-w-2xl bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl max-h-[88dvh] flex flex-col anim-up">
         <header className="flex items-center justify-between px-5 py-4 border-b border-stone-800">
           <div>
             <h2 className="font-display text-lg text-stone-50 leading-tight">
@@ -2792,12 +2792,13 @@ function BottomSheet({ title, onClose, children, footer }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div onMouseDown={e => e.stopPropagation()}
-           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[85vh] anim-up overflow-hidden">
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col anim-up overflow-hidden"
+           style={{ maxHeight: "85dvh" }}>
         <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
           <h3 className="font-display text-lg text-stone-50">{title}</h3>
           <button onClick={onClose} className="text-stone-400 hover:text-stone-100"><X size={20} /></button>
         </div>
-        <div className="flex-1 overflow-y-auto hide-scrollbar px-5 pb-2">
+        <div className="flex-1 overflow-y-auto hide-scrollbar px-5 pb-2 min-h-0">
           {children}
         </div>
         {footer && (
@@ -3110,7 +3111,7 @@ function ReportSheet({ listing = null, t, lang, user = null, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose(); }}>
       <div onMouseDown={e => e.stopPropagation()}
-           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[88vh] anim-up">
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[88dvh] anim-up">
         <div className="flex items-center justify-between p-5 pb-3 shrink-0">
           <h3 className="font-display text-lg text-stone-50">{t.reportTitle}</h3>
           <button onClick={onClose} className="text-stone-500 hover:text-stone-300"><X size={18} /></button>
@@ -3658,7 +3659,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
       {isMine && ownerMode && (
         <div className="fixed inset-0 z-40 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onClick={() => !ownerBusy && setOwnerMode(null)}>
           <div onClick={e => e.stopPropagation()}
-               className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85vh] overflow-y-auto hide-scrollbar anim-up mb-16 md:mb-0">
+               className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl p-5 max-h-[85dvh] overflow-y-auto hide-scrollbar anim-up mb-16 md:mb-0">
             {ownerErr && <div className="text-xs font-bold text-rose-400 mb-3">{ownerErr}</div>}
 
             {ownerMode === "sold" && (
@@ -6508,7 +6509,7 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
     <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm p-0 md:p-4"
          onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
       <div onMouseDown={e => e.stopPropagation()}
-           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up max-h-[92vh] overflow-y-auto hide-scrollbar">
+           className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl overflow-hidden anim-up max-h-[88dvh] overflow-y-auto hide-scrollbar">
         {/* Header */}
         <div className="relative p-6 pb-4 bg-gradient-to-br from-stone-900 to-stone-950 border-b border-stone-800">
           <button onClick={() => setModal(null)} className="absolute top-4 right-4 text-stone-400 hover:text-stone-100">
