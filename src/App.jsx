@@ -222,6 +222,17 @@ const I18N = {
     accountSection: "Account", notifSection: "Notifiche", verificationSection: "Verifica",
     langSection: "Lingua",
     citesArchive: "Archivio CITES",
+    citesDataTitle: "I miei dati CITES",
+    citesDataSub: "Riepilogo delle tue vendite completate, per aiutarti a compilare la documentazione CITES ufficiale. Questi dati NON sostituiscono i documenti ufficiali.",
+    citesDataEmpty: "Ancora nessuna vendita registrata. Quando segni un animale come venduto, i dati per la documentazione appariranno qui.",
+    citesDataDisclaimer: "Nota: questo è un riepilogo dei tuoi dati per comodità. Non è un documento CITES ufficiale. Per il trasferimento legale (specie in Annex A) è necessaria la documentazione ufficiale prevista dalla normativa.",
+    citesDataBuyer: "Acquirente",
+    citesDataAddress: "Indirizzo",
+    citesDataDate: "Data vendita",
+    citesDataCites: "Specie CITES dichiarata",
+    citesDataChannel: "Canale",
+    citesDataCopy: "Copia i dati",
+    citesDataCopied: "Copiato",
     breedingMgmt: "Gestione allevamento", bureaucracyLegal: "Burocrazia & Legale", infoSupport: "Informazioni & Supporto", configuration: "Configurazione",
     login: "Accedi", signup: "Iscriviti", joinCommunity: "Unisciti", loginOrJoin: "Accedi / Iscriviti",
     loginRequired: "Accedi per continuare",
@@ -477,6 +488,17 @@ const I18N = {
     accountSection: "Account", notifSection: "Notifications", verificationSection: "Verification",
     langSection: "Language",
     citesArchive: "CITES archive",
+    citesDataTitle: "My CITES data",
+    citesDataSub: "A summary of your completed sales, to help you fill out the official CITES documentation. This data does NOT replace the official documents.",
+    citesDataEmpty: "No sales recorded yet. When you mark an animal as sold, the data for your documentation will appear here.",
+    citesDataDisclaimer: "Note: this is a summary of your data for convenience. It is not an official CITES document. Legal transfer (especially for Annex A species) requires the official documentation set out by law.",
+    citesDataBuyer: "Buyer",
+    citesDataAddress: "Address",
+    citesDataDate: "Sale date",
+    citesDataCites: "CITES species declared",
+    citesDataChannel: "Channel",
+    citesDataCopy: "Copy data",
+    citesDataCopied: "Copied",
     breedingMgmt: "Breeding management", bureaucracyLegal: "Bureaucracy & Legal", infoSupport: "Information & Support", configuration: "Configuration",
     login: "Sign in", signup: "Sign up", joinCommunity: "Join us", loginOrJoin: "Sign in / Join",
     loginRequired: "Sign in to continue",
@@ -1352,6 +1374,7 @@ function SiteGate({ onUnlock }) {
 
 export default function HerpMarket() {
   const [view, setView] = useState("home");
+  const [navSeq, setNavSeq] = useState(0);  // bumps on every navigation → re-mounts screens that need fresh data
   const [viewData, setViewData] = useState(null);
   const [lang, setLangState] = useState(() => {
     try { return localStorage.getItem("hm_lang") || "it"; } catch (e) { return "it"; }
@@ -1484,6 +1507,7 @@ export default function HerpMarket() {
     try { window.history.pushState({ hmView: v }, ""); } catch (e) {}
     setView(v);
     setViewData(data);
+    setNavSeq(n => n + 1);
     const saved = scrollMemory.current[v];
     // Opening a NEW view (not in memory) must land at the top. Only restore a
     // remembered position when we actually have one saved for that view.
@@ -1499,6 +1523,7 @@ export default function HerpMarket() {
     scrollMemory.current[view] = getScroll();
     setView(target);
     setViewData(prev?.data ?? null);
+    setNavSeq(n => n + 1);
     const saved = scrollMemory.current[target];
     requestAnimationFrame(() => {
       setScroll(typeof saved === "number" ? saved : 0);
@@ -1586,7 +1611,7 @@ export default function HerpMarket() {
       case "seller":    return <SellerProfile sellerName={viewData} {...props} />;
       case "sell":      return user ? <SellScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "editlisting": return user ? <SellScreen {...props} editListing={viewData} /> : <AuthGate reason={t.loginToSell} {...props} />;
-      case "chat":      return user ? <ChatList {...props} user={user} onOpen={refreshUnread} /> : <AuthGate reason={t.loginToMessage} {...props} />;
+      case "chat":      return user ? <ChatList key={`chat-${navSeq}`} {...props} user={user} onOpen={refreshUnread} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "thread":    return user ? <ChatThread chat={viewData} {...props} user={user} onRead={refreshUnread} /> : <AuthGate reason={t.loginToMessage} {...props} />;
       case "profile":   return user ? <Profile {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "mylistings": return user ? <MyListingsScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
@@ -1597,7 +1622,7 @@ export default function HerpMarket() {
       case "breeding":  return <BreedingProjectsScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
       case "reviews":   return <ReviewsScreen {...props} />;
-      case "documents": return <PlaceholderScreen title={t.citesArchive} {...props} icon={<FileText size={28} />} />;
+      case "documents": return user ? <CitesDataScreen {...props} user={user} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "about":     return <AboutContact {...props} />;
       case "terms":     return <TermsLegal {...props} />;
       case "storepolicy": return <StorePolicy {...props} />;
@@ -5315,7 +5340,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
 
         {/* GROUP 2: Bureaucracy & Legal */}
         <ProfileGroup label={t.bureaucracyLegal}>
-          <ProfileRow icon={<FileText size={18} />} label={t.citesArchive} onClick={() => go("documents")} />
+          <ProfileRow icon={<FileText size={18} />} label={t.citesDataTitle} onClick={() => go("documents")} />
           <ProfileRow icon={<Truck size={18} />} label={t.transport} onClick={() => go("transport")} />
           <ProfileRow icon={<Scale size={18} />} label={t.legalGuide} onClick={() => go("legal")} />
         </ProfileGroup>
@@ -7622,7 +7647,123 @@ function ReviewsScreen({ t, go, lang, user }) {
   );
 }
 
-/* PLACEHOLDER for not-yet-built sections (e.g. Eco-Taxi, CITES Archive). */
+/* CITES data archive — a convenience summary of the seller's completed sales,
+   with the buyer/animal details they'll need to fill out the OFFICIAL CITES
+   documentation. Explicitly NOT presented as an official document. Reads the
+   transactions we already save at mark-as-sold time. */
+function CitesDataScreen({ t, go, lang, user }) {
+  const [records, setRecords] = useState(null);
+  const [err, setErr] = useState("");
+  const [copiedId, setCopiedId] = useState(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    loadApi().then(api => api.fetchMyTransferRecords(user.id))
+      .then(rows => { if (on) setRecords(rows); })
+      .catch(e => { if (on) { setErr(e?.message || "Error"); setRecords([]); } });
+    return () => { on = false; };
+  }, [user?.id]);
+
+  const fmtDate = (iso) => {
+    if (!iso) return "—";
+    try { return new Date(iso).toLocaleDateString(lang === "it" ? "it-IT" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }); }
+    catch { return iso; }
+  };
+
+  const copyRecord = (r) => {
+    const lines = [
+      `${r.title || r.common || r.species}`,
+      r.species && `Species: ${r.species}`,
+      r.sex && `Sex: ${r.sex}`,
+      r.birthDate && `Born: ${r.birthDate}`,
+      `${t.citesDataDate}: ${fmtDate(r.soldAt)}`,
+      r.buyerName && `${t.citesDataBuyer}: ${r.buyerName}`,
+      r.buyerAddress && `${t.citesDataAddress}: ${r.buyerAddress}`,
+      r.buyerCountry && `Country: ${r.buyerCountry}`,
+      r.citesListed && `${t.citesDataCites}: yes`,
+    ].filter(Boolean).join("\n");
+    try {
+      navigator.clipboard.writeText(lines);
+      setCopiedId(r.id);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch { /* clipboard unavailable */ }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-10">
+      <header className="px-5 md:px-8 pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.citesDataTitle}</h1>
+      </header>
+
+      <div className="px-5 md:px-8 pt-5">
+        <p className="text-[12px] text-stone-400 leading-relaxed mb-4">{t.citesDataSub}</p>
+
+        {records === null && !err && (
+          <div className="py-16 text-center text-stone-500 text-sm">…</div>
+        )}
+        {err && <div className="text-sm text-rose-400 font-bold py-4">{err}</div>}
+        {records && records.length === 0 && (
+          <div className="bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-6 text-center text-sm text-stone-400">
+            {t.citesDataEmpty}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {(records || []).map(r => (
+            <div key={r.id} className={`rounded-xl ring-1 p-4 ${r.citesListed ? "bg-amber-500/5 ring-amber-500/25" : "bg-stone-900/50 ring-stone-800"}`}>
+              <div className="flex items-start gap-3">
+                {r.image
+                  ? <img src={r.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                  : <div className="w-12 h-12 rounded-lg bg-stone-800 shrink-0" />}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-stone-100 text-sm">{r.title || r.common || r.species}</span>
+                    {r.citesListed && (
+                      <span className="text-[9px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/10 ring-1 ring-amber-500/25 px-1.5 py-0.5 rounded">CITES</span>
+                    )}
+                  </div>
+                  {r.species && <div className="text-[11px] text-stone-500 italic">{r.species}</div>}
+                </div>
+              </div>
+
+              <div className="mt-3 space-y-1.5 text-[12px]">
+                <Row label={t.citesDataDate} value={fmtDate(r.soldAt)} />
+                {r.buyerName && <Row label={t.citesDataBuyer} value={r.buyerName} />}
+                {r.buyerAddress && <Row label={t.citesDataAddress} value={r.buyerAddress} />}
+                {r.sex && <Row label={lang === "it" ? "Sesso" : "Sex"} value={r.sex} />}
+                {r.birthDate && <Row label={lang === "it" ? "Nascita" : "Born"} value={r.birthDate} />}
+                {r.crossBorder && <Row label={lang === "it" ? "Transfrontaliero" : "Cross-border"} value={`${r.sellerCountry} → ${r.buyerCountry}`} />}
+              </div>
+
+              <button onClick={() => copyRecord(r)}
+                      className="mt-3 text-[11px] font-bold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1.5">
+                <FileText size={12} />{copiedId === r.id ? t.citesDataCopied : t.citesDataCopy}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {records && records.length > 0 && (
+          <div className="mt-6 bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-4">
+            <p className="text-[11px] text-stone-500 leading-relaxed">{t.citesDataDisclaimer}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div className="flex gap-3">
+      <span className="text-stone-500 shrink-0 min-w-[90px]">{label}</span>
+      <span className="text-stone-200 font-medium break-words">{value}</span>
+    </div>
+  );
+}
+
+
 function PlaceholderScreen({ title, icon, badge, t, go, lang }) {
   return (
     <div className="max-w-2xl mx-auto w-full">

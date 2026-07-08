@@ -339,7 +339,38 @@ export async function fetchReviewableSales(userId) {
     }));
 }
 
-// Submit a review for a completed sale. RLS guarantees buyer + completed-tx.
+// Completed sales BY this user (as the seller) — the transfer records they'll
+// need when filling out official CITES / origin documentation. All data is
+// already captured at mark-as-sold time; this just reads it back.
+export async function fetchMyTransferRecords(userId) {
+  const { data: seller } = await supabase.from('sellers')
+    .select('id').eq('owner_id', userId).maybeSingle();
+  if (!seller) return [];
+  const { data, error } = await supabase.from('transactions')
+    .select('id, sold_at, amount, buyer_name, buyer_address, buyer_country, seller_country, cross_border, sale_channel, listing:listing_id(common, species, title, image_url, cites_listed, birth_date, sex)')
+    .eq('seller_id', seller.id).eq('state', 'completed')
+    .order('sold_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(tx => ({
+    id: tx.id,
+    soldAt: tx.sold_at,
+    amount: tx.amount,
+    buyerName: tx.buyer_name || null,
+    buyerAddress: tx.buyer_address || null,
+    buyerCountry: tx.buyer_country || null,
+    sellerCountry: tx.seller_country || null,
+    crossBorder: !!tx.cross_border,
+    channel: tx.sale_channel || null,
+    species: tx.listing?.species || "",
+    common: tx.listing?.common || "",
+    title: tx.listing?.title || "",
+    image: tx.listing?.image_url || null,
+    citesListed: !!tx.listing?.cites_listed,
+    birthDate: tx.listing?.birth_date || null,
+    sex: tx.listing?.sex || null,
+  }));
+}
+
 export async function submitReview({ sellerId, buyerId, transactionId, rating, comment }) {
   const { error } = await supabase.from('reviews').insert({
     seller_id: sellerId, buyer_id: buyerId, transaction_id: transactionId,
@@ -663,6 +694,7 @@ export async function signUp(email, password, displayName, consents = {}) {
   if (error) throw error;
   if (data.user) {
     await supabase.from('profiles').update({
+      display_name: displayName || null,
       consent_tos_version: '1.0', consent_tos_at: new Date().toISOString(),
       consent_privacy_version: '1.0', consent_privacy_at: new Date().toISOString(),
       consent_marketing: !!consents.marketing,
