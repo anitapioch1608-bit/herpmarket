@@ -7820,6 +7820,16 @@ function pdfFooter(doc, note) {
   }
 }
 
+// Traits are stored as objects ({ name, ... }) but custom ones can be plain
+// strings — normalise both into a readable list.
+const traitNames = (traits) => {
+  if (!Array.isArray(traits) || traits.length === 0) return null;
+  const names = traits
+    .map(tr => (typeof tr === "string" ? tr : (tr && (tr.name || tr.label || tr.id)) || ""))
+    .filter(Boolean);
+  return names.length ? names.join(", ") : null;
+};
+
 const fmtPdfDate = (iso, lang) => {
   if (!iso) return "—";
   try { return new Date(iso).toLocaleDateString(lang === "it" ? "it-IT" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }); }
@@ -7997,7 +8007,7 @@ async function printAnimalRecord(a, t, lang) {
   F(it ? "Specie" : "Species", a.species);
   F(it ? "Nome comune" : "Common name", a.common);
   F(it ? "Tipo di animale" : "Animal type", a.category);
-  F(it ? "Morph / Tratti" : "Morphs / Traits", (a.traits && a.traits.length) ? a.traits.join(", ") : null);
+  F(it ? "Morph / Tratti" : "Morphs / Traits", traitNames(a.traits));
 
   // ── Animal details ────────────────────────────────────────
   heading(it ? "Dettagli animale" : "Animal details");
@@ -8042,44 +8052,77 @@ async function printAnimalRecord(a, t, lang) {
 /* 3) Collection inventory — a table of all the keeper's animals. */
 async function printInventory(animals, t, lang, ownerName) {
   const jsPDF = await loadJsPDF();
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
+  const it = lang === "it";
   const list = animals || [];
-  let y = pdfHeader(doc, {
-    title: t.printInventoryTitle,
-    subtitle: (ownerName ? `${ownerName} — ` : "") + (lang === "it"
-      ? `${list.length} animali · generato il ${fmtPdfDate(new Date().toISOString(), lang)}`
-      : `${list.length} animals · generated ${fmtPdfDate(new Date().toISOString(), lang)}`),
-  });
+  const M = 15, W = 297;   // landscape A4
 
-  const M = 20, W = 210;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(120);
-  doc.text(lang === "it" ? "ANIMALE" : "ANIMAL", M, y);
-  doc.text(lang === "it" ? "MORPH" : "MORPHS", M + 55, y);
-  doc.text(lang === "it" ? "SESSO" : "SEX", M + 110, y);
-  doc.text(lang === "it" ? "NASCITA" : "BORN", M + 130, y);
-  doc.text("CITES", M + 158, y);
+  // Header (landscape, so draw it inline rather than via pdfHeader)
+  let y = M;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(120);
+  doc.text("HERPMARKET", M, y);
+  y += 8;
+  doc.setFontSize(17); doc.setTextColor(20);
+  doc.text(t.printInventoryTitle, M, y);
+  y += 6;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(130);
+  doc.text((ownerName ? `${ownerName} — ` : "") + (it
+    ? `${list.length} animali · generato il ${fmtPdfDate(new Date().toISOString(), lang)}`
+    : `${list.length} animals · generated ${fmtPdfDate(new Date().toISOString(), lang)}`), M, y);
   y += 3;
-  doc.setDrawColor(200); doc.setLineWidth(0.2); doc.line(M, y, W - M, y);
-  y += 5;
+  doc.setDrawColor(20); doc.setLineWidth(0.5); doc.line(M, y, W - M, y);
+  y += 8;
 
-  doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(30);
+  // Column layout (landscape gives room for species AND morphs)
+  const C = { name: M, species: M + 48, morph: M + 105, sex: M + 175, born: M + 192, weight: M + 220, cites: M + 243, status: M + 258 };
+
+  const drawHead = () => {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(120);
+    doc.text(it ? "NOME" : "NAME", C.name, y);
+    doc.text(it ? "SPECIE" : "SPECIES", C.species, y);
+    doc.text(it ? "MORPH" : "MORPHS", C.morph, y);
+    doc.text(it ? "SESSO" : "SEX", C.sex, y);
+    doc.text(it ? "NASCITA" : "BORN", C.born, y);
+    doc.text(it ? "PESO" : "WEIGHT", C.weight, y);
+    doc.text("CITES", C.cites, y);
+    doc.text(it ? "STATO" : "STATUS", C.status, y);
+    y += 2.5;
+    doc.setDrawColor(200); doc.setLineWidth(0.2); doc.line(M, y, W - M, y);
+    y += 5;
+  };
+  drawHead();
+
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(30);
   list.forEach(a => {
-    if (y > 272) {
-      doc.addPage(); y = 20;
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(30);
+    if (y > 185) {   // landscape page height is 210
+      doc.addPage(); y = M;
+      drawHead();
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(30);
     }
-    doc.text(doc.splitTextToSize(String(a.title || a.common || a.species || "—"), 52)[0], M, y);
-    const traits = (a.traits && a.traits.length) ? a.traits.join(", ") : "—";
-    doc.text(doc.splitTextToSize(traits, 52)[0], M + 55, y);
-    doc.text(String(a.sex || "—"), M + 110, y);
-    doc.text(String(a.birthDate || "—"), M + 130, y);
-    doc.text(a.citesListed ? (lang === "it" ? "Si" : "Yes") : "—", M + 158, y);
+    const cut = (txt, w) => doc.splitTextToSize(String(txt == null || txt === "" ? "—" : txt), w)[0];
+    doc.text(cut(a.title || a.common || a.species, 45), C.name, y);
+    doc.text(cut(a.species, 54), C.species, y);
+    doc.text(cut(traitNames(a.traits), 67), C.morph, y);
+    doc.text(cut(a.sex, 15), C.sex, y);
+    doc.text(cut(a.birthDate, 26), C.born, y);
+    doc.text(cut(a.weight, 21), C.weight, y);
+    doc.text(a.citesListed ? (it ? "Si" : "Yes") : "—", C.cites, y);
+    doc.text(cut(a.status, 30), C.status, y);
     y += 6;
   });
 
-  pdfFooter(doc, lang === "it"
-    ? "Inventario generato da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
-    : "Inventory generated by HerpMarket. Not a substitute for official CITES documentation.");
+  // Footer (landscape coords)
+  const pages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(150);
+    doc.text(it
+      ? "Inventario generato da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
+      : "Inventory generated by HerpMarket. Not a substitute for official CITES documentation.", M, 200);
+    doc.text(`${p}/${pages}`, W - M, 205, { align: "right" });
+    doc.text("herpmarket.it", M, 205);
+  }
+
   doc.save("collection-inventory.pdf");
 }
 
