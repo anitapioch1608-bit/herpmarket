@@ -139,7 +139,9 @@ const I18N = {
     addAnimalSave: "Aggiungi alla collezione", animalAdded: "Animale aggiunto alla collezione!",
     removeListingTitle: "Rimuovere dalla vendita?",
     removeListingIntro: "Cosa vuoi fare con questo animale?",
-    removeToHeld: "Tieni (non in vendita)", removeToBreeder: "Sposta nei riproduttori",
+    removeToHeld: "Sposta nella mia collezione", removeToBreeder: "Sposta nei riproduttori",
+    colCollection: "La mia collezione", colEmptyCollection: "Nessun animale nella collezione.",
+    mlManage: "Gestisci",
     removeToSold: "Segna come venduto", removeDelete: "Elimina definitivamente",
     colEmptyActive: "Nessun animale in vendita.", colEmptySold: "Nessun animale venduto.",
     colEmptyHeld: "Nessun animale tenuto.", colEmptyBreeder: "Nessun riproduttore.",
@@ -415,7 +417,9 @@ const I18N = {
     addAnimalSave: "Add to collection", animalAdded: "Animal added to your collection!",
     removeListingTitle: "Remove from sale?",
     removeListingIntro: "What do you want to do with this animal?",
-    removeToHeld: "Keep (not for sale)", removeToBreeder: "Move to breeders",
+    removeToHeld: "Move to my collection", removeToBreeder: "Move to breeders",
+    colCollection: "My collection", colEmptyCollection: "No animals in your collection.",
+    mlManage: "Manage",
     removeToSold: "Mark as sold", removeDelete: "Delete permanently",
     colEmptyActive: "No animals for sale.", colEmptySold: "No sold animals.",
     colEmptyHeld: "No held-back animals.", colEmptyBreeder: "No breeders.",
@@ -5700,21 +5704,22 @@ function MyListingsScreen({ t, lang, go, user }) {
 
   // Categorise every animal by collection status. Legacy 'reserved'/'hidden'
   // count as active (still for-sale-ish), so nothing disappears.
+  // "held" and "breeder" were two near-identical buckets ("my animal, not for
+  // sale"). They are merged into one COLLECTION tab. Both legacy statuses still
+  // map here, so nothing is lost for animals saved before the merge.
   const bucket = (l) => l.status === "sold" ? "sold"
-                      : l.status === "held" ? "held"
-                      : l.status === "breeder" ? "breeder"
+                      : (l.status === "held" || l.status === "breeder") ? "collection"
                       : "active";
   const all = items || [];
   const counts = {
     active: all.filter(l => bucket(l) === "active").length,
     sold: all.filter(l => bucket(l) === "sold").length,
-    held: all.filter(l => bucket(l) === "held").length,
-    breeder: all.filter(l => bucket(l) === "breeder").length,
+    collection: all.filter(l => bucket(l) === "collection").length,
   };
   const shown = all.filter(l => bucket(l) === tab);
-  const emptyMsg = { active: t.colEmptyActive, sold: t.colEmptySold, held: t.colEmptyHeld, breeder: t.colEmptyBreeder }[tab];
+  const emptyMsg = { active: t.colEmptyActive, sold: t.colEmptySold, collection: t.colEmptyCollection }[tab];
   const tabs = [
-    ["active", t.colActive], ["sold", t.colSold], ["held", t.colHeld], ["breeder", t.colBreeder],
+    ["active", t.colActive], ["sold", t.colSold], ["collection", t.colCollection],
   ];
 
   return (
@@ -5775,10 +5780,7 @@ function MyListingsScreen({ t, lang, go, user }) {
               <button onClick={() => go(tab === "active" ? "sell" : "addanimal")}
                       className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-lg transition-colors">
                 <PlusCircle size={15} />
-                {tab === "active" ? t.sellCta
-                  : tab === "breeder" ? (lang === "it" ? "Aggiungi riproduttore" : "Add a breeder")
-                  : tab === "held" ? (lang === "it" ? "Aggiungi animale tenuto" : "Add held-back animal")
-                  : t.addAnimal}
+                {tab === "active" ? t.sellCta : t.addAnimal}
               </button>
             )}
           </div>
@@ -5827,12 +5829,12 @@ function MyListingsScreen({ t, lang, go, user }) {
                       </button>
                     )}
                     <button onClick={() => { setRemoveFor(removeFor?.id === l.id ? null : l); setEditId(null); setSoldFor(null); }}
-                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
-                      {t.mlDelete}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
+                      {t.mlManage || (lang === "it" ? "Gestisci" : "Manage")}
                     </button>
                   </>
                 )}
-                {(bucket(l) === "held" || bucket(l) === "breeder") && (
+                {bucket(l) === "collection" && (
                   <>
                     <button onClick={() => go("editlisting", l)}
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 ring-1 ring-stone-700 text-stone-200 hover:bg-stone-700 transition-colors">
@@ -5907,10 +5909,6 @@ function MyListingsScreen({ t, lang, go, user }) {
                   <button onClick={() => changeStatus(l.id, "held")} disabled={busy}
                           className="w-full py-2 rounded-lg text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
                     {t.removeToHeld}
-                  </button>
-                  <button onClick={() => changeStatus(l.id, "breeder")} disabled={busy}
-                          className="w-full py-2 rounded-lg text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
-                    {t.removeToBreeder}
                   </button>
                   {bucket(l) === "active" && (
                     <button onClick={() => { setSoldFor(l); setRemoveFor(null); }} disabled={busy}
