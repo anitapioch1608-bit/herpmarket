@@ -7837,74 +7837,66 @@ const fmtPdfDate = (iso, lang) => {
 };
 
 // Load an image URL into a data URL so jsPDF can embed it.
-// Tries fetch first, then falls back to <img> + canvas (which works in some
-// CORS setups where fetch doesn't). Returns null if both fail — the PDF then
-// prints without the photo rather than failing.
+// NOTE: showing an image in <img> needs no CORS, but READING its pixels (which
+// is what embedding in a PDF requires) does. So an image can look fine in the
+// app yet be unreadable here. We try several routes and log clearly on failure.
+// Returns { dataUrl, format } or null.
 async function imageToDataUrl(url) {
   if (!url) return null;
 
-  // Attempt 1: fetch → blob → data URL
-  try {
-    const res = await fetch(url, { mode: "cors", cache: "no-cache" });
-    if (res.ok) {
-      const blob = await res.blob();
-      const dataUrl = await new Promise((resolve, reject) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(fr.result);
-        fr.onerror = reject;
-        fr.readAsDataURL(blob);
-      });
-      // Re-encode through canvas so we always hand jsPDF a JPEG/PNG it groks
-      // (Supabase can serve webp, which older jsPDF builds reject).
-      const reencoded = await reencodeToJpeg(dataUrl);
-      if (reencoded) return reencoded;
-      return dataUrl;
-    }
-  } catch { /* fall through */ }
+  const viaCanvas = (img) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    return canvas.toDataURL("image/jpeg", 0.85);   // always JPEG for jsPDF
+  };
 
-  // Attempt 2: <img crossOrigin> → canvas
+  // Route 1: <img crossOrigin=anonymous> → canvas. Cache-busted, because a
+  // cached non-CORS response will taint the canvas even if the server allows it.
   try {
-    return await new Promise((resolve, reject) => {
+    const dataUrl = await new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/jpeg", 0.85));
-        } catch (e) { reject(e); }
-      };
-      img.onerror = reject;
-      img.src = url;
+      img.onload = () => { try { resolve(viaCanvas(img)); } catch (e) { reject(e); } };
+      img.onerror = () => reject(new Error("img load failed"));
+      img.src = url + (url.includes("?") ? "&" : "?") + "hmpdf=1";
     });
-  } catch { return null; }
-}
+    if (dataUrl && dataUrl.length > 100) return { dataUrl, format: "JPEG" };
+  } catch (e) {
+    console.warn("[HerpMarket PDF] image route 1 (img+canvas) failed:", e?.message || e);
+  }
 
-// Draw a data URL onto a canvas and export as JPEG — normalises webp/png/etc
-// into a format jsPDF reliably accepts.
-function reencodeToJpeg(dataUrl) {
-  return new Promise((resolve) => {
-    try {
+  // Route 2: fetch → blob → data URL, then re-encode via canvas.
+  try {
+    const res = await fetch(url, { mode: "cors", cache: "reload" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const raw = await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result);
+      fr.onerror = reject;
+      fr.readAsDataURL(blob);
+    });
+    const jpeg = await new Promise((resolve) => {
       const img = new Image();
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/jpeg", 0.85));
-        } catch { resolve(null); }
-      };
+      img.onload = () => { try { resolve(viaCanvas(img)); } catch { resolve(null); } };
       img.onerror = () => resolve(null);
-      img.src = dataUrl;
-    } catch { resolve(null); }
-  });
+      img.src = raw;
+    });
+    if (jpeg) return { dataUrl: jpeg, format: "JPEG" };
+    // Last resort: hand jsPDF the raw data URL with its real format.
+    const m = /^data:image\/(png|jpe?g)/i.exec(raw || "");
+    if (m) return { dataUrl: raw, format: m[1].toLowerCase().startsWith("p") ? "PNG" : "JPEG" };
+  } catch (e) {
+    console.warn("[HerpMarket PDF] image route 2 (fetch) failed:", e?.message || e);
+  }
+
+  console.warn("[HerpMarket PDF] could not embed photo — printing without it. URL:", url);
+  return null;
 }
 
 
@@ -7917,13 +7909,13 @@ async function printCitesRecord(r, t, lang) {
 
   const M = 20, W = 210;
   // Animal photo, if we have one — helps identify the specimen on the sheet.
-  const dataUrl = await imageToDataUrl(r.image);
+  const photo = await imageToDataUrl(r.image);
   let photoBottom = 0;
-  if (dataUrl) {
+  if (photo) {
     try {
       const boxW = 40, boxH = 40;
       const x = W - M - boxW;
-      doc.addImage(dataUrl, "JPEG", x, y, boxW, boxH, undefined, "FAST");
+      doc.addImage(photo.dataUrl, photo.format, x, y, boxW, boxH, undefined, "FAST");
       doc.setDrawColor(210); doc.setLineWidth(0.3);
       doc.rect(x, y, boxW, boxH);
       photoBottom = y + 42;
@@ -7973,13 +7965,13 @@ async function printAnimalRecord(a, t, lang) {
 
   // Main photo, top-right. Re-encoded to JPEG so jsPDF always accepts it.
   const photoUrl = a.image || (a.images && a.images[0]) || null;
-  const dataUrl = await imageToDataUrl(photoUrl);
+  const photo = await imageToDataUrl(photoUrl);
   let photoBottom = 0;
-  if (dataUrl) {
+  if (photo) {
     try {
       const boxW = 52, boxH = 52;
       const x = W - M - boxW;
-      doc.addImage(dataUrl, "JPEG", x, y, boxW, boxH, undefined, "FAST");
+      doc.addImage(photo.dataUrl, photo.format, x, y, boxW, boxH, undefined, "FAST");
       doc.setDrawColor(205); doc.setLineWidth(0.3);
       doc.rect(x, y, boxW, boxH);
       photoBottom = y + boxH + 4;
