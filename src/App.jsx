@@ -7826,31 +7826,77 @@ const fmtPdfDate = (iso, lang) => {
   catch { return String(iso); }
 };
 
-// Fetch an image URL and turn it into a data URL so jsPDF can embed it.
-// Returns null on any failure (CORS, 404, offline) — the PDF still prints,
-// just without the photo. Never let a missing image break the document.
+// Load an image URL into a data URL so jsPDF can embed it.
+// Tries fetch first, then falls back to <img> + canvas (which works in some
+// CORS setups where fetch doesn't). Returns null if both fail — the PDF then
+// prints without the photo rather than failing.
 async function imageToDataUrl(url) {
   if (!url) return null;
+
+  // Attempt 1: fetch → blob → data URL
   try {
-    const res = await fetch(url, { mode: "cors" });
-    if (!res.ok) return null;
-    const blob = await res.blob();
+    const res = await fetch(url, { mode: "cors", cache: "no-cache" });
+    if (res.ok) {
+      const blob = await res.blob();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+      // Re-encode through canvas so we always hand jsPDF a JPEG/PNG it groks
+      // (Supabase can serve webp, which older jsPDF builds reject).
+      const reencoded = await reencodeToJpeg(dataUrl);
+      if (reencoded) return reencoded;
+      return dataUrl;
+    }
+  } catch { /* fall through */ }
+
+  // Attempt 2: <img crossOrigin> → canvas
+  try {
     return await new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => resolve(fr.result);
-      fr.onerror = reject;
-      fr.readAsDataURL(blob);
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        } catch (e) { reject(e); }
+      };
+      img.onerror = reject;
+      img.src = url;
     });
   } catch { return null; }
 }
 
-// Work out the image format jsPDF needs from the data URL.
-const dataUrlFormat = (dataUrl) => {
-  const m = /^data:image\/(png|jpe?g|webp)/i.exec(dataUrl || "");
-  if (!m) return null;
-  const f = m[1].toLowerCase();
-  return f === "jpg" ? "JPEG" : f === "jpeg" ? "JPEG" : f.toUpperCase();
-};
+// Draw a data URL onto a canvas and export as JPEG — normalises webp/png/etc
+// into a format jsPDF reliably accepts.
+function reencodeToJpeg(dataUrl) {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        } catch { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataUrl;
+    } catch { resolve(null); }
+  });
+}
+
 
 /* 1) CITES data sheet — record of a completed transfer, to help fill the
       OFFICIAL documentation. Explicitly NOT an official document. */
@@ -7862,13 +7908,12 @@ async function printCitesRecord(r, t, lang) {
   const M = 20, W = 210;
   // Animal photo, if we have one — helps identify the specimen on the sheet.
   const dataUrl = await imageToDataUrl(r.image);
-  const fmt = dataUrlFormat(dataUrl);
   let photoBottom = 0;
-  if (dataUrl && fmt) {
+  if (dataUrl) {
     try {
       const boxW = 40, boxH = 40;
       const x = W - M - boxW;
-      doc.addImage(dataUrl, fmt, x, y, boxW, boxH, undefined, "FAST");
+      doc.addImage(dataUrl, "JPEG", x, y, boxW, boxH, undefined, "FAST");
       doc.setDrawColor(210); doc.setLineWidth(0.3);
       doc.rect(x, y, boxW, boxH);
       photoBottom = y + 42;
@@ -7908,70 +7953,90 @@ async function printAnimalRecord(a, t, lang) {
   const jsPDF = await loadJsPDF();
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const it = lang === "it";
-  let y = pdfHeader(doc, {
-    title: t.printAnimalTitle,
-    subtitle: it ? "Scheda dell'animale — dati registrati su HerpMarket."
-                 : "Animal record — details held on HerpMarket.",
-  });
-
   const M = 20, W = 210;
 
-  // Main photo (top-right). Fails gracefully — no photo, no problem.
+  let y = pdfHeader(doc, {
+    title: a.title || a.common || a.species || t.printAnimalTitle,
+    subtitle: it ? "Scheda dell'animale — tutti i dati registrati su HerpMarket."
+                 : "Animal record — all details held on HerpMarket.",
+  });
+
+  // Main photo, top-right. Re-encoded to JPEG so jsPDF always accepts it.
   const photoUrl = a.image || (a.images && a.images[0]) || null;
   const dataUrl = await imageToDataUrl(photoUrl);
-  const fmt = dataUrlFormat(dataUrl);
-  if (dataUrl && fmt) {
+  let photoBottom = 0;
+  if (dataUrl) {
     try {
-      const boxW = 50, boxH = 50;
+      const boxW = 52, boxH = 52;
       const x = W - M - boxW;
-      doc.addImage(dataUrl, fmt, x, y, boxW, boxH, undefined, "FAST");
-      doc.setDrawColor(210); doc.setLineWidth(0.3);
+      doc.addImage(dataUrl, "JPEG", x, y, boxW, boxH, undefined, "FAST");
+      doc.setDrawColor(205); doc.setLineWidth(0.3);
       doc.rect(x, y, boxW, boxH);
-    } catch { /* unsupported format — skip the photo */ }
+      photoBottom = y + boxH + 4;
+    } catch { /* photo unsupported — carry on without it */ }
   }
 
-  const photoBottom = (dataUrl && fmt) ? y + 52 : 0;
-  // While we're alongside the photo, wrap text narrower; below it, full width.
+  // Every field prints, with an em-dash when empty, so a blank means
+  // "not recorded" rather than looking like the printout is broken.
   const F = (label, value) => {
-    if (value == null || value === "") return;
-    const limit = (y < photoBottom) ? (W - M - 50 - 55) : undefined;
-    y = pdfField(doc, y, label, value, limit);
+    const limit = (y < photoBottom) ? (W - M - 52 - 52) : undefined;
+    y = pdfField(doc, y, label, (value == null || value === "") ? "—" : value, limit);
+  };
+  const heading = (text) => {
+    y = Math.max(y, photoBottom) + 3;
+    if (y > 265) { doc.addPage(); y = 20; }
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(150);
+    doc.text(String(text).toUpperCase(), M, y);
+    y += 1.5;
+    doc.setDrawColor(225); doc.setLineWidth(0.2); doc.line(M, y, W - M, y);
+    y += 5;
   };
 
-  // Identity
-  F(it ? "Nome / Titolo" : "Name / Title", a.title || a.common);
+  // ── Identity ──────────────────────────────────────────────
+  F(it ? "Titolo annuncio" : "Listing title", a.title);
   F(it ? "Specie" : "Species", a.species);
   F(it ? "Nome comune" : "Common name", a.common);
-  F(it ? "Categoria" : "Category", a.category);
+  F(it ? "Tipo di animale" : "Animal type", a.category);
   F(it ? "Morph / Tratti" : "Morphs / Traits", (a.traits && a.traits.length) ? a.traits.join(", ") : null);
 
-  // Physical
-  y += 2;
+  // ── Animal details ────────────────────────────────────────
+  heading(it ? "Dettagli animale" : "Animal details");
   F(it ? "Sesso" : "Sex", a.sex);
   F(it ? "Data di nascita" : "Date of birth", a.birthDate);
   F(it ? "Et\u00e0" : "Age", a.ageMonths != null ? (it ? `${a.ageMonths} mesi` : `${a.ageMonths} months`) : null);
   F(it ? "Peso" : "Weight", a.weight);
-
-  // Legal / provenance
-  y += 2;
-  F(t.citesDataCites, a.citesListed ? (it ? "Si" : "Yes") : "No");
-  F(it ? "Provenienza" : "Location", [a.region, a.country].filter(Boolean).join(", ") || null);
   F(it ? "Padre (sire)" : "Sire", a.sire);
   F(it ? "Madre (dam)" : "Dam", a.dam);
 
-  // Listing info
-  y += 2;
+  // ── Legal / provenance ────────────────────────────────────
+  heading(it ? "Legale e provenienza" : "Legal & provenance");
+  F(it ? "Specie CITES dichiarata" : "CITES species declared", a.citesListed ? (it ? "Si" : "Yes") : (it ? "No" : "No"));
+  F(it ? "Regione" : "Region", a.region);
+  F(it ? "Paese" : "Country", a.country);
+
+  // ── Listing ───────────────────────────────────────────────
+  heading(it ? "Annuncio" : "Listing");
   F(it ? "Prezzo" : "Price", a.price != null ? `EUR ${a.price}` : null);
+  F(it ? "Spedizione" : "Shipping", a.shipping
+      ? (a.shippingCost ? `${it ? "Si" : "Yes"} — EUR ${a.shippingCost}` : (it ? "Si" : "Yes"))
+      : (it ? "No" : "No"));
+  F(it ? "Ritiro di persona" : "Local pickup", a.localPickup ? (it ? "Si" : "Yes") : (it ? "No" : "No"));
+  F(it ? "Fiere" : "Expos", (a.expoIds && a.expoIds.length) ? String(a.expoIds.length) : null);
   F(it ? "Stato" : "Status", a.status);
   F(it ? "Pubblicato il" : "Listed on", fmtPdfDate(a.createdAt, lang));
+  F(it ? "Aggiornato il" : "Last updated", fmtPdfDate(a.updatedAt, lang));
   F(it ? "Venditore" : "Seller", a.seller);
 
-  if (a.desc) { y += 3; y = pdfField(doc, y, it ? "Note" : "Notes", a.desc); }
+  // ── Description ───────────────────────────────────────────
+  if (a.desc) {
+    heading(it ? "Descrizione" : "Description");
+    y = pdfField(doc, y, "", a.desc);
+  }
 
   pdfFooter(doc, it
     ? "Scheda generata da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
     : "Record generated by HerpMarket. Not a substitute for official CITES documentation.");
-  doc.save(`animal-${String(a.species || "record").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+  doc.save(`animal-${String(a.title || a.species || "record").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`);
 }
 
 /* 3) Collection inventory — a table of all the keeper's animals. */
