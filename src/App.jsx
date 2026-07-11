@@ -232,6 +232,12 @@ const I18N = {
     citesDataCites: "Specie CITES dichiarata",
     citesDataChannel: "Canale",
     citesDataCopy: "Copia i dati",
+    citesDataPrint: "Stampa / PDF",
+    printAnimalTitle: "Scheda animale",
+    printInventoryTitle: "Inventario della collezione",
+    printRecord: "Stampa scheda",
+    printInventory: "Stampa inventario",
+    printing: "Generazione…",
     citesDataCopied: "Copiato",
     breedingMgmt: "Gestione allevamento", bureaucracyLegal: "Burocrazia & Legale", infoSupport: "Informazioni & Supporto", configuration: "Configurazione",
     login: "Accedi", signup: "Iscriviti", joinCommunity: "Unisciti", loginOrJoin: "Accedi / Iscriviti",
@@ -498,6 +504,12 @@ const I18N = {
     citesDataCites: "CITES species declared",
     citesDataChannel: "Channel",
     citesDataCopy: "Copy data",
+    citesDataPrint: "Print / PDF",
+    printAnimalTitle: "Animal record",
+    printInventoryTitle: "Collection inventory",
+    printRecord: "Print record",
+    printInventory: "Print inventory",
+    printing: "Generating…",
     citesDataCopied: "Copied",
     breedingMgmt: "Breeding management", bureaucracyLegal: "Bureaucracy & Legal", infoSupport: "Information & Support", configuration: "Configuration",
     login: "Sign in", signup: "Sign up", joinCommunity: "Join us", loginOrJoin: "Sign in / Join",
@@ -3616,6 +3628,16 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         </Section>
       )}
 
+      {/* Owner: print this animal's record. Quiet link, same row style as report. */}
+      {isMine && (
+        <div className="px-5 md:px-8 pb-28 md:pb-24 pt-2 text-center">
+          <button onClick={() => printAnimalRecord(a, t, lang)}
+                  className="inline-flex items-center gap-1.5 text-[11px] text-stone-500 hover:text-stone-300 transition-colors">
+            <FileText size={12} />{t.printRecord}
+          </button>
+        </div>
+      )}
+
       {/* Quiet report link — present on every listing (DSA notice mechanism),
           but visually unobtrusive. Hidden on the user's own listing. */}
       {!isMine && (
@@ -5703,6 +5725,11 @@ function MyListingsScreen({ t, lang, go, user }) {
           <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.myListings}</h1>
           <p className="text-[11px] text-stone-500 mt-0.5">{t.mlIntro}</p>
         </div>
+        <button onClick={() => printInventory(items || [], t, lang, user?.name)}
+                disabled={!items || items.length === 0}
+                className="shrink-0 inline-flex items-center gap-1.5 bg-stone-800/70 ring-1 ring-stone-700 hover:bg-stone-800 disabled:opacity-40 text-stone-300 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
+          <FileText size={14} />{t.printInventory}
+        </button>
         <button onClick={() => go("addanimal")}
                 className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500/15 ring-1 ring-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
           <PlusCircle size={14} />{t.addAnimal}
@@ -7647,6 +7674,187 @@ function ReviewsScreen({ t, go, lang, user }) {
   );
 }
 
+/* ═════════════════════════════════════════════════════════════════
+   PDF / PRINT HELPERS
+   Shared jsPDF loader (bundled first — works offline at expos — CDN fallback)
+   plus three printable documents: CITES data sheet, animal record, inventory.
+   ═════════════════════════════════════════════════════════════════ */
+async function loadJsPDF() {
+  let jsPDF;
+  try {
+    const pkg = "jspdf";
+    ({ jsPDF } = await import(/* @vite-ignore */ pkg));
+  } catch {
+    if (!window.jspdf) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    jsPDF = window.jspdf.jsPDF;
+  }
+  return jsPDF;
+}
+
+function pdfHeader(doc, { title, subtitle }) {
+  const M = 20, W = 210;
+  let y = M;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(120);
+  doc.text("HERPMARKET", M, y);
+  y += 8;
+  doc.setFontSize(17); doc.setTextColor(20);
+  doc.text(title, M, y);
+  y += 6;
+  if (subtitle) {
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(130);
+    const lines = doc.splitTextToSize(subtitle, W - M * 2);
+    doc.text(lines, M, y);
+    y += lines.length * 3.6;
+  }
+  y += 1;
+  doc.setDrawColor(20); doc.setLineWidth(0.5); doc.line(M, y, W - M, y);
+  return y + 8;
+}
+
+function pdfField(doc, y, label, value) {
+  const M = 20, W = 210;
+  if (y > 268) { doc.addPage(); y = 20; }
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(130);
+  doc.text(String(label), M, y);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(20);
+  const lines = doc.splitTextToSize(String(value == null || value === "" ? "—" : value), W - M - 60);
+  doc.text(lines, M + 45, y);
+  return y + Math.max(6.5, lines.length * 4.6);
+}
+
+function pdfFooter(doc, note) {
+  const M = 20, W = 210;
+  const pages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(150);
+    if (note) {
+      const lines = doc.splitTextToSize(note, W - M * 2);
+      doc.text(lines, M, 280);
+    }
+    doc.text(`${p}/${pages}`, W - M, 289, { align: "right" });
+    doc.text("herpmarket.it", M, 289);
+  }
+}
+
+const fmtPdfDate = (iso, lang) => {
+  if (!iso) return "—";
+  try { return new Date(iso).toLocaleDateString(lang === "it" ? "it-IT" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }); }
+  catch { return String(iso); }
+};
+
+/* 1) CITES data sheet — record of a completed transfer, to help fill the
+      OFFICIAL documentation. Explicitly NOT an official document. */
+async function printCitesRecord(r, t, lang) {
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  let y = pdfHeader(doc, { title: t.citesDataTitle, subtitle: t.citesDataSub });
+
+  y = pdfField(doc, y, lang === "it" ? "Animale" : "Animal", r.title || r.common || r.species);
+  y = pdfField(doc, y, lang === "it" ? "Specie" : "Species", r.species);
+  if (r.sex) y = pdfField(doc, y, lang === "it" ? "Sesso" : "Sex", r.sex);
+  if (r.birthDate) y = pdfField(doc, y, lang === "it" ? "Nascita" : "Born", r.birthDate);
+  y = pdfField(doc, y, t.citesDataCites, r.citesListed ? (lang === "it" ? "Si" : "Yes") : "No");
+  y += 3;
+  y = pdfField(doc, y, t.citesDataDate, fmtPdfDate(r.soldAt, lang));
+  y = pdfField(doc, y, t.citesDataBuyer, r.buyerName);
+  y = pdfField(doc, y, t.citesDataAddress, r.buyerAddress);
+  if (r.buyerCountry) y = pdfField(doc, y, lang === "it" ? "Paese acquirente" : "Buyer country", r.buyerCountry);
+  if (r.crossBorder) y = pdfField(doc, y, lang === "it" ? "Transfrontaliero" : "Cross-border", `${r.sellerCountry || "—"} -> ${r.buyerCountry || "—"}`);
+
+  const M = 20, W = 210;
+  y += 8;
+  if (y < 250) {
+    doc.setDrawColor(180); doc.setLineWidth(0.3);
+    doc.line(M, y + 10, M + 70, y + 10);
+    doc.line(W - M - 70, y + 10, W - M, y + 10);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(140);
+    doc.text(lang === "it" ? "Firma venditore" : "Seller signature", M, y + 14);
+    doc.text(lang === "it" ? "Firma acquirente" : "Buyer signature", W - M - 70, y + 14);
+  }
+
+  pdfFooter(doc, t.citesDataDisclaimer);
+  doc.save(`cites-data-${String(r.species || "animal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+}
+
+/* 2) Animal record / care sheet. */
+async function printAnimalRecord(a, t, lang) {
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  let y = pdfHeader(doc, {
+    title: t.printAnimalTitle,
+    subtitle: lang === "it" ? "Scheda dell'animale — dati registrati su HerpMarket."
+                            : "Animal record — details held on HerpMarket.",
+  });
+
+  y = pdfField(doc, y, lang === "it" ? "Nome / Titolo" : "Name / Title", a.title || a.common);
+  y = pdfField(doc, y, lang === "it" ? "Specie" : "Species", a.species);
+  if (a.common) y = pdfField(doc, y, lang === "it" ? "Nome comune" : "Common name", a.common);
+  if (a.sex) y = pdfField(doc, y, lang === "it" ? "Sesso" : "Sex", a.sex);
+  if (a.birthDate) y = pdfField(doc, y, lang === "it" ? "Data di nascita" : "Date of birth", a.birthDate);
+  if (a.weight) y = pdfField(doc, y, lang === "it" ? "Peso" : "Weight", a.weight);
+  if (a.traits && a.traits.length) y = pdfField(doc, y, lang === "it" ? "Morph / Tratti" : "Morphs / Traits", a.traits.join(", "));
+  y = pdfField(doc, y, t.citesDataCites, a.citesListed ? (lang === "it" ? "Si" : "Yes") : "No");
+  if (a.region || a.country) y = pdfField(doc, y, lang === "it" ? "Provenienza" : "Location", [a.region, a.country].filter(Boolean).join(", "));
+  if (a.desc) { y += 3; y = pdfField(doc, y, lang === "it" ? "Note" : "Notes", a.desc); }
+
+  pdfFooter(doc, lang === "it"
+    ? "Scheda generata da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
+    : "Record generated by HerpMarket. Not a substitute for official CITES documentation.");
+  doc.save(`animal-${String(a.species || "record").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+}
+
+/* 3) Collection inventory — a table of all the keeper's animals. */
+async function printInventory(animals, t, lang, ownerName) {
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const list = animals || [];
+  let y = pdfHeader(doc, {
+    title: t.printInventoryTitle,
+    subtitle: (ownerName ? `${ownerName} — ` : "") + (lang === "it"
+      ? `${list.length} animali · generato il ${fmtPdfDate(new Date().toISOString(), lang)}`
+      : `${list.length} animals · generated ${fmtPdfDate(new Date().toISOString(), lang)}`),
+  });
+
+  const M = 20, W = 210;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(120);
+  doc.text(lang === "it" ? "ANIMALE" : "ANIMAL", M, y);
+  doc.text(lang === "it" ? "MORPH" : "MORPHS", M + 55, y);
+  doc.text(lang === "it" ? "SESSO" : "SEX", M + 110, y);
+  doc.text(lang === "it" ? "NASCITA" : "BORN", M + 130, y);
+  doc.text("CITES", M + 158, y);
+  y += 3;
+  doc.setDrawColor(200); doc.setLineWidth(0.2); doc.line(M, y, W - M, y);
+  y += 5;
+
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(30);
+  list.forEach(a => {
+    if (y > 272) {
+      doc.addPage(); y = 20;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(30);
+    }
+    doc.text(doc.splitTextToSize(String(a.title || a.common || a.species || "—"), 52)[0], M, y);
+    const traits = (a.traits && a.traits.length) ? a.traits.join(", ") : "—";
+    doc.text(doc.splitTextToSize(traits, 52)[0], M + 55, y);
+    doc.text(String(a.sex || "—"), M + 110, y);
+    doc.text(String(a.birthDate || "—"), M + 130, y);
+    doc.text(a.citesListed ? (lang === "it" ? "Si" : "Yes") : "—", M + 158, y);
+    y += 6;
+  });
+
+  pdfFooter(doc, lang === "it"
+    ? "Inventario generato da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
+    : "Inventory generated by HerpMarket. Not a substitute for official CITES documentation.");
+  doc.save("collection-inventory.pdf");
+}
+
 /* CITES data archive — a convenience summary of the seller's completed sales,
    with the buyer/animal details they'll need to fill out the OFFICIAL CITES
    documentation. Explicitly NOT presented as an official document. Reads the
@@ -7736,10 +7944,16 @@ function CitesDataScreen({ t, go, lang, user }) {
                 {r.crossBorder && <Row label={lang === "it" ? "Transfrontaliero" : "Cross-border"} value={`${r.sellerCountry} → ${r.buyerCountry}`} />}
               </div>
 
-              <button onClick={() => copyRecord(r)}
-                      className="mt-3 text-[11px] font-bold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1.5">
-                <FileText size={12} />{copiedId === r.id ? t.citesDataCopied : t.citesDataCopy}
-              </button>
+              <div className="mt-3 flex items-center gap-4">
+                <button onClick={() => copyRecord(r)}
+                        className="text-[11px] font-bold text-stone-400 hover:text-stone-200 inline-flex items-center gap-1.5">
+                  <FileText size={12} />{copiedId === r.id ? t.citesDataCopied : t.citesDataCopy}
+                </button>
+                <button onClick={() => printCitesRecord(r, t, lang)}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1.5">
+                  <UploadCloud size={12} className="rotate-180" />{t.citesDataPrint}
+                </button>
+              </div>
             </div>
           ))}
         </div>
