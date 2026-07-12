@@ -1512,10 +1512,21 @@ export default function HerpMarket() {
     const el = scrollContainerRef.current;
     if (el) el.scrollTop = y;
   };
+  // Scroll memory must be keyed by the view AND what it's showing. Keying by
+  // view alone meant every listing shared one "detail" slot: scroll to the
+  // bottom of listing A, open listing B, and B opened at A's scroll position
+  // (i.e. at the bottom). Include the item's identity so a *different* item is
+  // treated as a new page and starts at the top.
+  const scrollKeyFor = (v, data) => {
+    const id = (data && typeof data === "object") ? (data.id ?? null)
+             : (typeof data === "string" ? data : null);
+    return id ? `${v}:${id}` : v;
+  };
   const go = (v, data = null, fresh = false) => {
     // Save where we are before leaving the current view
-    scrollMemory.current[view] = getScroll();
-    if (fresh) scrollMemory.current[v] = 0; // intentional new view → start at top
+    scrollMemory.current[scrollKeyFor(view, viewData)] = getScroll();
+    const nextKey = scrollKeyFor(v, data);
+    if (fresh) scrollMemory.current[nextKey] = 0; // intentional new view → start at top
     // Push current view onto history so "back" can return to it
     navHistory.current.push({ view, data: viewData });
     // Mirror into the browser history so the device/browser Back button
@@ -1524,9 +1535,9 @@ export default function HerpMarket() {
     setView(v);
     setViewData(data);
     setNavSeq(n => n + 1);
-    const saved = scrollMemory.current[v];
-    // Opening a NEW view (not in memory) must land at the top. Only restore a
-    // remembered position when we actually have one saved for that view.
+    const saved = scrollMemory.current[nextKey];
+    // Opening a NEW page (not in memory) must land at the top. Only restore a
+    // remembered position when we actually have one saved for that exact page.
     requestAnimationFrame(() => {
       setScroll(typeof saved === "number" ? saved : 0);
     });
@@ -1536,21 +1547,22 @@ export default function HerpMarket() {
   const goBack = () => {
     const prev = navHistory.current.pop();
     const target = prev?.view || "home";
-    scrollMemory.current[view] = getScroll();
+    const targetData = prev?.data ?? null;
+    scrollMemory.current[scrollKeyFor(view, viewData)] = getScroll();
     setView(target);
-    setViewData(prev?.data ?? null);
+    setViewData(targetData);
     setNavSeq(n => n + 1);
-    const saved = scrollMemory.current[target];
+    const saved = scrollMemory.current[scrollKeyFor(target, targetData)];
     requestAnimationFrame(() => {
       setScroll(typeof saved === "number" ? saved : 0);
     });
   };
   // Safety net: after any view change, if we don't have a remembered scroll
-  // position for this view, make sure the container is at the top. Runs after
-  // the new (possibly taller) content has rendered, so it can't be undone by
-  // a late layout. Covers navigation paths that bypass go() (e.g. bottom nav).
+  // position for this exact page, make sure the container is at the top. Runs
+  // after the new (possibly taller) content has rendered, so it can't be undone
+  // by a late layout. Covers navigation paths that bypass go() (e.g. bottom nav).
   useEffect(() => {
-    const saved = scrollMemory.current[view];
+    const saved = scrollMemory.current[scrollKeyFor(view, viewData)];
     if (typeof saved !== "number") setScroll(0);
   }, [view, viewData]);
   // Bridge the browser/device Back button to the app's own history. When the
@@ -7867,7 +7879,6 @@ async function imageToDataUrl(url) {
     });
     if (dataUrl && dataUrl.length > 100) return { dataUrl, format: "JPEG" };
   } catch (e) {
-    console.warn("[HerpMarket PDF] image route 1 (img+canvas) failed:", e?.message || e);
   }
 
   // Route 2: fetch → blob → data URL, then re-encode via canvas.
@@ -7892,10 +7903,8 @@ async function imageToDataUrl(url) {
     const m = /^data:image\/(png|jpe?g)/i.exec(raw || "");
     if (m) return { dataUrl: raw, format: m[1].toLowerCase().startsWith("p") ? "PNG" : "JPEG" };
   } catch (e) {
-    console.warn("[HerpMarket PDF] image route 2 (fetch) failed:", e?.message || e);
   }
 
-  console.warn("[HerpMarket PDF] could not embed photo — printing without it. URL:", url);
   return null;
 }
 
@@ -7964,7 +7973,10 @@ async function printAnimalRecord(a, t, lang) {
   });
 
   // Main photo, top-right. Re-encoded to JPEG so jsPDF always accepts it.
-  const photoUrl = a.image || (a.images && a.images[0]) || null;
+  // Main photo, top-right. Check every field an image could live in.
+  const photoUrl = a.image
+    || (Array.isArray(a.images) && a.images.length ? a.images[0] : null)
+    || a.image_url || a.imageUrl || null;
   const photo = await imageToDataUrl(photoUrl);
   let photoBottom = 0;
   if (photo) {
