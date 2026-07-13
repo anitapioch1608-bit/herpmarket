@@ -3,7 +3,7 @@ import {
   Home, Search, PlusCircle, MessageCircle, User,
   ChevronRight, ChevronLeft, ShieldCheck, MapPin,
   Star, Calendar, SlidersHorizontal, FileText, CheckCircle,
-  Camera, Heart, Mars, Venus, HelpCircle, X,
+  Camera, Heart, Mars, Venus, HelpCircle, X, Maximize2,
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
@@ -112,7 +112,7 @@ const I18N = {
     listedOn: "Pubblicato il", lastUpdated: "Ultimo aggiornamento",
     born: "Nato", weight: "Peso", origin: "Origine", captiveBred: "Nato in cattività",
     cites: "Documenti CITES", citesNotice: "Documento di cessione richiesto per Allegato A/B",
-    listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 3)", publishListing: "Pubblica annuncio",
+    listingTitle: "Titolo annuncio", uploadPhotos: "Carica foto (min. 1, max. 5)", publishListing: "Pubblica annuncio",
     photoHint: "Trascina qui o tocca per sceglierle dal dispositivo", photoNeed: "Aggiungi almeno una foto",
     needSpecies: "Seleziona o inserisci una specie", needPrice: "Inserisci un prezzo", needLoginPub: "Accedi per pubblicare", publishing: "Pubblicazione…", uploadingPhotos: "Caricamento foto…", uploadingHint: "Non chiudere l'app, può richiedere qualche secondo.",
     reserveTooLow: "Il prezzo di riserva non può essere inferiore al prezzo di partenza",
@@ -390,7 +390,7 @@ const I18N = {
     listedOn: "Listed on", lastUpdated: "Last updated",
     born: "Born", weight: "Weight", origin: "Origin", captiveBred: "Captive-bred",
     cites: "CITES paperwork", citesNotice: "Transfer document required for Annex A/B",
-    listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 3)", publishListing: "Publish listing",
+    listingTitle: "Listing title", uploadPhotos: "Upload photos (min. 1, max. 5)", publishListing: "Publish listing",
     photoHint: "Drag here or tap to choose from your device", photoNeed: "Add at least one photo",
     needSpecies: "Select or enter a species", needPrice: "Enter a price", needLoginPub: "Log in to publish", publishing: "Publishing…", uploadingPhotos: "Uploading photos…", uploadingHint: "Don't close the app, this can take a few seconds.",
     reserveTooLow: "The reserve price can't be lower than the starting price",
@@ -1923,9 +1923,10 @@ function SexIcon({ sex, t, withLabel = false, size = 12 }) {
    the detail page (full). Arrows + dots; tapping the image still bubbles up
    (so a card tap opens the listing). Arrows/dots stopPropagation so they only
    change the photo. Falls back to a single image gracefully. */
-function ImageCarousel({ images, alt, fallbackLabel, rounded = "", showCounter = false, imgClass = "" }) {
+function ImageCarousel({ images, alt, fallbackLabel, rounded = "", showCounter = false, imgClass = "", zoomable = false }) {
   const pics = (images && images.length) ? images : [null];
   const [idx, setIdx] = useState(0);
+  const [zoom, setZoom] = useState(false);
   const touchX = useRef(null);
   const multi = pics.length > 1;
   const at = Math.min(idx, pics.length - 1);
@@ -1939,20 +1940,46 @@ function ImageCarousel({ images, alt, fallbackLabel, rounded = "", showCounter =
     touchX.current = null;
   };
 
+  // Close the zoom view on Escape, and allow arrow-key navigation while open.
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setZoom(false);
+      if (e.key === "ArrowRight") setIdx(i => (i + 1) % pics.length);
+      if (e.key === "ArrowLeft") setIdx(i => (i - 1 + pics.length) % pics.length);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [zoom, pics.length]);
+
   return (
-    <div className={`relative w-full h-full ${rounded}`} onTouchStart={multi ? onTouchStart : undefined} onTouchEnd={multi ? onTouchEnd : undefined}>
+    <div className={`relative w-full h-full ${rounded}`}
+         onTouchStart={multi ? onTouchStart : undefined}
+         onTouchEnd={multi ? onTouchEnd : undefined}>
       <img src={pics[at]} alt={alt} loading="lazy"
+           onClick={zoomable ? () => setZoom(true) : undefined}
            onError={(e) => { e.target.onerror = null; e.target.src = fallback(fallbackLabel || alt || ""); }}
-           className={imgClass || "w-full h-full object-cover"} />
+           className={`${imgClass || "w-full h-full object-cover"} ${zoomable ? "cursor-zoom-in" : ""}`} />
+
+      {/* Tap-to-enlarge hint (only where zooming is enabled) */}
+      {zoomable && (
+        <button onClick={(e) => { e.stopPropagation(); setZoom(true); }}
+                className="absolute top-2 right-2 w-9 h-9 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center active:bg-stone-950/90"
+                aria-label="Enlarge photo">
+          <Maximize2 size={16} />
+        </button>
+      )}
+
       {multi && (
         <>
-          {/* Prev / next arrows */}
+          {/* Prev / next arrows. These used to be hover-only, which made them
+              invisible on phones (there is no hover on touch). Always visible. */}
           <button onClick={(e) => go(-1, e)}
-                  className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-stone-950/85 transition-opacity"
-                  aria-label="Previous photo"><ChevronLeft size={16} /></button>
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center active:bg-stone-950/90 hover:bg-stone-950/85 transition-colors"
+                  aria-label="Previous photo"><ChevronLeft size={18} /></button>
           <button onClick={(e) => go(1, e)}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-stone-950/85 transition-opacity"
-                  aria-label="Next photo"><ChevronRight size={16} /></button>
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center active:bg-stone-950/90 hover:bg-stone-950/85 transition-colors"
+                  aria-label="Next photo"><ChevronRight size={18} /></button>
           {/* Dots */}
           <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
             {pics.map((_, i) => (
@@ -1967,6 +1994,36 @@ function ImageCarousel({ images, alt, fallbackLabel, rounded = "", showCounter =
             </div>
           )}
         </>
+      )}
+
+      {/* Full-screen viewer */}
+      {zoom && (
+        <div className="fixed inset-0 z-[60] bg-stone-950/95 backdrop-blur flex items-center justify-center"
+             onClick={() => setZoom(false)}
+             onTouchStart={multi ? onTouchStart : undefined}
+             onTouchEnd={multi ? onTouchEnd : undefined}>
+          <img src={pics[at]} alt={alt}
+               onClick={(e) => e.stopPropagation()}
+               className="max-w-full max-h-full object-contain" />
+
+          <button onClick={(e) => { e.stopPropagation(); setZoom(false); }}
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-stone-900/80 text-stone-100 flex items-center justify-center active:bg-stone-800"
+                  aria-label="Close"><X size={20} /></button>
+
+          {multi && (
+            <>
+              <button onClick={(e) => go(-1, e)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-stone-900/80 text-stone-100 flex items-center justify-center active:bg-stone-800"
+                      aria-label="Previous photo"><ChevronLeft size={22} /></button>
+              <button onClick={(e) => go(1, e)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-stone-900/80 text-stone-100 flex items-center justify-center active:bg-stone-800"
+                      aria-label="Next photo"><ChevronRight size={22} /></button>
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-stone-900/80 text-[11px] font-bold text-stone-100 px-3 py-1 rounded-full">
+                {at + 1} / {pics.length}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
@@ -3378,7 +3435,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
     <div className="max-w-3xl mx-auto w-full pb-40 md:pb-32">
       {/* Hero image */}
       <div className="group relative aspect-square md:aspect-[16/10] bg-stone-800 overflow-hidden">
-        <ImageCarousel images={a.images} alt={a.common} fallbackLabel={t.realPhoto} showCounter
+        <ImageCarousel images={a.images} alt={a.common} fallbackLabel={t.realPhoto} showCounter zoomable
                        imgClass="w-full h-full object-cover" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-stone-950/80 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-stone-950 to-transparent pointer-events-none" />
@@ -4316,13 +4373,93 @@ const CITES_SPECIES = new Set([
 const CITES_SPECIES_LOWER = new Set([...CITES_SPECIES].map(s => s.toLowerCase()));
 const isCitesSpecies = (name) => !!name && CITES_SPECIES_LOWER.has(name.trim().toLowerCase());
 
+/* ── Photo preparation ────────────────────────────────────────────────
+   Phone photos are huge (8-15MB) and can be HEIC or other formats the
+   browser stores fine but which upload/serve badly. Uploading the raw file
+   was producing corrupted images (partial data rendering as coloured
+   stripes). We decode every picture, downscale it, and re-encode it as a
+   clean JPEG before it ever leaves the device. This guarantees a valid,
+   complete file, cuts the upload ~10x, and makes the app much faster.
+   If a file cannot be decoded at all, we reject it rather than upload
+   something broken. */
+/* Verification (KYC) collects identity documents — sensitive personal data.
+   It is switched OFF for the free beta so the platform does not hold ID
+   documents before the legal/GDPR side is settled. Flip to true to re-enable;
+   the whole flow is intact behind this flag. */
+const KYC_ENABLED = false;
+
+const MAX_PHOTO_EDGE = 1600;   // px on the longest side — plenty for a listing
+const PHOTO_QUALITY = 0.85;
+
+function prepareImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let { naturalWidth: w, naturalHeight: h } = img;
+        if (!w || !h) throw new Error("Image has no dimensions");
+        const scale = Math.min(1, MAX_PHOTO_EDGE / Math.max(w, h));
+        const cw = Math.round(w * scale), ch = Math.round(h * scale);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = cw; canvas.height = ch;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(img, 0, 0, cw, ch);
+
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          if (!blob) { reject(new Error("Could not encode image")); return; }
+          const clean = new File(
+            [blob],
+            (file.name || "photo").replace(/\.[^.]+$/, "") + ".jpg",
+            { type: "image/jpeg" }
+          );
+          resolve({ file: clean, url: URL.createObjectURL(clean) });
+        }, "image/jpeg", PHOTO_QUALITY);
+      } catch (e) {
+        URL.revokeObjectURL(url);
+        reject(e);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read image")); };
+    img.src = url;
+  });
+}
+
+/* ── Sell-form draft persistence ──────────────────────────────────────
+   Losing a half-finished listing to an accidental reload is infuriating,
+   so we keep the text fields in localStorage as the user types.
+   NOTE: photos cannot be persisted — the browser cannot keep uploaded
+   File objects across a reload — so those must be re-added. We tell the
+   user that rather than silently restoring an incomplete draft. */
+const SELL_DRAFT_KEY = "hm_sell_draft";
+const loadSellDraft = () => {
+  try { return JSON.parse(localStorage.getItem(SELL_DRAFT_KEY) || "{}") || {}; }
+  catch (e) { return {}; }
+};
+const saveSellDraft = (d) => {
+  try { localStorage.setItem(SELL_DRAFT_KEY, JSON.stringify(d)); } catch (e) {}
+};
+const clearSellDraft = () => {
+  try { localStorage.removeItem(SELL_DRAFT_KEY); } catch (e) {}
+};
+
 function SellScreen({ t, lang, go, user, editListing }) {
   const isEdit = !!editListing;
+  // Drafts only apply to NEW listings — never resurrect a draft over an edit.
+  const draft = useMemo(() => (isEdit ? {} : loadSellDraft()), [isEdit]);
+  const hadDraft = !isEdit && Object.keys(draft).length > 0;
+  const [draftNotice, setDraftNotice] = useState(hadDraft);
   const [success, setSuccess] = useState(false);
   const [createdListing, setCreatedListing] = useState(null);
   const [tosAccepted, setTosAccepted] = useState(isEdit);   // already accepted when first published
   const [selectedTraits, setSelectedTraits] = useState(
-    (editListing?.traits || []).map(tr => typeof tr === "string" ? tr : tr?.name).filter(Boolean)
+    isEdit
+      ? (editListing?.traits || []).map(tr => typeof tr === "string" ? tr : tr?.name).filter(Boolean)
+      : (draft.selectedTraits || [])
   );
   const [customTrait, setCustomTrait] = useState("");
   const addCustomTrait = () => {
@@ -4332,10 +4469,10 @@ function SellScreen({ t, lang, go, user, editListing }) {
     setCustomTrait("");
   };
   // Captured listing fields — pre-filled from editListing when editing.
-  const [title, setTitle] = useState(editListing?.title || "");
-  const [sex, setSex] = useState(editListing?.sex || "M");
-  const [born, setBorn] = useState(editListing?.birthDate || "");
-  const [weight, setWeight] = useState(editListing?.weight || "");
+  const [title, setTitle] = useState(editListing?.title || draft.title || "");
+  const [sex, setSex] = useState(editListing?.sex || draft.sex || "M");
+  const [born, setBorn] = useState(editListing?.birthDate || draft.born || "");
+  const [weight, setWeight] = useState(editListing?.weight || draft.weight || "");
   // Pick the date-precision that matches the stored birthDate, so the right
   // input type renders with a valid value (a "month" input rejects "YYYY-MM-DD").
   const detectBornPrecision = (v) => {
@@ -4346,9 +4483,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
     return "month";
   };
   const [bornPrecision, setBornPrecision] = useState(isEdit ? detectBornPrecision(editListing?.birthDate) : "month"); // "day" | "month" | "year"
-  const [isCites, setIsCites] = useState(!!editListing?.citesListed);
-  const [desc, setDesc] = useState(editListing?.desc || "");
-  const [price, setPrice] = useState(editListing?.price != null ? String(editListing.price) : "");
+  const [isCites, setIsCites] = useState(isEdit ? !!editListing?.citesListed : !!draft.isCites);
+  const [desc, setDesc] = useState(editListing?.desc || draft.desc || "");
+  const [price, setPrice] = useState(editListing?.price != null ? String(editListing.price) : (draft.price || ""));
   const [saleMode, setSaleMode] = useState("fixed");   // "fixed" | "auction" — editing keeps fixed
   const [startPrice, setStartPrice] = useState("");
   const [reserve, setReserve] = useState("");
@@ -4358,22 +4495,29 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // Photos (min 1, max 3). Files are uploaded to Supabase Storage on publish.
   // When editing, seed with the already-uploaded image URLs (no File object —
   // these are kept as-is unless the user removes/replaces them).
-  const MAX_PHOTOS = 3;
+  const MAX_PHOTOS = 5;
   const [photos, setPhotos] = useState(
     isEdit ? (editListing.images || (editListing.image ? [editListing.image] : [])).map(u => ({ url: u, existing: true })) : []
   );
   const [dragOver, setDragOver] = useState(false);
   const [photoError, setPhotoError] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const fileInputRef = useRef(null);
   const addFiles = (fileList) => {
     const imgs = Array.from(fileList || []).filter(f => f.type.startsWith("image/"));
     if (!imgs.length) return;
-    setPhotos(prev => {
-      const room = MAX_PHOTOS - prev.length;
-      const toAdd = imgs.slice(0, room).map(f => ({ file: f, url: URL.createObjectURL(f) }));
-      return [...prev, ...toAdd];
-    });
+    const room = MAX_PHOTOS - photos.length;
+    if (room <= 0) return;
+    setPhotoBusy(true);
     setPhotoError(false);
+    Promise.all(imgs.slice(0, room).map(f => prepareImage(f).catch(() => null)))
+      .then(results => {
+        const ok = results.filter(Boolean);
+        const failed = results.length - ok.length;
+        if (ok.length) setPhotos(prev => [...prev, ...ok].slice(0, MAX_PHOTOS));
+        if (failed) setPhotoError(true);
+      })
+      .finally(() => setPhotoBusy(false));
   };
   const removePhoto = (idx) => {
     setPhotos(prev => {
@@ -4486,6 +4630,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
         auction,
       }, seller.id);
       setCreatedListing(created);
+      clearSellDraft();   // published — the draft is no longer needed
       setSuccess(true);
     } catch (err) {
       setSaveErr(err?.message || "Error");
@@ -4494,19 +4639,33 @@ function SellScreen({ t, lang, go, user, editListing }) {
     }
   };
   // Cascading category → subcategory → species
-  const [catId, setCatId] = useState(editListing?.category || "");
-  const [subcatId, setSubcatId] = useState("");
-  const [speciesVal, setSpeciesVal] = useState(editListing?.species || "");
+  const [catId, setCatId] = useState(editListing?.category || draft.catId || "");
+  const [subcatId, setSubcatId] = useState(draft.subcatId || "");
+  const [speciesVal, setSpeciesVal] = useState(editListing?.species || draft.speciesVal || "");
   // Country → region
-  const [country, setCountry] = useState(editListing?.country || "IT");
-  const [region, setRegion] = useState(editListing?.region || "");   // empty until chosen/prefilled — prevents silent wrong default
+  const [country, setCountry] = useState(editListing?.country || draft.country || "IT");
+  const [region, setRegion] = useState(editListing?.region || draft.region || "");   // empty until chosen/prefilled — prevents silent wrong default
   // Delivery options — owned here (DeliverySection is a controlled child) so
   // they are actually saved. Pre-filled from the listing when editing.
-  const [localPickup, setLocalPickup] = useState(isEdit ? !!editListing.localPickup : true);
-  const [expoPickup, setExpoPickup] = useState(isEdit ? !!(editListing.expoIds && editListing.expoIds.length) : false);
-  const [shipping, setShipping] = useState(isEdit ? !!editListing.shipping : false);
-  const [shippingCost, setShippingCost] = useState(isEdit && editListing.shippingCost ? String(editListing.shippingCost) : "");
-  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds : []);
+  const [localPickup, setLocalPickup] = useState(isEdit ? !!editListing.localPickup : (draft.localPickup !== undefined ? draft.localPickup : true));
+  const [expoPickup, setExpoPickup] = useState(isEdit ? !!(editListing.expoIds && editListing.expoIds.length) : !!draft.expoPickup);
+  const [shipping, setShipping] = useState(isEdit ? !!editListing.shipping : !!draft.shipping);
+  const [shippingCost, setShippingCost] = useState(isEdit && editListing.shippingCost ? String(editListing.shippingCost) : (draft.shippingCost || ""));
+  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds : (draft.selectedExpoIds || []));
+
+  // Keep a draft of the in-progress listing so a reload / accidental back
+  // does not wipe the work. Never for edits (that would fight the real data).
+  useEffect(() => {
+    if (isEdit || success) return;
+    saveSellDraft({
+      title, sex, born, weight, isCites, desc, price,
+      catId, subcatId, speciesVal, country, region,
+      shipping, shippingCost, localPickup, expoPickup, selectedExpoIds,
+      selectedTraits,
+    });
+  }, [isEdit, success, title, sex, born, weight, isCites, desc, price,
+      catId, subcatId, speciesVal, country, region,
+      shipping, shippingCost, localPickup, expoPickup, selectedExpoIds, selectedTraits]);
   const toggleExpoId = (id) => setSelectedExpoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   // Pre-fill location from the breeder's saved store profile (they can still
@@ -4589,6 +4748,28 @@ function SellScreen({ t, lang, go, user, editListing }) {
       </header>
 
       <div className="p-5 md:p-8 space-y-6">
+        {/* A restored draft must be visible, not silent magic — and the user
+            must be told the photos could not be kept. */}
+        {draftNotice && (
+          <div className="bg-amber-500/5 ring-1 ring-amber-500/25 rounded-xl p-4 flex items-start gap-3">
+            <RefreshCw size={16} className="text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] text-amber-100/90 leading-relaxed">
+                {lang === "it"
+                  ? "Abbiamo ripristinato la bozza non salvata. Le foto devono essere ricaricate."
+                  : "We restored your unsaved draft. Photos need to be added again."}
+              </p>
+              <button onClick={() => { clearSellDraft(); setDraftNotice(false); go("sell", null, true); }}
+                      className="mt-2 text-[11px] font-bold text-stone-400 hover:text-stone-200 underline">
+                {lang === "it" ? "Ricomincia da zero" : "Start fresh"}
+              </button>
+            </div>
+            <button onClick={() => setDraftNotice(false)} className="text-stone-500 hover:text-stone-300 shrink-0">
+              <X size={15} />
+            </button>
+          </div>
+        )}
+
         {/* Photos — drag & drop or pick from device, min 1 / max 3 */}
         <FormBlock>
           <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
@@ -5753,8 +5934,9 @@ function MyListingsScreen({ t, lang, go, user }) {
         </button>
       </header>
 
-      {/* Trust nudge — shortcut to verification for unverified sellers */}
-      {!user?.verified && (
+      {/* Trust nudge — shortcut to verification for unverified sellers.
+          Hidden while KYC is disabled for the beta. */}
+      {KYC_ENABLED && !user?.verified && (
         <button onClick={() => go("settings")}
                 className="mx-5 md:mx-8 mt-4 w-[calc(100%-2.5rem)] md:w-[calc(100%-4rem)] flex items-center gap-3 bg-sky-500/10 ring-1 ring-sky-500/30 rounded-xl px-4 py-3 text-left hover:bg-sky-500/15 transition-colors">
           <ShieldCheck size={20} className="text-sky-400 shrink-0" />
@@ -5980,7 +6162,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
   const fileRef = useRef(null);
-  const MAX_PHOTOS = 3;
+  const MAX_PHOTOS = 5;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -6008,7 +6190,14 @@ function AddAnimalScreen({ t, lang, go, user }) {
   };
   const addFiles = (fileList) => {
     const imgs = Array.from(fileList || []).filter(f => f.type.startsWith("image/"));
-    setPhotos(prev => [...prev, ...imgs.slice(0, MAX_PHOTOS - prev.length).map(f => ({ file: f, url: URL.createObjectURL(f) }))]);
+    if (!imgs.length) return;
+    const room = MAX_PHOTOS - photos.length;
+    if (room <= 0) return;
+    Promise.all(imgs.slice(0, room).map(f => prepareImage(f).catch(() => null)))
+      .then(results => {
+        const ok = results.filter(Boolean);
+        if (ok.length) setPhotos(prev => [...prev, ...ok].slice(0, MAX_PHOTOS));
+      });
   };
   const removePhoto = (i) => {
     setPhotos(prev => {
@@ -7296,7 +7485,8 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
           </div>
         </section>
 
-        {/* Verification / KYC */}
+        {/* Verification / KYC — disabled during the free beta (KYC_ENABLED). */}
+        {KYC_ENABLED && (
         <section>
           <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.verificationSection}</h2>
           <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
@@ -7355,6 +7545,7 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
             )}
           </div>
         </section>
+        )}
 
         {/* Notifications — not yet live; honest "coming soon" so testers aren't misled */}
         <section>
@@ -7973,21 +8164,46 @@ async function printAnimalRecord(a, t, lang) {
   });
 
   // Main photo, top-right. Re-encoded to JPEG so jsPDF always accepts it.
-  // Main photo, top-right. Check every field an image could live in.
-  const photoUrl = a.image
-    || (Array.isArray(a.images) && a.images.length ? a.images[0] : null)
-    || a.image_url || a.imageUrl || null;
-  const photo = await imageToDataUrl(photoUrl);
+  // Photos: the main one large, top-right, with any additional shots stacked
+  // beneath it as thumbnails. All photos on the listing are printed.
+  const allPhotos = [];
+  if (Array.isArray(a.images) && a.images.length) allPhotos.push(...a.images);
+  else if (a.image) allPhotos.push(a.image);
+  // Deduplicate + drop empties, cap at what fits sensibly on the page.
+  const photoUrls = [...new Set(allPhotos.filter(Boolean))].slice(0, 5);
+
   let photoBottom = 0;
-  if (photo) {
-    try {
+  if (photoUrls.length) {
+    const loaded = await Promise.all(photoUrls.map(u => imageToDataUrl(u).catch(() => null)));
+    const pics = loaded.filter(Boolean);
+
+    if (pics.length) {
       const boxW = 52, boxH = 52;
       const x = W - M - boxW;
-      doc.addImage(photo.dataUrl, photo.format, x, y, boxW, boxH, undefined, "FAST");
-      doc.setDrawColor(205); doc.setLineWidth(0.3);
-      doc.rect(x, y, boxW, boxH);
-      photoBottom = y + boxH + 4;
-    } catch { /* photo unsupported — carry on without it */ }
+      // Main photo
+      try {
+        doc.addImage(pics[0].dataUrl, pics[0].format, x, y, boxW, boxH, undefined, "FAST");
+        doc.setDrawColor(205); doc.setLineWidth(0.3);
+        doc.rect(x, y, boxW, boxH);
+        photoBottom = y + boxH + 3;
+      } catch { /* skip */ }
+
+      // Additional photos as a row of thumbnails under the main one
+      const extras = pics.slice(1);
+      if (extras.length) {
+        const tw = (boxW - (extras.length - 1) * 2) / extras.length;   // fit the same width
+        const th = Math.min(tw, 18);
+        extras.forEach((p, i) => {
+          try {
+            const tx = x + i * (tw + 2);
+            doc.addImage(p.dataUrl, p.format, tx, photoBottom, tw, th, undefined, "FAST");
+            doc.setDrawColor(215); doc.setLineWidth(0.2);
+            doc.rect(tx, photoBottom, tw, th);
+          } catch { /* skip this thumbnail */ }
+        });
+        photoBottom += th + 4;
+      }
+    }
   }
 
   // Every field prints, with an em-dash when empty, so a blank means
@@ -8721,11 +8937,13 @@ const PRIVACY_CONTENT = {
       id: "1", title: { it: "Titolare del trattamento", en: "Data controller" }, review: true,
       body: {
         it: [
-          "Titolare del trattamento dei dati personali è HerpMarket, con sede in Italia, indirizzo email privacy@herpmarket.it. I dati identificativi completi del titolare (denominazione, P.IVA e sede) saranno indicati qui non appena disponibili.",
+          "Titolare del trattamento dei dati personali è Anita Pioch, persona fisica residente in Italia, che gestisce HerpMarket. Contatti: PEC info@pec.herpmarket.it, email privacy@herpmarket.it.",
+          "HerpMarket è attualmente in fase beta ed è gestito da una persona fisica. Qualora l'attività venga costituita in forma d'impresa, i dati identificativi completi (denominazione, P.IVA e sede legale) saranno aggiornati in questa sezione.",
           "Per esercitare i tuoi diritti o per qualunque chiarimento sul trattamento dei tuoi dati, puoi contattarci all'indirizzo email indicato. Risponderemo entro 30 giorni, come previsto dall'art. 12 GDPR.",
         ],
         en: [
-          "Data controller is HerpMarket, based in Italy, email privacy@herpmarket.it. The controller's full identifying details (legal name, VAT number and registered address) will be shown here as soon as they are available.",
+          "The data controller is Anita Pioch, a natural person resident in Italy, who operates HerpMarket. Contact: PEC info@pec.herpmarket.it, email privacy@herpmarket.it.",
+          "HerpMarket is currently in beta and is operated by an individual. Should the activity be incorporated as a business, the full identifying details (legal name, VAT number and registered office) will be updated in this section.",
           "To exercise your rights or for any clarification, contact us at the email above. We respond within 30 days as required by Art. 12 GDPR.",
         ],
       },
@@ -9072,13 +9290,13 @@ function PlansScreen({ t, go, lang, user }) {
   const tiers = [
     {
       id: "free",
-      name: lang === "it" ? "Founding Breeder" : "Founding Breeder",
+      name: lang === "it" ? "Beta (gratuito)" : "Beta (free)",
       tagline: lang === "it" ? "Per chi inizia con noi" : "For early adopters",
       monthly: 0, yearly: 0,
       accent: "stone",
       features: lang === "it"
-        ? ["Fino a 3 annunci attivi", "1 asta", "Pagina venditore", "Documenti CITES e di origine", "Badge Founding Breeder esclusivo"]
-        : ["Up to 3 active listings", "1 auction", "Seller page", "CITES & origin documents", "Exclusive Founding Breeder badge"],
+        ? ["Fino a 3 annunci attivi", "1 asta", "Pagina venditore", "Documenti CITES e di origine", "Badge beta tester"]
+        : ["Up to 3 active listings", "1 auction", "Seller page", "CITES & origin documents", "Beta tester badge"],
       cta: null,
     },
     {
@@ -9148,51 +9366,26 @@ function PlansScreen({ t, go, lang, user }) {
       </header>
 
       <div className="p-5 md:p-8">
-        {/* ─── Founding Breeder hero — limited-spots launch offer ─── */}
+        {/* ─── Beta notice — honest framing, no artificial scarcity ─── */}
         <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-stone-900/40 ring-1 ring-amber-500/30 rounded-2xl p-5 md:p-6 mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">🚀</span>
+            <span className="text-lg">🧪</span>
             <h2 className="font-display text-xl md:text-2xl text-stone-50 tracking-tight">
-              {lang === "it" ? "Programma Founding Breeder" : "Founding Breeder Program"}
+              {lang === "it" ? "HerpMarket è in beta" : "HerpMarket is in beta"}
             </h2>
             <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/15 ring-1 ring-amber-500/30 px-2 py-0.5 rounded-full">
-              {lang === "it" ? "Posti limitati" : "Limited spots"}
+              {lang === "it" ? "Gratis" : "Free"}
             </span>
           </div>
           <p className="text-[13px] text-stone-300 leading-relaxed">
             {lang === "it"
-              ? <>Siamo in Beta privata. Per festeggiare il lancio ufficiale alla <span className="font-bold text-amber-300">fiera di Verona</span>, i primi <span className="font-bold text-amber-300">{FOUNDING_SPOTS_TOTAL} allevatori professionali</span> che si uniscono ricevono un <span className="font-bold text-amber-300">account Premium a vita, GRATIS</span>.</>
-              : <>We are in private Beta. To celebrate our official launch at the <span className="font-bold text-amber-300">Verona Expo</span>, the first <span className="font-bold text-amber-300">{FOUNDING_SPOTS_TOTAL} professional breeders</span> to join get a <span className="font-bold text-amber-300">Lifetime Premium account, FREE</span>.</>}
+              ? <>HerpMarket è nuovo e in fase di test. <span className="font-bold text-amber-300">Durante la beta è tutto gratuito</span> — nessun limite, nessuna carta di credito. In cambio ci farebbe piacere ricevere i tuoi commenti: cosa funziona, cosa no, cosa manca.</>
+              : <>HerpMarket is new and being tested. <span className="font-bold text-amber-300">Everything is free during the beta</span> — no limits, no credit card. In return, we would love your feedback: what works, what does not, what is missing.</>}
           </p>
-
-          {reqState.founding === "done" ? (
-            <div className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 font-bold text-sm py-3 rounded-lg">
-              <CheckCircle size={16} />
-              {lang === "it" ? "HerpMarket è stato avvisato ✓" : "HerpMarket has been notified ✓"}
-            </div>
-          ) : (
-            <button
-              onClick={() => sendRequest("founding", { plan: "Founding Breeder (lifetime Premium)" })}
-              disabled={reqState.founding === "sending"}
-              className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
-              {reqState.founding === "sending"
-                ? <><Loader2 size={15} className="animate-spin" />{lang === "it" ? "Invio…" : "Sending…"}</>
-                : <>{lang === "it" ? "Richiedi il mio posto" : "Claim my spot"}</>}
-            </button>
-          )}
-          {reqState.founding === "error" && (
-            <p className="text-[11px] text-red-400 font-bold mt-2">
-              {lang === "it" ? "Qualcosa è andato storto. Riprova." : "Something went wrong. Please try again."}
-            </p>
-          )}
           <p className="text-[11px] text-stone-500 leading-relaxed mt-2.5">
-            {reqState.founding === "done"
-              ? (lang === "it"
-                  ? "Abbiamo ricevuto la tua richiesta. Ti contatteremo per attivare il tuo posto Founding Breeder."
-                  : "We've received your request. We'll be in touch to activate your Founding Breeder spot.")
-              : (lang === "it"
-                  ? "Tocca «Richiedi il mio posto» e veniamo avvisati subito — nessuna email da scrivere. Ti ricontatteremo per attivare l'account."
-                  : "Tap \"Claim my spot\" and we're notified right away — no email to write. We'll get back to you to activate your account.")}
+            {lang === "it"
+              ? "Resterà gratuito per tutto il 2026. Quando introdurremo i piani a pagamento lo comunicheremo con ampio preavviso — e chi ci ha aiutato in beta non verrà penalizzato."
+              : "It will stay free through 2026. When paid plans arrive we will give plenty of notice — and the people who helped us during the beta will not be penalised."}
           </p>
         </div>
 
