@@ -1024,7 +1024,33 @@ const CATEGORIES = [
   { id: "tortoises",   it: "Testuggini",  en: "Tortoises",   emoji: "🐢" },
   { id: "amphibians",  it: "Anfibi",      en: "Amphibians",  emoji: "🐸" },
   { id: "inverts",     it: "Invertebrati",en: "Invertebrates",emoji: "🕷️" },
+  { id: "exotics",     it: "Altri esotici",en: "Other exotics", emoji: "🦔" },
+  { id: "equipment",   it: "Attrezzatura", en: "Equipment",     emoji: "🧰" },
 ];
+
+/* Equipment listings carry no species / morph / CITES. The chosen TYPE is
+   stored in the listing's `common` field; CONDITION + BRAND ride in `traits`
+   as plain chips (condition first, brand second) so they render on cards and
+   the detail page with zero extra plumbing, and round-trip on edit. */
+const EQUIPMENT_TYPES = [
+  { id: "terrari",       it: "Terrari e teche",           en: "Terrariums & enclosures" },
+  { id: "illuminazione", it: "Illuminazione (UVB/luce)",  en: "Lighting (UVB/light)" },
+  { id: "riscaldamento", it: "Riscaldamento e termostati", en: "Heating & thermostats" },
+  { id: "arredo",        it: "Substrati e arredo",        en: "Substrate & décor" },
+  { id: "alimentazione", it: "Alimentazione",             en: "Feeding" },
+  { id: "trasporto",     it: "Trasporto e contenitori",   en: "Transport & tubs" },
+  { id: "altro",         it: "Altro",                     en: "Other" },
+];
+const EQUIPMENT_CONDITIONS = [
+  { id: "nuovo",     it: "Nuovo",      en: "New" },
+  { id: "comenuovo", it: "Come nuovo", en: "Like new" },
+  { id: "buono",     it: "Buono",      en: "Good" },
+  { id: "usato",     it: "Usato",      en: "Used" },
+];
+const eqTypeLabel = (id, lang) => EQUIPMENT_TYPES.find(x => x.id === id)?.[lang] || id || "";
+const eqTypeIdFromLabel = (label) => EQUIPMENT_TYPES.find(x => x.it === label || x.en === label)?.id || "";
+const eqCondLabel = (id, lang) => EQUIPMENT_CONDITIONS.find(x => x.id === id)?.[lang] || id || "";
+const eqCondIdFromLabel = (label) => EQUIPMENT_CONDITIONS.find(x => x.it === label || x.en === label)?.id || "";
 
 const REGIONS = [
   "Tutte le regioni","Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna",
@@ -2036,10 +2062,12 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
       <div className="relative aspect-square bg-stone-800 overflow-hidden">
         <ImageCarousel images={item.images} alt={item.common} fallbackLabel={item.common || t.realPhoto}
                        imgClass="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-        {/* Sex badge top-left */}
-        <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50">
-          <SexIcon sex={item.sex} t={t} size={11} />
-        </div>
+        {/* Sex badge top-left (animals only) */}
+        {item.sex && (
+          <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50">
+            <SexIcon sex={item.sex} t={t} size={11} />
+          </div>
+        )}
         {/* Heart top-right */}
         <button onClick={(e) => toggleFav(item.id, e)} aria-label="Save to favourites"
                 className="absolute top-2 right-2 p-1.5 bg-stone-950/80 backdrop-blur-sm rounded-full ring-1 ring-stone-700/50 hover:ring-rose-500/50 transition-all">
@@ -2071,12 +2099,12 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             <>
               <h4 className="text-[13px] font-bold text-stone-50 leading-tight line-clamp-2">{item.title}</h4>
               <p className="text-[10px] text-stone-400 truncate mt-0.5">{item.common}</p>
-              <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>
+              {item.species && <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>}
             </>
           ) : (
             <>
               <h4 className="text-[13px] font-bold text-stone-50 leading-tight truncate">{item.common}</h4>
-              <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>
+              {item.species && <p className="text-[10px] text-stone-500 italic truncate">{item.species}</p>}
             </>
           )}
         </div>
@@ -2111,7 +2139,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             ) : (
               <>
                 <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
-                <div className="text-[9px] text-stone-500 mt-1 truncate">{formatBirth(item, t)} · {countryByCode(item.country).flag} {item.city}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.category === "equipment" ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {item.city}</div>
               </>
             )}
           </div>
@@ -2482,10 +2510,10 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
     if (filter.search) {
       const q = filter.search.toLowerCase();
       r = r.filter(l =>
-        l.species.toLowerCase().includes(q) ||
-        l.common.toLowerCase().includes(q) ||
-        l.seller.toLowerCase().includes(q) ||
-        l.traits.some(tr => tr.name.toLowerCase().includes(q)));
+        (l.species || "").toLowerCase().includes(q) ||
+        (l.common || "").toLowerCase().includes(q) ||
+        (l.seller || "").toLowerCase().includes(q) ||
+        (l.traits || []).some(tr => tr.name.toLowerCase().includes(q)));
     }
     if (filter.sort === "priceAsc")  r = [...r].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
     if (filter.sort === "priceDesc") r = [...r].sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
@@ -3455,12 +3483,12 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           <>
             <h1 className="font-display text-3xl md:text-4xl text-stone-50 tracking-tight leading-tight">{a.title}</h1>
             <p className="text-stone-300 text-sm mt-1.5">{a.common}</p>
-            <p className="font-display italic text-amber-500 text-sm md:text-base">{a.species}</p>
+            {a.species && <p className="font-display italic text-amber-500 text-sm md:text-base">{a.species}</p>}
           </>
         ) : (
           <>
             <h1 className="font-display text-3xl md:text-4xl text-stone-50 tracking-tight leading-tight">{a.common}</h1>
-            <p className="font-display italic text-amber-500 text-sm md:text-base mt-1">{a.species}</p>
+            {a.species && <p className="font-display italic text-amber-500 text-sm md:text-base mt-1">{a.species}</p>}
           </>
         )}
         <div className="flex flex-wrap gap-1.5 mt-4">
@@ -3479,9 +3507,15 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
       {/* Specs grid */}
       <div className="px-5 mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
-        <Spec label={t.sex}>{sexLabel(a.sex, t)}</Spec>
-        <Spec label={t.age}>{formatBirth(a, t)}</Spec>
-        {a.weight && <Spec label={t.weight}>{a.weight}</Spec>}
+        {a.category === "equipment" ? (
+          a.common && <Spec label={lang === "it" ? "Tipo" : "Type"}>{a.common}</Spec>
+        ) : (
+          <>
+            <Spec label={t.sex}>{sexLabel(a.sex, t)}</Spec>
+            <Spec label={t.age}>{formatBirth(a, t)}</Spec>
+            {a.weight && <Spec label={t.weight}>{a.weight}</Spec>}
+          </>
+        )}
         <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag} {a.city}</Spec>
       </div>
 
@@ -4555,7 +4589,10 @@ function SellScreen({ t, lang, go, user, editListing }) {
     if (photos.length < 1) { setPhotoError(true); return; }
     if (!title.trim()) { setSaveErr(t.needTitle); return; }
     if (!catId) { setSaveErr(t.needCategory); return; }
-    if (!speciesVal || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
+    if (isEquipment) {
+      if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di attrezzatura" : "Choose the equipment type"); return; }
+      if (!condition) { setSaveErr(lang === "it" ? "Scegli la condizione" : "Choose the condition"); return; }
+    } else if (!speciesVal.trim() || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
     const isAuction = saleMode === "auction";
     const basePrice = isAuction ? Number(startPrice) : Number(price);
     if (!basePrice || basePrice <= 0) { setSaveErr(t.needPrice); return; }
@@ -4585,11 +4622,23 @@ function SellScreen({ t, lang, go, user, editListing }) {
       const uploadedUrls = newFiles.length ? await api.uploadListingPhotos(newFiles, user.id) : [];
       let ui = 0;
       const urls = photos.map(p => p.existing ? p.url : uploadedUrls[ui++]).filter(Boolean);
-      const traits = selectedTraits.map(n => {
+      let traits = selectedTraits.map(n => {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
       });
-      const common = SPECIES_LABELS[speciesVal]?.it || speciesVal;
+      let common = SPECIES_LABELS[speciesVal]?.it || speciesVal;
+      let speciesOut = speciesVal;
+      if (isEquipment) {
+        // Equipment: TYPE -> common; CONDITION + BRAND -> first two trait chips.
+        common = eqTypeLabel(subcatId, "it");
+        speciesOut = null;
+        traits = [{ name: eqCondLabel(condition, "it"), cls: "wild" }];
+        if (brand.trim()) traits.push({ name: brand.trim(), cls: "line" });
+      } else if (isExotic) {
+        speciesOut = speciesVal.trim();
+        common = speciesVal.trim();
+        traits = [];
+      }
       const headline = title.trim();
       let auction = null;
       if (isAuction) {
@@ -4604,11 +4653,13 @@ function SellScreen({ t, lang, go, user, editListing }) {
         };
       }
       const fields = {
-        species: speciesVal, common, title: headline, category: catId,
+        species: speciesOut, common, title: headline, category: catId,
         traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
-        sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
-        birthDate: (born || "").trim() || null,
-        citesListed: isCites,
+        sex: isEquipment ? null : sex,
+        ageMonths: isEquipment ? null : monthsSince(born),
+        weight: isEquipment ? null : (weight.trim() || null),
+        birthDate: isEquipment ? null : ((born || "").trim() || null),
+        citesListed: isEquipment ? false : isCites,
         country, region, city: null,
         sire: null, dam: null, desc: desc.trim(),
         image: urls[0] || null, images: urls,
@@ -4640,8 +4691,13 @@ function SellScreen({ t, lang, go, user, editListing }) {
   };
   // Cascading category → subcategory → species
   const [catId, setCatId] = useState(editListing?.category || draft.catId || "");
-  const [subcatId, setSubcatId] = useState(draft.subcatId || "");
+  const _editEquip = isEdit && editListing?.category === "equipment";
+  const [subcatId, setSubcatId] = useState(_editEquip ? eqTypeIdFromLabel(editListing.common) : (draft.subcatId || ""));
   const [speciesVal, setSpeciesVal] = useState(editListing?.species || draft.speciesVal || "");
+  // Equipment-only fields (condition + brand). Stored as the first two trait
+  // chips at publish, so they round-trip when editing an equipment listing.
+  const [condition, setCondition] = useState(_editEquip ? eqCondIdFromLabel(editListing.traits?.[0]?.name) : "");
+  const [brand, setBrand] = useState(_editEquip ? (editListing.traits?.[1]?.name || "") : "");
   // Country → region
   const [country, setCountry] = useState(editListing?.country || draft.country || "IT");
   const [region, setRegion] = useState(editListing?.region || draft.region || "");   // empty until chosen/prefilled — prevents silent wrong default
@@ -4712,6 +4768,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // Species-aware traits: a chosen species shows its own morphs; otherwise the
   // category's generic set. Same source the search filter uses, so they match.
   const exampleTraits = getTraitsForScope(catId, speciesVal);
+  // New listing kinds that skip the herp cascade: equipment (no species/morph/
+  // CITES) and "other exotics" (free-text species, no morphs).
+  const isEquipment = catId === "equipment";
+  const isExotic = catId === "exotics";
+  const isSimple = isEquipment || isExotic;
 
   if (success) {
     return (
@@ -4808,17 +4869,55 @@ function SellScreen({ t, lang, go, user, editListing }) {
                  placeholder={lang === "it" ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
         </FormBlock>
 
-        {/* Category → Subcategory → Species cascade */}
+        {/* Category, then the right fields for the kind of listing:
+            animals -> species cascade; other exotics -> free-text species;
+            equipment -> type + condition + brand (no species/morph/CITES). */}
         <div className="grid grid-cols-1 gap-3">
           <FormBlock label={t.category} required done={!!catId}>
             <select className="form-input" value={catId}
                     onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
               <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
-              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
+              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c[lang]}</option>)}
             </select>
           </FormBlock>
 
-          {catId && (
+          {/* Equipment: type + condition + optional brand */}
+          {isEquipment && (
+            <>
+              <FormBlock label={lang === "it" ? "Tipo di attrezzatura" : "Equipment type"} required done={!!subcatId}>
+                <select className="form-input" value={subcatId} onChange={e => setSubcatId(e.target.value)}>
+                  <option value="">{lang === "it" ? "Scegli tipo" : "Choose type"}</option>
+                  {EQUIPMENT_TYPES.map(x => <option key={x.id} value={x.id}>{x[lang]}</option>)}
+                </select>
+              </FormBlock>
+              <FormBlock label={lang === "it" ? "Condizione" : "Condition"} required done={!!condition}>
+                <select className="form-input" value={condition} onChange={e => setCondition(e.target.value)}>
+                  <option value="">{lang === "it" ? "Scegli condizione" : "Choose condition"}</option>
+                  {EQUIPMENT_CONDITIONS.map(x => <option key={x.id} value={x.id}>{x[lang]}</option>)}
+                </select>
+              </FormBlock>
+              <FormBlock label={lang === "it" ? "Marca (facoltativo)" : "Brand (optional)"}>
+                <input className="form-input" value={brand} onChange={e => setBrand(e.target.value)}
+                       placeholder={lang === "it" ? "es. Exo Terra, Trixie, JBL…" : "e.g. Exo Terra, Trixie, JBL…"} />
+              </FormBlock>
+            </>
+          )}
+
+          {/* Other exotics: free-text species, no morphs */}
+          {isExotic && (
+            <FormBlock label={lang === "it" ? "Specie / animale" : "Species / animal"}
+                       required done={!!speciesVal.trim() && speciesVal !== "__other"}>
+              <input className="form-input" value={speciesVal === "__other" ? "" : speciesVal}
+                     onChange={e => setSpeciesVal(e.target.value)}
+                     placeholder={lang === "it" ? "es. Riccio africano (Atelerix albiventris)" : "e.g. African pygmy hedgehog (Atelerix albiventris)"} />
+              <p className="text-[10px] text-stone-500 mt-1.5">
+                {lang === "it" ? "Scrivi la specie o il tipo di animale. Nessun morph richiesto." : "Type the species or kind of animal. No morphs required."}
+              </p>
+            </FormBlock>
+          )}
+
+          {/* Animals: category → subcategory → species cascade */}
+          {!isSimple && catId && (
             <FormBlock label={lang === "it" ? "Sottocategoria" : "Subcategory"}>
               <select className="form-input" value={subcatId}
                       onChange={e => { setSubcatId(e.target.value); setSpeciesVal(""); }}>
@@ -4828,7 +4927,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </FormBlock>
           )}
 
-          {subcatId && (
+          {!isSimple && subcatId && (
             <FormBlock label={t.species} required done={!!speciesVal && speciesVal !== "__other"}>
               {speciesOptions.length > 0 ? (
                 <>
@@ -4859,13 +4958,17 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </FormBlock>
           )}
 
-          <FormBlock label={t.sex}>
-            <select className="form-input" value={sex} onChange={e => setSex(e.target.value)}>
-              <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="P">{t.pair}</option><option value="U">{t.unsexed}</option>
-            </select>
-          </FormBlock>
+          {/* Sex — animals & other exotics, not equipment */}
+          {!isEquipment && (
+            <FormBlock label={t.sex}>
+              <select className="form-input" value={sex} onChange={e => setSex(e.target.value)}>
+                <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="P">{t.pair}</option><option value="U">{t.unsexed}</option>
+              </select>
+            </FormBlock>
+          )}
         </div>
 
+        {!isSimple && (
         <FormBlock label={t.traits}>
           <div className="flex flex-wrap gap-1.5">
             {/* Preset chips for the category + any custom traits the user added */}
@@ -4893,6 +4996,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
           </div>
           <p className="text-[10px] text-stone-500 mt-2">{t.pickTraits}</p>
         </FormBlock>
+        )}
 
         {/* Sale type: fixed price or auction */}
         <SellPricing t={t} lang={lang} price={price} setPrice={setPrice}
@@ -4902,6 +5006,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
                      durationDays={durationDays} setDurationDays={setDurationDays}
                      done={saleMode === "auction" ? Number(startPrice) > 0 : Number(price) > 0} />
 
+        {!isEquipment && (<>
         <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
           {/* Precision chooser — some breeders only know the year or month. */}
           <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
@@ -4980,6 +5085,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </div>
           );
         })()}
+        </>)}
 
         {/* Country → region cascade */}
         <div className="grid grid-cols-2 gap-3">
@@ -6347,7 +6453,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         <FormBlock label={t.category} required done={!!catId}>
           <select className="form-input" value={catId} onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
             <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
-            {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
+            {CATEGORIES.filter(c => c.id !== "equipment" && c.id !== "exotics").map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
           </select>
         </FormBlock>
         {catId && (
@@ -7075,10 +7181,10 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
   const filteredAnimals = expoAnimals.filter(l => {
     if (!expoSearch.trim()) return true;
     const q = expoSearch.toLowerCase();
-    return l.species.toLowerCase().includes(q)
-        || l.common.toLowerCase().includes(q)
-        || l.traits.some(tr => tr.name.toLowerCase().includes(q))
-        || l.seller.toLowerCase().includes(q);
+    return (l.species || "").toLowerCase().includes(q)
+        || (l.common || "").toLowerCase().includes(q)
+        || (l.traits || []).some(tr => tr.name.toLowerCase().includes(q))
+        || (l.seller || "").toLowerCase().includes(q);
   });
 
   return (
