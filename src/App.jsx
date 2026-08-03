@@ -5817,6 +5817,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const [soldFor, setSoldFor] = useState(null);   // listing being marked sold (opens modal)
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [toast, setToast] = useState("");   // transient success message (e.g. "Listing deleted.")
 
   const doRelist = async (id, fields) => {
     setBusy(true); setErr("");
@@ -5863,10 +5864,16 @@ function MyListingsScreen({ t, lang, go, user }) {
       .catch(e => { setErr(e?.message || "Error"); setItems([]); });
   };
   useEffect(() => { if (user?.id) load(); }, [user?.id]);
+  // Auto-dismiss the transient success toast after a couple of seconds.
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(""), 2500);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const startEdit = (l) => {
     setEditId(l.id); setETitle(l.title || ""); setEPrice(String(l.price ?? "")); setEDesc(l.desc || "");
-    setConfirmDel(null); setErr("");
+    setErr("");
   };
   const saveEdit = async (id) => {
     // Find the listing so we know whether it's for sale (price required) or a
@@ -5887,12 +5894,23 @@ function MyListingsScreen({ t, lang, go, user }) {
   };
   const doDelete = async (id) => {
     setBusy(true); setErr("");
+    // Optimistic removal: drop the card from the list immediately so the UI
+    // responds instantly instead of appearing frozen until a manual refresh.
+    // Keep the previous list around so we can restore it if the delete fails.
+    const prevItems = items;
+    setItems(list => (list || []).filter(x => x.id !== id));
+    setRemoveFor(null);
     try {
       const api = await loadApi();
       await api.deleteListing(id);
-      setConfirmDel(null); load();
-    } catch (e) { setErr(e?.message || "Error"); }
-    finally { setBusy(false); }
+      setToast(t.mlDeleted);
+      // Reconcile with the server in the background so the counts stay honest.
+      load();
+    } catch (e) {
+      // Delete failed — put the card back so nothing is silently lost.
+      setItems(prevItems);
+      setErr(e?.message || "Error");
+    } finally { setBusy(false); }
   };
 
   // Categorise every animal by collection status. Legacy 'reserved'/'hidden'
@@ -5923,6 +5941,16 @@ function MyListingsScreen({ t, lang, go, user }) {
           <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.myListings}</h1>
           <p className="text-[11px] text-stone-500 mt-0.5">{t.mlIntro}</p>
         </div>
+        {/* Transient success toast — e.g. after deleting a listing. Fixed to the
+            bottom-centre so it's visible on mobile without shifting the layout. */}
+        {toast && (
+          <div role="status" aria-live="polite"
+               className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2
+                          bg-emerald-500/95 text-white text-[13px] font-bold px-4 py-2.5 rounded-full
+                          shadow-lg ring-1 ring-emerald-400/50 backdrop-blur-sm">
+            <Check size={15} strokeWidth={3} />{toast}
+          </div>
+        )}
         <button onClick={() => printInventory(items || [], t, lang, user?.name)}
                 disabled={!items || items.length === 0}
                 className="shrink-0 inline-flex items-center gap-1.5 bg-stone-800/70 ring-1 ring-stone-700 hover:bg-stone-800 disabled:opacity-40 text-stone-300 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
