@@ -200,6 +200,7 @@ export async function updateListing(id, fields) {
   if (fields.auction !== undefined) patch.auction = fields.auction;
   // Full-form edit also updates the animal's own details:
   if (fields.species != null) patch.species = fields.species;
+  if (fields.common != null) patch.common = fields.common;
   if (fields.category != null) patch.category = fields.category;
   if (fields.traits != null) patch.traits = fields.traits;
   if (fields.sex != null) patch.sex = fields.sex;

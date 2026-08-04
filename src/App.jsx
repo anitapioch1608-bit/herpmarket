@@ -3548,7 +3548,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
       {/* Description */}
       <Section title={t.description}>
-        <p className="text-sm text-stone-300 leading-relaxed">{a.desc}</p>
+        <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-line">{a.desc}</p>
       </Section>
 
       {/* Parentage — only shown when the seller has linked a parent. Hidden
@@ -4866,7 +4866,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
 
         <FormBlock label={t.listingTitle} required done={!!title.trim()}>
           <input className="form-input" value={title} onChange={e => setTitle(e.target.value)}
-                 placeholder={lang === "it" ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
+                 placeholder={lang === "it" ? "" : ""} />
         </FormBlock>
 
         {/* Category, then the right fields for the kind of listing:
@@ -4898,7 +4898,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
               </FormBlock>
               <FormBlock label={lang === "it" ? "Marca (facoltativo)" : "Brand (optional)"}>
                 <input className="form-input" value={brand} onChange={e => setBrand(e.target.value)}
-                       placeholder={lang === "it" ? "es. Exo Terra, Trixie, JBL…" : "e.g. Exo Terra, Trixie, JBL…"} />
+                       placeholder={lang === "it" ? "" : ""} />
               </FormBlock>
             </>
           )}
@@ -4909,7 +4909,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
                        required done={!!speciesVal.trim() && speciesVal !== "__other"}>
               <input className="form-input" value={speciesVal === "__other" ? "" : speciesVal}
                      onChange={e => setSpeciesVal(e.target.value)}
-                     placeholder={lang === "it" ? "es. Riccio africano (Atelerix albiventris)" : "e.g. African pygmy hedgehog (Atelerix albiventris)"} />
+                     placeholder={lang === "it" ? "" : ""} />
               <p className="text-[10px] text-stone-500 mt-1.5">
                 {lang === "it" ? "Scrivi la specie o il tipo di animale. Nessun morph richiesto." : "Type the species or kind of animal. No morphs required."}
               </p>
@@ -5045,7 +5045,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
 
         <FormBlock label={t.weight}>
           <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)}
-                 placeholder={lang === "it" ? "es. 38g (facoltativo)" : "e.g. 38g (optional)"} />
+                 placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
         </FormBlock>
 
         {/* CITES self-declaration — the SELLER decides. Never auto-ticked.
@@ -6206,7 +6206,7 @@ function MyListingsScreen({ t, lang, go, user }) {
                 <div>
                   <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.listingTitleLabel || (lang === "it" ? "Titolo annuncio" : "Listing title")}</div>
                   <input type="text" className="form-input" value={eTitle} onChange={e => setETitle(e.target.value)}
-                         placeholder={lang === "it" ? "es. Crested Gecko Lily White femmina" : "e.g. Female Lily White Crested Gecko"} />
+                         placeholder={lang === "it" ? "" : ""} />
                 </div>
                 {bucket(l) === "active" && (
                   <div>
@@ -6547,7 +6547,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         </FormBlock>
 
         <FormBlock label={t.weight}>
-          <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)} placeholder={lang === "it" ? "es. 38g (facoltativo)" : "e.g. 38g (optional)"} />
+          <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)} placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
         </FormBlock>
 
         {/* CITES — seller-controlled declaration (same model as the sell form). */}
@@ -6721,7 +6721,7 @@ function EditStoreScreen({ t, lang, go, user }) {
 
             <FormBlock label={t.spStoreName}>
               <input className="form-input" value={storeName} onChange={e => setStoreName(e.target.value)}
-                     placeholder={lang === "it" ? "es. GeckosAndChameleons (facoltativo)" : "e.g. GeckosAndChameleons (optional)"} />
+                     placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
               <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">{t.spStoreNameHint}</p>
             </FormBlock>
 
