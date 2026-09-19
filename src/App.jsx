@@ -5211,7 +5211,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
       {mode === "fixed" ? (
         <div className="flex items-center gap-2">
           <span className="text-stone-400 text-sm shrink-0">€</span>
-          <input type="number" min="0" className="form-input flex-1" placeholder="150" value={price} onChange={e => setPrice(e.target.value)} />
+          <input type="number" min="0" className="form-input flex-1" value={price} onChange={e => setPrice(e.target.value)} />
         </div>
       ) : (
         <div className="space-y-3">
@@ -5220,7 +5220,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
               <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.startPrice}</div>
               <div className="flex items-center gap-2">
                 <span className="text-stone-400 text-sm shrink-0">€</span>
-                <input type="number" min="0" className="form-input flex-1" placeholder="100" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
+                <input type="number" min="0" className="form-input flex-1" value={startPrice} onChange={e => setStartPrice(e.target.value)} />
               </div>
             </div>
             <div>
@@ -5383,7 +5383,7 @@ function DeliverySection({ lang, t, itemPrice = 0, localPickup, setLocalPickup, 
                 <div className="flex items-center gap-2 max-w-[160px]">
                   <span className="text-stone-400 text-sm shrink-0">€</span>
                   <input type="number" min="0" value={shippingCost} onChange={e => setShippingCost(e.target.value)}
-                         className="form-input flex-1" placeholder="45" />
+                         className="form-input flex-1" />
                 </div>
                 {itemPrice > 0 && Number(shippingCost) > itemPrice * 0.5 && (
                   <p className="text-[11px] text-amber-400 font-bold mt-2 flex items-center gap-1.5">
@@ -5868,7 +5868,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
         <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.price}</div>
         <div className="flex items-center gap-2 max-w-[160px]">
           <span className="text-stone-400 text-sm shrink-0">€</span>
-          <input type="number" min="0" className="form-input flex-1" value={price} onChange={e => setPrice(e.target.value)} placeholder="150" />
+          <input type="number" min="0" className="form-input flex-1" value={price} onChange={e => setPrice(e.target.value)} />
         </div>
       </div>
 
