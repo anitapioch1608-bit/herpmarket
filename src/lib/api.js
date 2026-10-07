@@ -40,6 +40,7 @@ export function mapListing(row) {
     createdAt: row.created_at || null,
     updatedAt: row.updated_at || null,
     seller: row.sellers?.store_name || row.sellers?.name || row.seller_name,
+    sellerInstagram: row.sellers?.instagram || "",
     sellerRealName: row.sellers?.name || row.seller_name,
     sellerId: row.seller_id || row.sellers?.id || null,
     sellerOwnerId: row.sellers?.owner_id || null,

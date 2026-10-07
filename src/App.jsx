@@ -24,7 +24,7 @@ const I18N = {
   it: {
     tagline: "Il mercato italiano dei rettili",
     home: "Esplora", search: "Cerca", sell: "Vendi", chat: "Messaggi", profile: "Profilo",
-    nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Sfoglia per categoria",
+    nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Che animale stai cercando?",
     category: "Categoria",
     breedingProjects: "Progetti di riproduzione",
     breedingIntro: "Pianifica e visualizza i tuoi accoppiamenti — sostituisci i fogli Excel con un planner visivo.",
@@ -302,7 +302,7 @@ const I18N = {
   en: {
     tagline: "Italy's reptile marketplace",
     home: "Explore", search: "Search", sell: "Sell", chat: "Messages", profile: "Profile",
-    nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "Browse by category",
+    nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "What animal are you looking for?",
     category: "Category",
     breedingProjects: "Breeding projects",
     breedingIntro: "Plan and visualise your pairings — replace Excel sheets with a visual planner.",
@@ -788,8 +788,9 @@ const CATEGORY_SUBCATS = {
   ],
   snakes: [
     { id: "snakes_pythons",   it: "Pitoni",     en: "Pythons",     species: ["Python regius", "Python brongersmai", "Python bivittatus", "Morelia viridis", "Morelia spilota", "Antaresia childreni"] },
-    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Pantherophis obsoletus", "Pantherophis emoryi", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Lampropeltis californiae", "Pituophis catenifer", "Thamnophis sirtalis", "Zamenis longissimus", "Elaphe dione", "Elaphe schrenckii", "Gonyosoma oxycephalum"] },
+    { id: "snakes_colubrids", it: "Colubridi",  en: "Colubrids",   species: ["Pantherophis guttatus", "Pantherophis obsoletus", "Pantherophis emoryi", "Heterodon nasicus", "Lampropeltis triangulum", "Lampropeltis getula", "Lampropeltis californiae", "Lampropeltis nigra", "Lampropeltis mexicana", "Lampropeltis pyromelana", "Pituophis catenifer", "Thamnophis sirtalis", "Zamenis longissimus", "Elaphe dione", "Elaphe schrenckii", "Gonyosoma oxycephalum"] },
     { id: "snakes_boas",      it: "Boa",        en: "Boas",        species: ["Boa constrictor", "Boa imperator", "Eryx colubrinus", "Epicrates cenchria"] },
+    { id: "snakes_other",     it: "Altri serpenti", en: "Other snakes", species: [] },
   ],
   lizards: [
     { id: "lizards_agamids", it: "Agamidi",  en: "Agamids",  species: ["Pogona vitticeps", "Pogona henrylawsoni", "Uromastyx", "Uromastyx geyri", "Uromastyx ocellata", "Chlamydosaurus kingii", "Intellagama lesueurii"] },
@@ -816,6 +817,9 @@ const CATEGORY_SUBCATS = {
     { id: "inv_mantids",    it: "Mantidi",              en: "Mantids",           species: ["Hierodula", "Sphodromantis", "Idolomantis diabolica"] },
     { id: "inv_myriapods",  it: "Millepiedi/Centopiedi",en: "Milli/Centipedes",  species: ["Archispirostreptus gigas", "Scolopendra"] },
     { id: "inv_isopods",    it: "Isopodi",              en: "Isopods",           species: ["Porcellio scaber", "Armadillidium"] },
+    { id: "inv_phasmids",   it: "Insetti stecco",       en: "Stick insects",     species: ["Extatosoma tiaratum", "Phyllium philippinicum", "Medauroidea extradentata", "Carausius morosus"] },
+    { id: "inv_spiders_other", it: "Altri ragni",       en: "Other spiders",     species: ["Phidippus regius"] },
+    { id: "inv_other",      it: "Altri invertebrati",   en: "Other inverts",     species: [] },
   ],
 };
 
@@ -1276,7 +1280,10 @@ const EXPOS = [
   { id: 127, name: "Esotika Pet Show · Fermo", location: "Fermo", date: "20-21 nov 2027", dateISO: "2027-11-20", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
   { id: 128, name: "Esotika Pet Show · Pordenone", location: "Pordenone", date: "27-28 nov 2027", dateISO: "2027-11-27", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
   { id: 129, name: "Milano Reptiles Meeting", location: "Milano", date: "31 gen 2027", dateISO: "2027-01-31", color: "from-rose-700 to-pink-600", description: "Meeting dedicato a rettili e animali esotici a Milano.", website: "", venue: "", country: "IT" },
-  { id: 130, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "giugno 2027 · data da confermare", dateISO: "2027-06-20", tbd: true, color: "from-emerald-700 to-teal-600", description: "La principale fiera italiana di terraristica, rettili e animali esotici. Data esatta ancora da confermare.", website: "https://www.squamata.it", venue: "Palagira · Viale 2 Giugno, 3", country: "IT" },
+  { id: 130, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "15 nov 2026", dateISO: "2026-11-15", color: "from-emerald-700 to-teal-600", description: "Edizione autunnale di Squamata, storica fiera italiana di rettili, anfibi e animali esotici.", website: "https://www.squamata.it", venue: "Palagira · Viale 2 Giugno, 3", country: "IT" },
+  { id: 140, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "giugno 2027 · data da confermare", dateISO: "2027-06-20", tbd: true, color: "from-emerald-700 to-teal-600", description: "Edizione principale (estiva) di Squamata. Data esatta ancora da confermare.", website: "https://www.squamata.it", venue: "Palagira · Viale 2 Giugno, 3", country: "IT" },
+  { id: 141, name: "Terrabörsen Karlsruhe", location: "Wörth am Rhein", date: "26 giu 2027", dateISO: "2027-06-26", color: "from-stone-700 to-stone-600", description: "Fiera specializzata per rettili, anfibi, invertebrati e accessori da terrario.", website: "https://www.terraboersen.de", venue: "Bienwaldhalle Wörth am Rhein", country: "DE" },
+  { id: 142, name: "EXOTICA Vienna", location: "Vienna", date: "febbraio 2027 · data da confermare", dateISO: "2027-02-15", tbd: true, color: "from-rose-700 to-pink-600", description: "Fiera di rettili e animali esotici a Vienna, Marx Halle. Data esatta ancora da confermare.", website: "", venue: "Marx Halle Wien", country: "AT" },
   { id: 131, name: "Verona Reptiles · Primavera", location: "Cerea (VR)", date: "primavera 2027 · data da confermare", dateISO: "2027-05-01", tbd: true, color: "from-orange-700 to-amber-600", description: "Edizione primaverile della più grande fiera di animali esotici d'Europa. Data esatta ancora da confermare.", website: "https://www.veronareptiles.it", venue: "Area Exp · Cerea", country: "IT" },
   { id: 132, name: "Verona Reptiles · Autunno", location: "Cerea (VR)", date: "autunno 2027 · data da confermare", dateISO: "2027-10-01", tbd: true, color: "from-orange-700 to-amber-600", description: "Edizione autunnale di Verona Reptiles. Data esatta ancora da confermare.", website: "https://www.veronareptiles.it", venue: "Area Exp · Cerea", country: "IT" },
   { id: 133, name: "Terraristika Hamm · Primavera", location: "Hamm", date: "marzo 2027 · data da confermare", dateISO: "2027-03-15", tbd: true, color: "from-slate-700 to-zinc-600", description: "Edizione primaverile della più grande borsa mondiale di terraristica. Data esatta ancora da confermare.", website: "https://www.terraristika.de", venue: "Zentralhallen Hamm", country: "DE" },
@@ -1300,11 +1307,11 @@ function getFeaturedExpos(count = 3, allExpos = EXPOS, todayISO = new Date().toI
   const pushUnique = (expo) => {
     if (expo && !featured.some(e => e.id === expo.id)) featured.push(expo);
   };
-  // 1) Verona (the launch expo) if it's still upcoming.
-  pushUnique(upcoming.find(e => e.name && e.name.toLowerCase().includes("verona")));
-  // 2) The next upcoming Hamm edition.
-  pushUnique(upcoming.find(e => e.name && e.name.toLowerCase().includes("hamm")));
-  // 3) Fill remaining slots with the next soonest upcoming expos.
+  // 1) Pin the flagship shows (first upcoming edition of each), in this order.
+  for (const key of ["verona", "hamm", "squamata", "houten"]) {
+    pushUnique(upcoming.find(e => e.name && e.name.toLowerCase().includes(key)));
+  }
+  // 2) Fill remaining slots with the next soonest upcoming expos.
   for (const e of upcoming) {
     if (featured.length >= count) break;
     pushUnique(e);
@@ -2218,10 +2225,6 @@ function VeronaThanksBanner({ lang }) {
              className="inline-flex items-center gap-1 text-[12px] font-bold text-amber-400 hover:text-amber-300">
             <Camera size={14} />Instagram
           </a>
-          <a href="https://www.facebook.com/herpmarket.it" target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-1 text-[12px] font-bold text-amber-400 hover:text-amber-300">
-            <Globe size={14} />Facebook
-          </a>
         </div>
       </div>
       <button onClick={() => { try { localStorage.setItem(KEY, "1"); } catch (e) {} setHidden(true); }}
@@ -2389,7 +2392,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {getFeaturedExpos(3).map((expo, i) => {
+          {getFeaturedExpos(4).map((expo, i) => {
             const expoAnimalsCount = (listingsData || LISTINGS).filter(l => (l.expoIds && l.expoIds.includes(expo.id)) || l.expoId === expo.id).length;
             return (
               <button key={expo.id}
@@ -3727,7 +3730,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
             {a.weight && <Spec label={t.weight}>{a.weight}</Spec>}
           </>
         )}
-        <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag} {a.city}</Spec>
+        <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag}{a.region ? " · " + a.region : ""}</Spec>
       </div>
 
       {/* Cross-border notice — buyer (assumed IT for demo) and seller differ */}
@@ -3837,6 +3840,13 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           </div>
           <ChevronRight size={18} className="text-stone-600 group-hover:text-amber-400 transition-colors" />
         </button>
+        {a.sellerInstagram && (
+          <a href={`https://instagram.com/${a.sellerInstagram.replace(/^@+/, "")}`}
+             target="_blank" rel="noopener noreferrer"
+             className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors">
+            <Camera size={13} />@{a.sellerInstagram.replace(/^@+/, "")}
+          </a>
+        )}
       </Section>
 
       {/* CITES notice if applicable */}
@@ -7177,7 +7187,7 @@ function WantedScreen({ t, lang, go, user, requireAuth }) {
           <h1 className="font-display text-2xl text-stone-50 tracking-tight">{it ? "Cerco" : "Wanted"}</h1>
           <p className="text-[11px] text-stone-500 mt-0.5">{it ? "Cerchi un animale specifico? Pubblica una richiesta: gli allevatori la vedono e ti rispondono." : "Looking for a specific animal? Post a request — breeders see it and reach out."}</p>
         </div>
-        <button onClick={() => { if (requireAuth(it ? "Accedi per pubblicare." : "Log in to post.", () => setShowForm(v => !v))) setShowForm(v => !v); }}
+        <button onClick={() => { if (requireAuth(it ? "Accedi per pubblicare." : "Log in to post.")) setShowForm(v => !v); }}
                 className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
           <PlusCircle size={14} />{it ? "Pubblica" : "Post"}
         </button>
@@ -7187,32 +7197,13 @@ function WantedScreen({ t, lang, go, user, requireAuth }) {
         <div className="mx-5 md:mx-8 mt-4 bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-4 space-y-3">
           <div>
             <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Cosa cerchi?" : "What are you looking for?"}</div>
-            <input className="form-input" value={title} onChange={e => setTitle(e.target.value)}
-                   placeholder={it ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.category}</div>
-              <select className="form-input" value={catId} onChange={e => setCatId(e.target.value)}>
-                <option value="">{it ? "Qualsiasi" : "Any"}</option>
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
-              </select>
-            </div>
-            <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Budget max" : "Max budget"}</div>
-              <div className="flex items-center gap-2"><span className="text-stone-400 text-sm">€</span>
-                <input type="number" min="0" className="form-input flex-1" value={budget} onChange={e => setBudget(e.target.value)} /></div>
-            </div>
+            <textarea rows="3" className="form-input resize-none" value={title} onChange={e => setTitle(e.target.value)}
+                      placeholder={it ? "Scrivi liberamente cosa stai cercando — specie, morph, sesso, zona…" : "Write freely what you're after — species, morph, sex, area…"} />
           </div>
           <div>
-            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.region}</div>
-            <input className="form-input" value={region} onChange={e => setRegion(e.target.value)}
-                   placeholder={it ? "es. Piemonte (facoltativo)" : "e.g. Piedmont (optional)"} />
-          </div>
-          <div>
-            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.description}</div>
-            <textarea rows="2" className="form-input resize-none" value={desc} onChange={e => setDesc(e.target.value)}
-                      placeholder={it ? "Dettagli utili: morph, sesso, età…" : "Useful details: morph, sex, age…"} />
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Budget max (facoltativo)" : "Max budget (optional)"}</div>
+            <div className="flex items-center gap-2"><span className="text-stone-400 text-sm">€</span>
+              <input type="number" min="0" className="form-input flex-1" value={budget} onChange={e => setBudget(e.target.value)} /></div>
           </div>
           {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
           <div className="flex gap-2">
@@ -9155,10 +9146,6 @@ function AboutContact({ t, go, lang, user }) {
           <a href="https://www.instagram.com/herpmarket.it/" target="_blank" rel="noopener noreferrer"
              className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors mt-3">
             <Camera size={16} />Instagram @herpmarket.it
-          </a>
-          <a href="https://www.facebook.com/herpmarket.it" target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors mt-3">
-            <Globe size={16} />Facebook · HerpMarket
           </a>
         </div>
         <button onClick={() => setShowReport(true)}
