@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw, Flag
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw, Flag, Share2
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -1245,12 +1245,49 @@ const EXPOS = [
     website: "https://www.terraboersen.de",
     venue: "Bienwaldhalle Wörth am Rhein", country: "DE",
   },
+  // ── Added Oct 2026: upcoming Italian circuit + international + date-TBD ──
+  { id: 100, name: "Esotika Pet Show · Brescia", location: "Brescia", date: "10-11 ott 2026", dateISO: "2026-10-10", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 101, name: "Esotika Pet Show · Casale Monferrato", location: "Casale Monferrato (AL)", date: "17-18 ott 2026", dateISO: "2026-10-17", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 102, name: "Esotika Pet Show · Bastia Umbra", location: "Bastia Umbra (PG)", date: "24-25 ott 2026", dateISO: "2026-10-24", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 103, name: "Esotika Pet Show · Busto Arsizio", location: "Busto Arsizio (VA)", date: "7-8 nov 2026", dateISO: "2026-11-07", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 104, name: "Esotika Pet Show · Fermo", location: "Fermo", date: "21-22 nov 2026", dateISO: "2026-11-21", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 105, name: "Esotika Pet Show · Pordenone", location: "Pordenone", date: "28-29 nov 2026", dateISO: "2026-11-28", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 106, name: "Terraristika Hamm · Inverno", location: "Hamm", date: "12 dic 2026", dateISO: "2026-12-12", color: "from-slate-700 to-zinc-600", description: "Edizione invernale della più grande borsa mondiale di terraristica.", website: "https://www.terraristika.de", venue: "Zentralhallen Hamm", country: "DE" },
+  { id: 107, name: "Terraria Houten · Inverno", location: "Houten", date: "6 dic 2026", dateISO: "2026-12-06", color: "from-blue-700 to-indigo-600", description: "Grande fiera di rettili e anfibi dei Paesi Bassi, Expo Houten.", website: "https://vhm-events.com", venue: "Expo Houten · Meidoornkade 24", country: "NL" },
+  { id: 108, name: "Ziva Exotika · Praga", location: "Praga", date: "17 ott 2026", dateISO: "2026-10-17", color: "from-violet-700 to-purple-600", description: "La più grande fiera di animali e piante esotiche dell'Europa centrale.", website: "https://zivaexotika.cz", venue: "Top Hotel Praha", country: "CZ" },
+  { id: 109, name: "Ziva Exotika · Praga", location: "Praga", date: "21 nov 2026", dateISO: "2026-11-21", color: "from-violet-700 to-purple-600", description: "La più grande fiera di animali e piante esotiche dell'Europa centrale.", website: "https://zivaexotika.cz", venue: "Top Hotel Praha", country: "CZ" },
+  { id: 110, name: "Ziva Exotika · Praga", location: "Praga", date: "19 dic 2026", dateISO: "2026-12-19", color: "from-violet-700 to-purple-600", description: "La più grande fiera di animali e piante esotiche dell'Europa centrale.", website: "https://zivaexotika.cz", venue: "Top Hotel Praha", country: "CZ" },
+  { id: 111, name: "Esotika Pet Show · Erba", location: "Erba (CO)", date: "16-17 gen 2027", dateISO: "2027-01-16", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 112, name: "Esotika Pet Show · Mantova", location: "Mantova", date: "23-24 gen 2027", dateISO: "2027-01-23", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 113, name: "Esotika Pet Show · Arezzo", location: "Arezzo", date: "6-7 feb 2027", dateISO: "2027-02-06", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 114, name: "Esotika Pet Show · Caresanablot", location: "Caresanablot (VC)", date: "27-28 feb 2027", dateISO: "2027-02-27", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 115, name: "Esotika Pet Show · Genova", location: "Genova", date: "13-14 mar 2027", dateISO: "2027-03-13", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 116, name: "Esotika Pet Show · Ferrara", location: "Ferrara", date: "20-21 mar 2027", dateISO: "2027-03-20", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 117, name: "Esotika Pet Show · Busto Arsizio", location: "Busto Arsizio (VA)", date: "3-4 apr 2027", dateISO: "2027-04-03", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 118, name: "Esotika Pet Show · Brescia", location: "Brescia", date: "24-25 apr 2027", dateISO: "2027-04-24", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 119, name: "Esotika Pet Show · Morbegno", location: "Morbegno (SO)", date: "22-23 mag 2027", dateISO: "2027-05-22", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 120, name: "Esotika Pet Show · Erba", location: "Erba (CO)", date: "4-5 set 2027", dateISO: "2027-09-04", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 121, name: "Esotika Pet Show · Arezzo", location: "Arezzo", date: "11-12 set 2027", dateISO: "2027-09-11", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 122, name: "Esotika Pet Show · Marina di Carrara", location: "Marina di Carrara (MS)", date: "25-26 set 2027", dateISO: "2027-09-25", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 123, name: "Esotika Pet Show · Brescia", location: "Brescia", date: "9-10 ott 2027", dateISO: "2027-10-09", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 124, name: "Esotika Pet Show · Casale Monferrato", location: "Casale Monferrato (AL)", date: "16-17 ott 2027", dateISO: "2027-10-16", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 125, name: "Esotika Pet Show · Bastia Umbra", location: "Bastia Umbra (PG)", date: "23-24 ott 2027", dateISO: "2027-10-23", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 126, name: "Esotika Pet Show · Gonzaga", location: "Gonzaga (MN)", date: "13-14 nov 2027", dateISO: "2027-11-13", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 127, name: "Esotika Pet Show · Fermo", location: "Fermo", date: "20-21 nov 2027", dateISO: "2027-11-20", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 128, name: "Esotika Pet Show · Pordenone", location: "Pordenone", date: "27-28 nov 2027", dateISO: "2027-11-27", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
+  { id: 129, name: "Milano Reptiles Meeting", location: "Milano", date: "31 gen 2027", dateISO: "2027-01-31", color: "from-rose-700 to-pink-600", description: "Meeting dedicato a rettili e animali esotici a Milano.", website: "", venue: "", country: "IT" },
+  { id: 130, name: "Squamata", location: "Ozzano dell'Emilia (BO)", date: "giugno 2027 · data da confermare", dateISO: "2027-06-20", tbd: true, color: "from-emerald-700 to-teal-600", description: "La principale fiera italiana di terraristica, rettili e animali esotici. Data esatta ancora da confermare.", website: "https://www.squamata.it", venue: "Palagira · Viale 2 Giugno, 3", country: "IT" },
+  { id: 131, name: "Verona Reptiles · Primavera", location: "Cerea (VR)", date: "primavera 2027 · data da confermare", dateISO: "2027-05-01", tbd: true, color: "from-orange-700 to-amber-600", description: "Edizione primaverile della più grande fiera di animali esotici d'Europa. Data esatta ancora da confermare.", website: "https://www.veronareptiles.it", venue: "Area Exp · Cerea", country: "IT" },
+  { id: 132, name: "Verona Reptiles · Autunno", location: "Cerea (VR)", date: "autunno 2027 · data da confermare", dateISO: "2027-10-01", tbd: true, color: "from-orange-700 to-amber-600", description: "Edizione autunnale di Verona Reptiles. Data esatta ancora da confermare.", website: "https://www.veronareptiles.it", venue: "Area Exp · Cerea", country: "IT" },
+  { id: 133, name: "Terraristika Hamm · Primavera", location: "Hamm", date: "marzo 2027 · data da confermare", dateISO: "2027-03-15", tbd: true, color: "from-slate-700 to-zinc-600", description: "Edizione primaverile della più grande borsa mondiale di terraristica. Data esatta ancora da confermare.", website: "https://www.terraristika.de", venue: "Zentralhallen Hamm", country: "DE" },
 ];
 
-/* Returns expos with dateISO >= today, sorted by date ascending */
+/* Returns upcoming expos sorted by date. Entries flagged `tbd` (exact date not
+   announced yet) stay visible regardless of their approximate anchor date —
+   they only leave the list when an admin adds a real date or removes them. */
 function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().slice(0, 10)) {
   return allExpos
-    .filter(e => e.dateISO >= todayISO)
+    .filter(e => e.tbd || e.dateISO >= todayISO)
     .sort((a, b) => a.dateISO.localeCompare(b.dateISO));
 }
 
@@ -1289,11 +1326,15 @@ const formatAge = (months, t) => {
   return `${years} ${years === 1 ? t.year : t.years}`;
 };
 // Birth/age display that respects the precision the breeder gave:
-//  - year only ("2025")      → "CB25" (captive-bred shorthand; no fake month count)
+//  - year only ("2025")      → approximate age computed from the year ("~1 anno")
 //  - month ("2025-06") / full → computed age from ageMonths
 const formatBirth = (listing, t) => {
   const bd = (listing?.birthDate || "").trim();
-  if (/^\d{4}$/.test(bd)) return `CB${bd.slice(2)}`;
+  if (/^\d{4}$/.test(bd)) {
+    const yrs = new Date().getFullYear() - parseInt(bd, 10);
+    if (yrs <= 0) return `< 1 ${t.year}`;
+    return `~${yrs} ${yrs === 1 ? t.year : t.years}`;
+  }
   return formatAge(listing?.ageMonths, t);
 };
 const formatPrice = (n) => (n == null || isNaN(n)) ? "—" : `€${Number(n).toLocaleString("it-IT")}`;
@@ -1501,7 +1542,7 @@ export default function HerpMarket() {
     const u = session?.user;
     if (!u) { setUser(null); return; }
     const meta = u.user_metadata || {};
-    setUser({ id: u.id, email: u.email, name: meta.display_name || (u.email || "").split("@")[0], region: "Piemonte", verified: false });
+    setUser({ id: u.id, email: u.email, name: meta.display_name || (u.email || "").split("@")[0], region: "", verified: false });
     // enrich from profile (region, verified) without blocking the UI
     api.fetchProfile(u.id).then(p => {
       if (p) setUser(prev => prev ? { ...prev, name: p.display_name || prev.name, region: p.region || prev.region, verified: !!p.verified } : prev);
@@ -1636,7 +1677,7 @@ export default function HerpMarket() {
   // Demo shortcut (DemoToggle) — fake local login for quick UI testing only.
   // Must NOT grant verification: the blue check only reflects the real DB flag.
   const handleLogin = (name) => {
-    setUser({ name: name || "Anita Pioch", region: "Piemonte", verified: false });
+    setUser({ name: name || "Anita Pioch", region: "", verified: false });
     const after = authModal?.after;
     setAuthModal(null);
     after && setTimeout(after, 100);
@@ -1672,6 +1713,7 @@ export default function HerpMarket() {
       case "addanimal": return user ? <AddAnimalScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "editstore": return user ? <EditStoreScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
+      case "wanted":    return <WantedScreen {...props} user={user} />;
       case "legal":     return <Legal {...props} />;
       case "breeding":  return <BreedingProjectsScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
@@ -1687,7 +1729,7 @@ export default function HerpMarket() {
     }
   };
 
-  const profileViews = ["profile", "mylistings", "addanimal", "editstore", "wishlist", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
+  const profileViews = ["profile", "mylistings", "addanimal", "editstore", "wishlist", "wanted", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   // Private pre-launch gate: block the whole site until the access password is entered.
   if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
@@ -2153,8 +2195,45 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
 /* ═══════════════════════════════════════════════════════════════════
    HOME — clean: hero → category strip → expos → near you → all
    ═════════════════════════════════════════════════════════════════ */
+/* Temporary banner shown after Verona 2026 — thanks + social links. Dismissible
+   (choice saved locally). Remove this component + its usage once it's stale. */
+function VeronaThanksBanner({ lang }) {
+  const KEY = "hm_verona_thanks_dismissed";
+  const [hidden, setHidden] = useState(() => {
+    try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; }
+  });
+  if (hidden) return null;
+  const it = lang === "it";
+  return (
+    <div className="relative bg-gradient-to-r from-emerald-900/60 via-stone-900 to-stone-900 border-b border-amber-500/20 px-5 md:px-8 py-3 pr-12">
+      <div className="max-w-5xl mx-auto flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="text-lg leading-none">🦎</span>
+        <p className="text-[12px] md:text-[13px] text-stone-200 leading-snug flex-1 min-w-[200px]">
+          {it
+            ? "Grazie per tutti i feedback a Verona! Nei prossimi giorni arriveranno diverse novità sulla piattaforma."
+            : "Thank you for all the feedback at Verona! Several improvements are landing on the platform over the next few days."}
+        </p>
+        <div className="flex items-center gap-3">
+          <a href="https://www.instagram.com/herpmarket.it/" target="_blank" rel="noopener noreferrer"
+             className="inline-flex items-center gap-1 text-[12px] font-bold text-amber-400 hover:text-amber-300">
+            <Camera size={14} />Instagram
+          </a>
+          <a href="https://www.facebook.com/herpmarket.it" target="_blank" rel="noopener noreferrer"
+             className="inline-flex items-center gap-1 text-[12px] font-bold text-amber-400 hover:text-amber-300">
+            <Globe size={14} />Facebook
+          </a>
+        </div>
+      </div>
+      <button onClick={() => { try { localStorage.setItem(KEY, "1"); } catch (e) {} setHidden(true); }}
+              aria-label="Chiudi" className="absolute top-2.5 right-3 text-stone-400 hover:text-stone-100">
+        <X size={16} />
+      </button>
+    </div>
+  );
+}
+
 function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth, listingsData, listingsStatus, retryListings }) {
-  const userRegion = user?.region || "Piemonte";
+  const userRegion = user?.region || "";
   // Use real data when we have it. While loading/erroring with nothing yet,
   // show an empty list (not demo animals) so we don't display fake listings.
   const LIST = listingsData || [];
@@ -2170,6 +2249,8 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
 
   return (
     <div className="max-w-7xl mx-auto w-full">
+      {/* Temporary post-Verona thank-you banner (remove when no longer needed) */}
+      <VeronaThanksBanner lang={lang} />
       {/* Mobile header */}
       <header className="md:hidden px-5 pt-14 pb-5 bg-gradient-to-b from-stone-900 to-stone-950 border-b border-stone-800/60">
         <div className="flex items-start justify-between gap-3">
@@ -2341,6 +2422,9 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
       <div className="px-5 md:px-8 pt-6">
         <SponsorSlot slot="home_banner" t={t} lang={lang} />
       </div>
+
+      {/* Community wanted / "Cerco" strip — surfaces demand to sellers */}
+      <WantedStrip t={t} lang={lang} go={go} />
 
       {/* Near you */}
       {near.length > 0 && (
@@ -3304,6 +3388,129 @@ function ReportSheet({ listing = null, t, lang, user = null, onClose }) {
   );
 }
 
+/* Compact optional photo picker for a parent (sire/dam) on a listing. */
+function ParentPhotoPicker({ photo, setPhoto, lang }) {
+  const onPick = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) prepareImage(f).then(p => setPhoto(p)).catch(() => {});
+    e.target.value = "";
+  };
+  return (
+    <div className="mt-2">
+      {photo ? (
+        <div className="relative inline-block">
+          <img src={photo.url} alt="" className="w-16 h-16 rounded-lg object-cover ring-1 ring-stone-700" />
+          <button type="button" onClick={() => setPhoto(null)}
+                  className="absolute -top-1.5 -right-1.5 bg-stone-950 rounded-full p-0.5 ring-1 ring-stone-700 text-stone-300 hover:text-stone-100">
+            <X size={12} />
+          </button>
+        </div>
+      ) : (
+        <label className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 cursor-pointer">
+          <Camera size={13} />{lang === "it" ? "Aggiungi foto" : "Add photo"}
+          <input type="file" accept="image/*" className="hidden" onChange={onPick} />
+        </label>
+      )}
+    </div>
+  );
+}
+
+/* ─── Share to Instagram / social ────────────────────────────────────
+   Builds a clean, HerpMarket-branded card from a listing (photo + morph +
+   price) on a canvas, then shares it via the native share sheet (mobile) or
+   downloads it with a ready-to-paste caption. Every seller who shares becomes
+   a distribution channel: their post carries HerpMarket branding + the link. */
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+async function shareListingImage(a, t, lang) {
+  const W = 1080, H = 1350, photoH = 780;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#0c0a09"; ctx.fillRect(0, 0, W, H);
+  const imgUrl = (a.images && a.images[0]) || a.image || null;
+  // Load with crossOrigin so the canvas stays exportable. If the host doesn't
+  // allow CORS the load simply fails and we render a text-only card instead —
+  // never a tainted canvas.
+  const loadImg = (src) => new Promise((res) => {
+    if (!src) return res(null);
+    const im = new Image(); im.crossOrigin = "anonymous";
+    im.onload = () => res(im); im.onerror = () => res(null);
+    im.src = src;
+    setTimeout(() => res(im.complete && im.naturalWidth ? im : null), 4500);
+  });
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+  const photo = await loadImg(imgUrl);
+  if (photo && photo.naturalWidth) {
+    const r = Math.max(W / photo.naturalWidth, photoH / photo.naturalHeight);
+    const dw = photo.naturalWidth * r, dh = photo.naturalHeight * r;
+    try { ctx.drawImage(photo, (W - dw) / 2, (photoH - dh) / 2, dw, dh); }
+    catch (e) { ctx.fillStyle = "#1c1917"; ctx.fillRect(0, 0, W, photoH); }
+  } else { ctx.fillStyle = "#1c1917"; ctx.fillRect(0, 0, W, photoH); }
+  const g = ctx.createLinearGradient(0, photoH - 220, 0, photoH);
+  g.addColorStop(0, "rgba(12,10,9,0)"); g.addColorStop(1, "rgba(12,10,9,1)");
+  ctx.fillStyle = g; ctx.fillRect(0, photoH - 220, W, 220);
+  // wordmark watermark
+  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+  ctx.font = "700 44px Fraunces, Georgia, serif"; ctx.fillStyle = "#f5f5f4";
+  ctx.fillText("Herp", 48, 86);
+  const hw = ctx.measureText("Herp").width;
+  ctx.font = "italic 700 44px Fraunces, Georgia, serif"; ctx.fillStyle = "#f59e0b";
+  ctx.fillText("Market", 48 + hw, 86);
+  // info block
+  let y = photoH + 100;
+  const title = (a.title || a.common || a.species || "").trim();
+  ctx.fillStyle = "#f5f5f4"; ctx.font = "700 60px Fraunces, Georgia, serif";
+  const words = title.split(" "); let ln = ""; const lines = [];
+  for (const w of words) { const tst = (ln + " " + w).trim(); if (ctx.measureText(tst).width > W - 96 && ln) { lines.push(ln); ln = w; } else ln = tst; }
+  if (ln) lines.push(ln);
+  for (const L of lines.slice(0, 2)) { ctx.fillText(L, 48, y); y += 72; }
+  if (a.species && a.species !== title) { ctx.fillStyle = "#f59e0b"; ctx.font = "italic 600 34px Fraunces, Georgia, serif"; ctx.fillText(a.species, 48, y); y += 56; }
+  const traits = (a.traits || []).map(tr => tr && tr.name).filter(Boolean).slice(0, 3);
+  if (traits.length) {
+    ctx.font = "600 26px Manrope, sans-serif"; let cx = 48;
+    for (const tn of traits) {
+      const tw = ctx.measureText(tn).width, pad = 20;
+      if (cx + tw + pad * 2 > W - 60) break;
+      ctx.fillStyle = "rgba(245,158,11,0.14)"; roundRectPath(ctx, cx, y - 30, tw + pad * 2, 44, 12); ctx.fill();
+      ctx.fillStyle = "#fbbf24"; ctx.fillText(tn, cx + pad, y);
+      cx += tw + pad * 2 + 12;
+    }
+    y += 62;
+  }
+  const priceVal = a.auction ? a.auction.currentBid : a.price;
+  ctx.fillStyle = "#f59e0b"; ctx.font = "700 78px Fraunces, Georgia, serif";
+  ctx.fillText(formatPrice(priceVal), 48, y + 12); y += 46;
+  ctx.fillStyle = "#a8a29e"; ctx.font = "500 30px Manrope, sans-serif";
+  const meta = [sexLabel(a.sex, t), formatBirth(a, t)].filter(x => x && x !== "—").join("   ·   ");
+  if (meta) ctx.fillText(meta, 48, y + 46);
+  ctx.fillStyle = "#78716c"; ctx.font = "600 30px Manrope, sans-serif";
+  ctx.fillText("herpmarket.it", 48, H - 56);
+  ctx.textAlign = "right"; ctx.fillStyle = "#f59e0b"; ctx.font = "italic 600 30px Fraunces, Georgia, serif";
+  ctx.fillText(lang === "it" ? "Guarda l'annuncio →" : "See the listing →", W - 48, H - 56);
+  ctx.textAlign = "left";
+  const blob = await new Promise((res) => canvas.toBlob(res, "image/png", 0.92));
+  if (!blob) { alert(lang === "it" ? "Impossibile creare l'immagine. Riprova." : "Couldn't create the image. Try again."); return; }
+  const file = new File([blob], "herpmarket.png", { type: "image/png" });
+  const caption = lang === "it"
+    ? `${title}${a.species ? " — " + a.species : ""}\n${formatPrice(priceVal)}\n\nDisponibile su HerpMarket 👉 herpmarket.it\n\n#HerpMarket #rettili #terraristica #animaliesotici`
+    : `${title}${a.species ? " — " + a.species : ""}\n${formatPrice(priceVal)}\n\nAvailable on HerpMarket 👉 herpmarket.it\n\n#HerpMarket #reptiles #geckos #exoticpets`;
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: caption }); return;
+    }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a"); link.href = url; link.download = "herpmarket.png";
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  try { await navigator.clipboard.writeText(caption); } catch (e) {}
+  alert(lang === "it" ? "Immagine salvata e testo copiato! Aprila su Instagram e incolla il testo." : "Image saved and caption copied! Open Instagram and paste the text.");
+}
+
 function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAuth, lang }) {
   // Single state machine. Possible values:
   // "idle" | "requested" | "approved" | "declined" | "paid" | "handover" | "completed"
@@ -3471,6 +3678,10 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                 className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
           <ChevronLeft size={20} />
         </button>
+        <button onClick={(e) => { e.stopPropagation(); shareListingImage(a, t, lang); }} aria-label="Condividi / Share"
+                className="absolute top-5 right-[4.5rem] p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
+          <Share2 size={20} />
+        </button>
         <button onClick={(e) => toggleFav(a.id, e)} aria-label="Save to favourites"
                 className="absolute top-5 right-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full transition-colors z-10">
           <Heart size={20} className={favorites.includes(a.id) ? "fill-rose-500 text-rose-500" : "text-stone-100"} />
@@ -3554,7 +3765,25 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
       {/* Parentage — only shown when the seller has linked a parent. Hidden
           otherwise (there's no parent-linking field yet, so "Unknown" would
           just look broken). */}
-      {(a.sire || a.dam) && (
+      {Array.isArray(a.parents) && a.parents.some(p => p && (p.image || p.label)) ? (
+        <Section title={t.parentage}>
+          <div className="grid grid-cols-2 gap-2.5">
+            {a.parents.filter(p => p && (p.image || p.label)).map((p, i) => (
+              <div key={i} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
+                {p.image ? (
+                  <img src={p.image} alt="" className="w-full aspect-square object-cover" />
+                ) : (
+                  <div className="w-full aspect-square bg-stone-800/50 flex items-center justify-center text-stone-600 font-display italic text-xs">{t.unknown}</div>
+                )}
+                <div className="p-2.5">
+                  <div className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">{p.role === "dam" ? t.dam : t.sire}</div>
+                  <div className="text-sm text-stone-100 font-medium mt-0.5">{p.label || t.unknown}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      ) : (a.sire || a.dam) && (
         <Section title={t.parentage}>
           <div className="grid grid-cols-2 gap-2">
             <ParentCard role="sire" label={t.sire}>{a.sire || t.unknown}</ParentCard>
@@ -5648,7 +5877,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
             <h1 className="font-display text-2xl text-stone-50 tracking-tight flex items-center gap-2">
               {user?.name || "Anita Pioch"} {user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
             </h1>
-            <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder} · {user?.region || "Piemonte"}</p>
+            <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder}{user?.region ? " · " + user.region : ""}</p>
           </div>
         </div>
       </header>
@@ -5658,6 +5887,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
         <ProfileGroup label={t.breedingMgmt}>
           <ProfileRow icon={<Heart size={18} />} label={t.wishlist} sub={String((favorites || []).length)} onClick={() => go("wishlist")} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t.myListings} onClick={() => go("mylistings")} />
+          <ProfileRow icon={<Search size={18} />} label={lang === "it" ? "Cerco (bacheca)" : "Wanted board"} onClick={() => go("wanted")} />
           <ProfileRow icon={<Camera size={18} />} label={t.spTitle} onClick={() => go("editstore")} />
           <ProfileRow icon={<GitBranch size={18} />} label={t.geneticsBreeding} badge="SOON" onClick={() => go("breeding")} />
           <ProfileRow icon={<Star size={18} />} label={t.reviews} onClick={() => go("reviews")} />
@@ -6287,6 +6517,8 @@ function AddAnimalScreen({ t, lang, go, user }) {
   const [isCites, setIsCites] = useState(false);
   const [sire, setSire] = useState("");
   const [dam, setDam] = useState("");
+  const [sirePhoto, setSirePhoto] = useState(null);   // optional parent photo {file,url} or {url}
+  const [damPhoto, setDamPhoto] = useState(null);
   const [desc, setDesc] = useState("");
   const [selectedTraits, setSelectedTraits] = useState([]);
   const [customTrait, setCustomTrait] = useState("");
@@ -6365,6 +6597,17 @@ function AddAnimalScreen({ t, lang, go, user }) {
       const api = await loadApi();
       const seller = await api.getOrCreateSeller({ id: user.id, name: user.name, email: user.email, region, country });
       const urls = photos.length ? await api.uploadListingPhotos(photos.map(p => p.file), user.id) : [];
+      // optional parent photos (lineage lives only in the listing)
+      const uploadParent = async (p) => {
+        if (!p) return null;
+        if (p.file) { const [u] = await api.uploadListingPhotos([p.file], user.id); return u || null; }
+        return p.url || null;
+      };
+      const sireImg = await uploadParent(sirePhoto);
+      const damImg = await uploadParent(damPhoto);
+      const parents = [];
+      if (sire.trim() || sireImg) parents.push({ role: "sire", label: sire.trim(), image: sireImg });
+      if (dam.trim() || damImg) parents.push({ role: "dam", label: dam.trim(), image: damImg });
       const traits = selectedTraits.map(n => {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
@@ -6376,7 +6619,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         sex, ageMonths: monthsSince(born), weight: weight.trim() || null,
         birthDate: (born || "").trim() || null,
         citesListed: isCites, country, region, city: null,
-        sire: sire.trim() || null, dam: dam.trim() || null, desc: desc.trim(),
+        sire: sire.trim() || null, dam: dam.trim() || null, parents, desc: desc.trim(),
         image: urls[0] || null, images: urls, shipping: false, euShipping: false, localPickup: true,
         expoIds: [], auction: null, status,
       }, seller.id);
@@ -6518,14 +6761,19 @@ function AddAnimalScreen({ t, lang, go, user }) {
           </div>
         </FormBlock>
 
-        {/* Parentage — feeds the breeding/genetics page */}
-        <div className="grid grid-cols-2 gap-3">
-          <FormBlock label={t.sire}>
-            <input className="form-input" value={sire} onChange={e => setSire(e.target.value)} placeholder={lang === "it" ? "Padre (facoltativo)" : "Sire (optional)"} />
-          </FormBlock>
-          <FormBlock label={t.dam}>
-            <input className="form-input" value={dam} onChange={e => setDam(e.target.value)} placeholder={lang === "it" ? "Madre (facoltativo)" : "Dam (optional)"} />
-          </FormBlock>
+        {/* Parentage — morph label + optional photo for each parent (lives only in this listing) */}
+        <div>
+          <div className="grid grid-cols-2 gap-3">
+            <FormBlock label={t.sire}>
+              <input className="form-input" value={sire} onChange={e => setSire(e.target.value)} placeholder={lang === "it" ? "Morph del padre (facoltativo)" : "Sire morph (optional)"} />
+              <ParentPhotoPicker photo={sirePhoto} setPhoto={setSirePhoto} lang={lang} />
+            </FormBlock>
+            <FormBlock label={t.dam}>
+              <input className="form-input" value={dam} onChange={e => setDam(e.target.value)} placeholder={lang === "it" ? "Morph della madre (facoltativo)" : "Dam morph (optional)"} />
+              <ParentPhotoPicker photo={damPhoto} setPhoto={setDamPhoto} lang={lang} />
+            </FormBlock>
+          </div>
+          <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Aggiungi foto e morph dei genitori per mostrare la linea di sangue." : "Add parent photos & morphs to showcase the bloodline."}</p>
         </div>
 
         {/* Birth date with precision */}
@@ -6609,6 +6857,7 @@ function EditStoreScreen({ t, lang, go, user }) {
   const [bio, setBio] = useState("");
   const [specs, setSpecs] = useState("");
   const [website, setWebsite] = useState("");
+  const [instagram, setInstagram] = useState("");
   const [isPro, setIsPro] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -6639,6 +6888,7 @@ function EditStoreScreen({ t, lang, go, user }) {
           setBio(s.bioIt || "");
           setSpecs((s.specialties || []).join(", "));
           setWebsite(s.website || "");
+          setInstagram(s.instagram || "");
           setIsPro(!!s.pro);
           setAvatarPreview(s.avatarUrl || null);
         }
@@ -6673,6 +6923,7 @@ function EditStoreScreen({ t, lang, go, user }) {
         bio: bio.trim(),
         specialties: specs.split(",").map(s => s.trim()).filter(Boolean),
         website: isPro ? website.trim() : "",
+        instagram: instagram.trim().replace(/^@+/, ""),
       };
       if (avatarUrl) fields.avatarUrl = avatarUrl;
       const updated = await api.updateMySeller(seller.id, fields);
@@ -6750,6 +7001,12 @@ function EditStoreScreen({ t, lang, go, user }) {
               <input className="form-input" value={specs} onChange={e => setSpecs(e.target.value)} placeholder={t.spSpecialtiesPh} />
             </FormBlock>
 
+            <FormBlock label="Instagram">
+              <input className="form-input" value={instagram} onChange={e => setInstagram(e.target.value)}
+                     placeholder={lang === "it" ? "@iltuoprofilo" : "@yourhandle"} />
+              <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Mostrato sulla tua pagina pubblica — aiuta gli acquirenti a fidarsi." : "Shown on your public page — helps buyers trust you."}</p>
+            </FormBlock>
+
             <FormBlock label={t.spWebsite}>
               <div className="flex items-center gap-2 mb-1.5">
                 {!isPro && <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 px-2 py-0.5 rounded-full">{t.proOnly}</span>}
@@ -6800,6 +7057,240 @@ function Wishlist({ t, go, favorites, toggleFav, listingsData }) {
             {items.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* Home-page strip: surfaces the latest community "Wanted" requests so sellers
+   see demand immediately. Renders nothing until there are open requests. */
+function WantedStrip({ t, lang, go }) {
+  const it = lang === "it";
+  const [items, setItems] = useState(null);
+  useEffect(() => {
+    let on = true;
+    loadApi().then(api => api.fetchWanted({ limit: 6 }))
+      .then(rows => { if (on) setItems(rows || []); }).catch(() => { if (on) setItems([]); });
+    return () => { on = false; };
+  }, []);
+  if (!items || items.length === 0) return null;
+  return (
+    <section className="px-5 md:px-8 pt-8">
+      <div className="flex items-baseline justify-between mb-3">
+        <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight flex items-center gap-2">
+          <Search size={16} className="text-amber-500" />{it ? "Richieste della community" : "Community wanted"}
+        </h3>
+        <button onClick={() => go("wanted")} className="text-[11px] text-amber-400 font-bold hover:underline">{it ? "Vedi tutte" : "See all"} →</button>
+      </div>
+      <div className="flex gap-2.5 overflow-x-auto hide-scrollbar -mx-5 px-5 md:mx-0 md:px-0 pb-2">
+        {items.map(w => {
+          const cat = CATEGORIES.find(c => c.id === w.category);
+          return (
+            <button key={w.id} onClick={() => go("wanted")}
+                    className="shrink-0 w-64 text-left bg-stone-900/60 ring-1 ring-stone-800 hover:ring-amber-500/40 rounded-xl p-3.5 transition-all">
+              <span className="text-[9px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 ring-1 ring-amber-500/25 px-1.5 py-0.5 rounded">{it ? "CERCO" : "WANTED"}</span>
+              <div className="font-bold text-stone-100 text-sm mt-2 line-clamp-2 leading-tight">{w.title}</div>
+              <div className="text-[11px] text-stone-500 mt-1.5 flex flex-wrap gap-x-2">
+                {cat && <span>{cat.emoji} {cat[lang]}</span>}
+                {w.budgetMax != null && <span className="text-amber-400 font-bold">{it ? "fino a" : "up to"} {formatPrice(w.budgetMax)}</span>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WANTED / "CERCO" — community board of animal requests (ISO). Keepers post
+   what they're looking for; sellers browse the demand and respond by opening
+   a chat through one of their listings (reuses the existing messaging).
+   ═════════════════════════════════════════════════════════════════ */
+function WantedScreen({ t, lang, go, user, requireAuth }) {
+  const it = lang === "it";
+  const [items, setItems] = useState(null);
+  const [tab, setTab] = useState("all");        // all | mine
+  const [showForm, setShowForm] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [title, setTitle] = useState("");
+  const [catId, setCatId] = useState("");
+  const [budget, setBudget] = useState("");
+  const [region, setRegion] = useState("");
+  const [desc, setDesc] = useState("");
+
+  const load = () => {
+    loadApi().then(async api => {
+      const all = await api.fetchWanted({});
+      let mine = [];
+      if (user?.id) { try { mine = await api.fetchMyWanted(user.id); } catch (e) {} }
+      setItems({ all, mine });
+    }).catch(e => { setErr(e?.message || "Error"); setItems({ all: [], mine: [] }); });
+  };
+  useEffect(() => { load(); }, [user?.id]);
+
+  const submit = async () => {
+    if (!requireAuth(it ? "Accedi per pubblicare una richiesta." : "Log in to post a request.", () => {})) return;
+    if (!title.trim()) { setErr(it ? "Scrivi cosa cerchi." : "Say what you're looking for."); return; }
+    setBusy(true); setErr("");
+    try {
+      const api = await loadApi();
+      await api.createWanted({
+        title: title.trim(), category: catId || null,
+        budgetMax: budget ? Number(budget) : null,
+        country: user?.country || "IT", region: region.trim() || null,
+        description: desc.trim() || null, requesterName: user?.name || null,
+      }, user.id);
+      setTitle(""); setBudget(""); setRegion(""); setDesc(""); setCatId(""); setShowForm(false);
+      setTab("mine"); load();
+    } catch (e) { setErr(e?.message || "Error"); } finally { setBusy(false); }
+  };
+
+  const respond = async (w) => {
+    if (!requireAuth(it ? "Accedi per rispondere." : "Log in to respond.", () => {})) return;
+    try {
+      const api = await loadApi();
+      const seller = await api.fetchMySeller(user.id);
+      const mine = await api.fetchMyListings(user.id);
+      const active = (mine || []).find(l => l.status !== "sold");
+      if (!seller || !active) { alert(it ? "Per rispondere, pubblica prima un tuo animale." : "To respond, list one of your animals first."); return; }
+      const thread = await api.getOrCreateThread(active.id, seller.id, w.userId);
+      await api.sendMessage(thread.id, user.id, it
+        ? `Ciao! Ho visto la tua richiesta «${w.title}». Potrei avere qualcosa che ti interessa 🙂`
+        : `Hi! I saw your request "${w.title}". I might have something for you 🙂`);
+      go("thread", { listing: active });
+    } catch (e) { alert(e?.message || "Error"); }
+  };
+
+  const markFound = async (id) => { setBusy(true); try { const api = await loadApi(); await api.updateWantedStatus(id, "fulfilled"); load(); } catch (e) { setErr(e?.message || "Error"); } finally { setBusy(false); } };
+  const remove = async (id) => { setBusy(true); try { const api = await loadApi(); await api.deleteWanted(id); load(); } catch (e) { setErr(e?.message || "Error"); } finally { setBusy(false); } };
+
+  const list = items ? (tab === "mine" ? items.mine : items.all) : null;
+  const dateStr = (iso) => { try { return new Date(iso).toLocaleDateString(it ? "it-IT" : "en-GB", { day: "2-digit", month: "short" }); } catch { return ""; } };
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("home")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl text-stone-50 tracking-tight">{it ? "Cerco" : "Wanted"}</h1>
+          <p className="text-[11px] text-stone-500 mt-0.5">{it ? "Cerchi un animale specifico? Pubblica una richiesta: gli allevatori la vedono e ti rispondono." : "Looking for a specific animal? Post a request — breeders see it and reach out."}</p>
+        </div>
+        <button onClick={() => { if (requireAuth(it ? "Accedi per pubblicare." : "Log in to post.", () => setShowForm(v => !v))) setShowForm(v => !v); }}
+                className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
+          <PlusCircle size={14} />{it ? "Pubblica" : "Post"}
+        </button>
+      </header>
+
+      {showForm && (
+        <div className="mx-5 md:mx-8 mt-4 bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-4 space-y-3">
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Cosa cerchi?" : "What are you looking for?"}</div>
+            <input className="form-input" value={title} onChange={e => setTitle(e.target.value)}
+                   placeholder={it ? "es. Geco crestato Lilly White femmina" : "e.g. Lilly White female crested gecko"} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.category}</div>
+              <select className="form-input" value={catId} onChange={e => setCatId(e.target.value)}>
+                <option value="">{it ? "Qualsiasi" : "Any"}</option>
+                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
+              </select>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Budget max" : "Max budget"}</div>
+              <div className="flex items-center gap-2"><span className="text-stone-400 text-sm">€</span>
+                <input type="number" min="0" className="form-input flex-1" value={budget} onChange={e => setBudget(e.target.value)} /></div>
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.region}</div>
+            <input className="form-input" value={region} onChange={e => setRegion(e.target.value)}
+                   placeholder={it ? "es. Piemonte (facoltativo)" : "e.g. Piedmont (optional)"} />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.description}</div>
+            <textarea rows="2" className="form-input resize-none" value={desc} onChange={e => setDesc(e.target.value)}
+                      placeholder={it ? "Dettagli utili: morph, sesso, età…" : "Useful details: morph, sex, age…"} />
+          </div>
+          {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
+          <div className="flex gap-2">
+            <button onClick={submit} disabled={busy}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 text-stone-950 transition-colors">
+              {busy ? t.processing : (it ? "Pubblica richiesta" : "Post request")}
+            </button>
+            <button onClick={() => { setShowForm(false); setErr(""); }}
+                    className="px-4 py-2.5 rounded-lg text-sm font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+              {it ? "Annulla" : "Cancel"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="px-5 md:px-8 pt-4 flex gap-1.5">
+        {[["all", it ? "Tutte" : "All"], ["mine", it ? "Le mie" : "Mine"]].map(([id, label]) => (
+          <button key={id} onClick={() => setTab(id)}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-colors ${tab === id ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-400 hover:text-stone-200"}`}>
+            {label}{tab === id && items ? ` (${(id === "mine" ? items.mine : items.all).length})` : ""}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-5 md:px-8 pt-4 space-y-2.5">
+        {err && !showForm && <p className="text-xs text-rose-400 font-bold flex items-center gap-1.5"><Info size={12} />{err}</p>}
+        {list === null ? (
+          <p className="text-center text-stone-500 text-sm py-16 italic">…</p>
+        ) : list.length === 0 ? (
+          <div className="text-center py-16 text-stone-500">
+            <Search size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-display italic">{tab === "mine" ? (it ? "Non hai ancora pubblicato richieste." : "You haven't posted any requests yet.") : (it ? "Ancora nessuna richiesta. Sii il primo!" : "No requests yet. Be the first!")}</p>
+          </div>
+        ) : list.map(w => {
+          const mine = user?.id && w.userId === user.id;
+          const cat = CATEGORIES.find(c => c.id === w.category);
+          return (
+            <div key={w.id} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 ring-1 ring-amber-500/25 px-1.5 py-0.5 rounded">{it ? "CERCO" : "WANTED"}</span>
+                    {w.status === "fulfilled" && <span className="text-[9px] font-black uppercase tracking-widest text-stone-400 bg-stone-800 px-1.5 py-0.5 rounded">{it ? "TROVATO" : "FOUND"}</span>}
+                  </div>
+                  <h3 className="font-bold text-stone-100 text-sm mt-1.5">{w.title}</h3>
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-stone-500 mt-1">
+                    {cat && <span>{cat.emoji} {cat[lang]}</span>}
+                    {w.budgetMax != null && <span className="text-amber-400 font-bold">{it ? "fino a" : "up to"} {formatPrice(w.budgetMax)}</span>}
+                    {w.region && <span>· {w.region}</span>}
+                  </div>
+                  {w.description && <p className="text-[12px] text-stone-400 mt-2 leading-relaxed whitespace-pre-line">{w.description}</p>}
+                  <div className="text-[10px] text-stone-600 mt-2">{w.requester || (it ? "Un membro" : "A member")} · {dateStr(w.createdAt)}</div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                {mine ? (
+                  <>
+                    {w.status === "open" && (
+                      <button onClick={() => markFound(w.id)} disabled={busy}
+                              className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
+                        {it ? "Segna come trovato" : "Mark as found"}
+                      </button>
+                    )}
+                    <button onClick={() => remove(w.id)} disabled={busy}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                      {t.mlDelete}
+                    </button>
+                  </>
+                ) : w.status === "open" ? (
+                  <button onClick={() => respond(w)}
+                          className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-amber-500/15 ring-1 ring-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition-colors inline-flex items-center gap-1.5">
+                    <MessageCircle size={12} />{it ? "Ho questo — rispondi" : "I have this — respond"}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -7449,6 +7940,13 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
               </div>
             )}
 
+            {data.instagram && (
+              <a href={`https://instagram.com/${data.instagram.replace(/^@+/, "")}`}
+                 target="_blank" rel="noopener noreferrer"
+                 className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 font-bold transition-colors">
+                <Camera size={15} />@{data.instagram.replace(/^@+/, "")}
+              </a>
+            )}
             {data.website && (
               <a href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
                  target="_blank" rel="noopener noreferrer"
@@ -8651,8 +9149,16 @@ function AboutContact({ t, go, lang, user }) {
         </div>
         <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
           <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.expoInfo}</div>
-          <a href="mailto:support@herpmarket.it" className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors">
-            <Mail size={16} />support@herpmarket.it
+          <a href="mailto:info@herpmarket.it" className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors">
+            <Mail size={16} />info@herpmarket.it
+          </a>
+          <a href="https://www.instagram.com/herpmarket.it/" target="_blank" rel="noopener noreferrer"
+             className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors mt-3">
+            <Camera size={16} />Instagram @herpmarket.it
+          </a>
+          <a href="https://www.facebook.com/herpmarket.it" target="_blank" rel="noopener noreferrer"
+             className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors mt-3">
+            <Globe size={16} />Facebook · HerpMarket
           </a>
         </div>
         <button onClick={() => setShowReport(true)}

@@ -27,6 +27,7 @@ export function mapListing(row) {
     distanceKm: row.distance_km,
     sire: row.sire,
     dam: row.dam,
+    parents: Array.isArray(row.parents) ? row.parents : [],
     desc: row.description,
     image: row.image_url,
     images: (row.images && row.images.length) ? row.images : (row.image_url ? [row.image_url] : []),
@@ -74,6 +75,7 @@ export function mapSeller(row) {
     avatarUrl: row.avatar_url || null,
     pro: !!row.pro,
     website: row.website || "",
+    instagram: row.instagram || "",
     expoIds: [],   // sellers table has no expo links yet — safe default for the UI
     reviews: [],   // reviews load separately later — safe default for the UI
   };
@@ -141,7 +143,7 @@ export async function createListing(listing, sellerId) {
     sex: listing.sex, age_months: listing.ageMonths, weight: listing.weight,
     birth_date: listing.birthDate || null, cites_listed: !!listing.citesListed,
     country: listing.country, region: listing.region, city: listing.city,
-    sire: listing.sire, dam: listing.dam, description: listing.desc,
+    sire: listing.sire, dam: listing.dam, parents: listing.parents || [], description: listing.desc,
     image_url: listing.image, images: listing.images || (listing.image ? [listing.image] : []),
     shipping: !!listing.shipping,
     shipping_cost: listing.shippingCost != null ? listing.shippingCost : null,
@@ -189,6 +191,7 @@ export async function updateListing(id, fields) {
   if (fields.price !== undefined) patch.price = fields.price;
   if (fields.desc != null) patch.description = fields.desc;
   if (fields.common != null) patch.common = fields.common;
+  if (fields.parents != null) patch.parents = fields.parents;
   if (fields.title !== undefined) patch.title = fields.title || null;
   if (fields.deposit !== undefined) patch.deposit = fields.deposit;
   if (fields.status != null) patch.status = fields.status;
@@ -201,6 +204,7 @@ export async function updateListing(id, fields) {
   // Full-form edit also updates the animal's own details:
   if (fields.species != null) patch.species = fields.species;
   if (fields.common != null) patch.common = fields.common;
+  if (fields.parents != null) patch.parents = fields.parents;
   if (fields.category != null) patch.category = fields.category;
   if (fields.traits != null) patch.traits = fields.traits;
   if (fields.sex != null) patch.sex = fields.sex;
@@ -461,6 +465,7 @@ export async function updateMySeller(sellerId, fields) {
   if (fields.specialties != null) patch.specialties = fields.specialties;
   if (fields.avatarUrl != null) patch.avatar_url = fields.avatarUrl;
   if (fields.website != null) patch.website = fields.website;
+  if (fields.instagram != null) patch.instagram = fields.instagram;
   if (fields.sellerType != null && (fields.sellerType === 'professional' || fields.sellerType === 'private')) {
     patch.seller_type = fields.sellerType;
   }
@@ -841,4 +846,45 @@ export async function submitReport({ reason, listing = null, note = "", contactE
   });
   if (error) throw error;
   return true;
+}
+
+// ── WANTED / "Cerco" board (community requests) ─────────────────────────────
+export function mapWanted(row) {
+  if (!row) return null;
+  return {
+    id: row.id, userId: row.user_id, requester: row.requester_name || null,
+    title: row.title, species: row.species || "", category: row.category || null,
+    budgetMax: row.budget_max, country: row.country || "IT", region: row.region || "",
+    description: row.description || "", status: row.status || "open", createdAt: row.created_at,
+  };
+}
+export async function fetchWanted({ limit = 80 } = {}) {
+  const { data, error } = await supabase.from('wanted')
+    .select('*').eq('status', 'open').order('created_at', { ascending: false }).limit(limit);
+  if (error) throw error;
+  return (data || []).map(mapWanted);
+}
+export async function fetchMyWanted(userId) {
+  const { data, error } = await supabase.from('wanted')
+    .select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapWanted);
+}
+export async function createWanted(fields, userId) {
+  const { data, error } = await supabase.from('wanted').insert({
+    user_id: userId, requester_name: fields.requesterName || null,
+    title: fields.title, species: fields.species || null, category: fields.category || null,
+    budget_max: fields.budgetMax ?? null, country: fields.country || null,
+    region: fields.region || null, description: fields.description || null,
+  }).select('*').single();
+  if (error) throw error;
+  return mapWanted(data);
+}
+export async function updateWantedStatus(id, status) {
+  const { error } = await supabase.from('wanted').update({ status }).eq('id', id);
+  if (error) throw error;
+}
+export async function deleteWanted(id) {
+  const { error } = await supabase.from('wanted').delete().eq('id', id);
+  if (error) throw error;
 }
