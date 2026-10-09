@@ -694,7 +694,7 @@ export function subscribeAuction(listingId, onUpdate) {
 }
 
 // ── AUTH ────────────────────────────────────────────────────────────────────
-export async function signUp(email, password, displayName, consents = {}) {
+export async function signUp(email, password, displayName, consents = {}, region = null, country = 'IT') {
   const { data, error } = await supabase.auth.signUp({
     email, password, options: { data: { display_name: displayName } },
   });
@@ -707,6 +707,9 @@ export async function signUp(email, password, displayName, consents = {}) {
       consent_marketing: !!consents.marketing,
       consent_marketing_at: consents.marketing ? new Date().toISOString() : null,
     }).eq('id', data.user.id);
+    // Location is optional + its columns may not exist on older DBs, so save it
+    // separately and ignore any error (keeps signup working pre-migration).
+    try { await supabase.from('profiles').update({ region: region || null, country: country || 'IT' }).eq('id', data.user.id); } catch (e) {}
   }
   return data;
 }
@@ -777,6 +780,17 @@ export async function fetchProfile(userId) {
   if (error) return null;
   return data;
 }
+// Update the logged-in user's own profile (display name, region, country).
+export async function updateProfile(userId, fields) {
+  const patch = {};
+  if (fields.displayName != null) patch.display_name = fields.displayName;
+  if (fields.region !== undefined) patch.region = fields.region || null;
+  if (fields.country != null) patch.country = fields.country;
+  const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
+  if (error) throw error;
+  return true;
+}
+
 // Account deletion. Full erasure of the auth login + data purge happens in a
 // server-side Edge Function (added with the GDPR functions). For now this marks
 // the account for deletion and signs the user out.
@@ -857,6 +871,7 @@ export function mapWanted(row) {
     title: row.title, species: row.species || "", category: row.category || null,
     budgetMax: row.budget_max, country: row.country || "IT", region: row.region || "",
     description: row.description || "", status: row.status || "open", createdAt: row.created_at,
+    instagram: row.instagram || null,
   };
 }
 export async function fetchWanted({ limit = 80 } = {}) {
@@ -877,6 +892,7 @@ export async function createWanted(fields, userId) {
     title: fields.title, species: fields.species || null, category: fields.category || null,
     budget_max: fields.budgetMax ?? null, country: fields.country || null,
     region: fields.region || null, description: fields.description || null,
+    instagram: fields.instagram || null,
   }).select('*').single();
   if (error) throw error;
   return mapWanted(data);

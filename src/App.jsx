@@ -50,8 +50,9 @@ const I18N = {
     reportEmailHint: "Lasciala se vuoi che ti ricontattiamo per chiarimenti.",
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
-    heroTitle: "Rettili e animali esotici, dagli appassionati italiani.",
+    heroTitle: "Rettili e animali esotici, dagli appassionati in Italia e in Europa.",
     heroSub: "Che tu voglia trovare il tuo prossimo geco, serpente o tarantola, o presentare gli animali del tuo allevamento, HerpMarket è il punto d'incontro per chi ama i rettili e gli esotici in Italia e in Europa. Sfogliare e pubblicare è gratuito.",
+    heroCta: "📲 Aggiungila alla schermata Home e usala come un'app — pubblica il tuo animale in 2 minuti.",
     heroBtn: "Esplora il marketplace",
     browseListings: "Sfoglia annunci", sellCta: "Vendi un animale", orSep: "oppure",
     filters: "Filtri", sort: "Ordina", apply: "Applica", reset: "Reimposta",
@@ -59,7 +60,7 @@ const I18N = {
     advFilters: "Filtri avanzati", priceRange: "Fascia di prezzo", anyPrice: "Qualsiasi", min: "Min", max: "Max",
     traitsLabel: "Geni e tratti", traitClassLabel: "Tipo genetico", subCategoryLabel: "Specie",
     sellerLabel: "Allevatore", anySeller: "Tutti gli allevatori", anySpecies: "Tutte le specie",
-    anyRegion: "Tutte le regioni", geneticsBreeding: "Genetica e progetti di riproduzione",
+    anyRegion: "Tutte le regioni", geneticsBreeding: "Riproduzione e cura",
     expoOnlyLabel: "Solo con ritiro in fiera", verifiedOnlyLabel: "Solo allevatori verificati",
     clearAll: "Cancella tutto", classRecessive: "Recessivo", classDominant: "Dominante", classIncDom: "Co-dom", classLine: "Linea/Poligenico", classLocality: "Località", classHet: "Het (portatore)",
     selectCategoryFirst: "Seleziona prima una categoria per vedere i tratti disponibili",
@@ -328,8 +329,9 @@ const I18N = {
     reportEmailHint: "Leave it if you'd like us to follow up with you.",
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
-    heroTitle: "Reptiles & exotic animals, from enthusiasts across Italy.",
+    heroTitle: "Reptiles & exotic animals, from enthusiasts across Italy and Europe.",
     heroSub: "Whether you're looking for your next gecko, snake or tarantula, or showing the animals you breed, HerpMarket is the meeting place for everyone who loves reptiles and exotics in Italy and across Europe. Browsing and listing are free.",
+    heroCta: "📲 Add it to your home screen and use it like an app — list your animal in 2 minutes.",
     heroBtn: "Browse the Marketplace",
     browseListings: "Browse listings", sellCta: "Sell an animal", orSep: "or",
     filters: "Filters", sort: "Sort", apply: "Apply", reset: "Reset",
@@ -337,7 +339,7 @@ const I18N = {
     advFilters: "Advanced filters", priceRange: "Price range", anyPrice: "Any", min: "Min", max: "Max",
     traitsLabel: "Genes & traits", traitClassLabel: "Genetic type", subCategoryLabel: "Species",
     sellerLabel: "Breeder", anySeller: "All breeders", anySpecies: "All species",
-    anyRegion: "All regions", geneticsBreeding: "Genetics & breeding projects",
+    anyRegion: "All regions", geneticsBreeding: "Breeding & care",
     expoOnlyLabel: "Expo pickup only", verifiedOnlyLabel: "Verified breeders only",
     clearAll: "Clear all", classRecessive: "Recessive", classDominant: "Dominant", classIncDom: "Co-dom", classLine: "Line/Polygenic", classLocality: "Locality", classHet: "Het (carrier)",
     selectCategoryFirst: "Select a category first to see available traits",
@@ -1549,10 +1551,10 @@ export default function HerpMarket() {
     const u = session?.user;
     if (!u) { setUser(null); return; }
     const meta = u.user_metadata || {};
-    setUser({ id: u.id, email: u.email, name: meta.display_name || (u.email || "").split("@")[0], region: "", verified: false });
+    setUser({ id: u.id, email: u.email, name: meta.display_name || (u.email || "").split("@")[0], region: "", country: "IT", verified: false });
     // enrich from profile (region, verified) without blocking the UI
     api.fetchProfile(u.id).then(p => {
-      if (p) setUser(prev => prev ? { ...prev, name: p.display_name || prev.name, region: p.region || prev.region, verified: !!p.verified } : prev);
+      if (p) setUser(prev => prev ? { ...prev, name: p.display_name || prev.name, region: p.region || prev.region, country: p.country || prev.country || "IT", verified: !!p.verified } : prev);
     }).catch(() => {});
   };
   useEffect(() => {
@@ -1702,7 +1704,7 @@ export default function HerpMarket() {
     go("home");
   };
 
-  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, requireAuth, setAuthModal, handleLogout, listingsData: LISTINGS_DATA, listingsStatus, retryListings: loadListings };
+  const props = { t, lang, setLang, go, goBack, favorites, toggleFav, filter, setFilter, user, setUser, requireAuth, setAuthModal, handleLogout, listingsData: LISTINGS_DATA, listingsStatus, retryListings: loadListings };
 
   const screen = () => {
     switch (view) {
@@ -1721,6 +1723,7 @@ export default function HerpMarket() {
       case "editstore": return user ? <EditStoreScreen {...props} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "wishlist":  return <Wishlist {...props} />;
       case "wanted":    return <WantedScreen {...props} user={user} />;
+      case "editprofile": return user ? <EditProfile {...props} user={user} /> : <AuthGate reason={t.loginToSell} {...props} />;
       case "legal":     return <Legal {...props} />;
       case "breeding":  return <BreedingProjectsScreen {...props} />;
       case "transport": return <PlaceholderScreen title={t.transport} {...props} icon={<Truck size={28} />} />;
@@ -1736,7 +1739,7 @@ export default function HerpMarket() {
     }
   };
 
-  const profileViews = ["profile", "mylistings", "addanimal", "editstore", "wishlist", "wanted", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
+  const profileViews = ["profile", "mylistings", "addanimal", "editstore", "editprofile", "wishlist", "wanted", "legal", "inventory", "breeding", "transport", "reviews", "documents", "about", "terms", "settings"];
 
   // Private pre-launch gate: block the whole site until the access password is entered.
   if (!siteUnlocked) return <SiteGate onUnlock={() => setSiteUnlocked(true)} />;
@@ -2239,10 +2242,19 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
   const userRegion = user?.region || "";
   // Use real data when we have it. While loading/erroring with nothing yet,
   // show an empty list (not demo animals) so we don't display fake listings.
+  const [showAllExpos, setShowAllExpos] = useState(false);
+  const [homeSort, setHomeSort] = useState("newest");   // newest | near | price_asc | price_desc
   const LIST = listingsData || [];
   const near = LIST.filter(l => l.region === userRegion);
-  const all = LIST;
-  const [showAllExpos, setShowAllExpos] = useState(false);
+  const priceOf = (l) => (l.auction ? (l.auction.currentBid ?? l.price) : l.price) || 0;
+  const all = (() => {
+    let xs = [...LIST];
+    if (homeSort === "near") xs = userRegion ? xs.filter(l => l.region === userRegion) : xs;
+    else if (homeSort === "price_asc") xs.sort((a, b) => priceOf(a) - priceOf(b));
+    else if (homeSort === "price_desc") xs.sort((a, b) => priceOf(b) - priceOf(a));
+    else xs.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return xs;
+  })();
   // Real per-category counts from the actual listings (no more fake 412).
   const catCounts = useMemo(() => {
     const m = {};
@@ -2284,6 +2296,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
       <div className="md:hidden px-5 pt-5">
         <h2 className="font-display text-2xl text-stone-50 tracking-tight leading-tight">{t.heroTitle}</h2>
         <p className="text-stone-400 text-[13px] mt-2.5 leading-relaxed">{t.heroSub}</p>
+        <p className="text-amber-300/90 text-[12px] mt-2 font-semibold leading-snug">{t.heroCta}</p>
         <div className="flex items-center gap-2 mt-4">
           <button onClick={() => { setFilter({ ...filter, sort: "distance" }); go("search", null, true); }}
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-4 py-3 rounded-lg transition-colors">
@@ -2327,6 +2340,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           <p className="text-stone-400 text-base mt-4 max-w-2xl leading-relaxed">
             {t.heroSub}
           </p>
+          <p className="text-amber-300/90 text-sm mt-3 font-semibold">{t.heroCta}</p>
           <button onClick={() => { setFilter({ ...filter, sort: "distance" }); go("search", null, true); }}
                   className="mt-6 inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-6 py-3 rounded-lg transition-colors">
             <Search size={16} />{t.heroBtn}
@@ -2355,8 +2369,8 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           ))}
         </div>
 
-        {/* Quick-access: detailed search + auctions */}
-        <div className="grid grid-cols-2 gap-2.5 mt-3">
+        {/* Quick-access: detailed search + auctions + community wanted */}
+        <div className="grid grid-cols-3 gap-2 mt-3">
           <button onClick={() => go("search", { openFilters: true }, true)}
                   className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
             <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
@@ -2375,6 +2389,16 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             <div className="min-w-0">
               <div className="font-bold text-sm text-stone-100 truncate">{t.viewAuctions}</div>
               <div className="text-[10px] text-stone-500 truncate">{t.viewAuctionsSub}</div>
+            </div>
+          </button>
+          <button onClick={() => go("wanted")}
+                  className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
+            <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
+              <Search size={16} className="text-amber-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm text-stone-100 truncate">{lang === "it" ? "Cerco" : "Wanted"}</div>
+              <div className="text-[10px] text-stone-500 truncate">{lang === "it" ? "Richieste community" : "Community requests"}</div>
             </div>
           </button>
         </div>
@@ -2426,8 +2450,6 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         <SponsorSlot slot="home_banner" t={t} lang={lang} />
       </div>
 
-      {/* Community wanted / "Cerco" strip — surfaces demand to sellers */}
-      <WantedStrip t={t} lang={lang} go={go} />
 
       {/* Near you */}
       {near.length > 0 && (
@@ -2448,7 +2470,18 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
       <section className="px-5 md:px-8 pt-8 pb-10">
         <div className="flex items-baseline justify-between mb-3">
           <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight">{t.allListings}</h3>
-          <button onClick={() => go("search")} className="text-[11px] text-amber-400 font-bold hover:underline">{t.filters} →</button>
+          <button onClick={() => go("search", { openFilters: true }, true)} className="text-[11px] text-amber-400 font-bold hover:underline">{t.detailedSearch} →</button>
+        </div>
+        <div className="flex gap-1.5 overflow-x-auto hide-scrollbar mb-3 -mx-5 px-5 md:mx-0 md:px-0">
+          {[["newest", lang === "it" ? "Più recenti" : "Newest"],
+            ["near", lang === "it" ? "Vicino a me" : "Near me"],
+            ["price_asc", lang === "it" ? "Prezzo ↑" : "Price ↑"],
+            ["price_desc", lang === "it" ? "Prezzo ↓" : "Price ↓"]].map(([id, label]) => (
+            <button key={id} onClick={() => setHomeSort(id)}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${homeSort === id ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-400 hover:text-stone-200"}`}>
+              {label}
+            </button>
+          ))}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
           {all.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
@@ -5888,6 +5921,9 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
               {user?.name || "Anita Pioch"} {user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
             </h1>
             <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder}{user?.region ? " · " + user.region : ""}</p>
+            <button onClick={() => go("editprofile")} className="text-[11px] text-amber-400 font-bold hover:underline mt-1">
+              {lang === "it" ? "Modifica profilo" : "Edit profile"}
+            </button>
           </div>
         </div>
       </header>
@@ -7146,11 +7182,14 @@ function WantedScreen({ t, lang, go, user, requireAuth }) {
     setBusy(true); setErr("");
     try {
       const api = await loadApi();
+      let ig = null;
+      try { const s = await api.fetchMySeller(user.id); ig = s?.instagram || null; } catch (e) {}
       await api.createWanted({
         title: title.trim(), category: catId || null,
         budgetMax: budget ? Number(budget) : null,
         country: user?.country || "IT", region: region.trim() || null,
         description: desc.trim() || null, requesterName: user?.name || null,
+        instagram: ig,
       }, user.id);
       setTitle(""); setBudget(""); setRegion(""); setDesc(""); setCatId(""); setShowForm(false);
       setTab("mine"); load();
@@ -7204,6 +7243,10 @@ function WantedScreen({ t, lang, go, user, requireAuth }) {
             <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Budget max (facoltativo)" : "Max budget (optional)"}</div>
             <div className="flex items-center gap-2"><span className="text-stone-400 text-sm">€</span>
               <input type="number" min="0" className="form-input flex-1" value={budget} onChange={e => setBudget(e.target.value)} /></div>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Zona / Regione (facoltativo)" : "Area / Region (optional)"}</div>
+            <input className="form-input" value={region} onChange={e => setRegion(e.target.value)} placeholder={it ? "es. Lombardia" : "e.g. Lombardy"} />
           </div>
           {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
           <div className="flex gap-2">
@@ -7273,15 +7316,87 @@ function WantedScreen({ t, lang, go, user, requireAuth }) {
                     </button>
                   </>
                 ) : w.status === "open" ? (
+                  <>
                   <button onClick={() => respond(w)}
                           className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-amber-500/15 ring-1 ring-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition-colors inline-flex items-center gap-1.5">
                     <MessageCircle size={12} />{it ? "Ho questo — rispondi" : "I have this — respond"}
                   </button>
+                  {w.instagram && (
+                    <a href={`https://instagram.com/${w.instagram.replace(/^@+/, "")}`} target="_blank" rel="noopener noreferrer"
+                       className="text-[11px] font-bold px-3 py-1.5 rounded-md ring-1 ring-stone-700 text-stone-300 hover:text-amber-300 transition-colors inline-flex items-center gap-1.5">
+                      <Camera size={12} />Instagram
+                    </a>
+                  )}
+                  </>
                 ) : null}
               </div>
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/* Edit profile — name + country + region, saved to the user's profile. This is
+   the "il tuo profilo" screen buyers (not just sellers) can reach to fix the
+   region. Writes to profiles via updateProfile. */
+function EditProfile({ t, go, lang, user, setUser }) {
+  const it = lang === "it";
+  const [name, setName] = useState(user?.name || "");
+  const [country, setCountry] = useState(user?.country || "IT");
+  const [region, setRegion] = useState(user?.region || "");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  const save = async () => {
+    setBusy(true); setErr(""); setSaved(false);
+    try {
+      const api = await loadApi();
+      await api.updateProfile(user.id, { displayName: name.trim() || null, region: region.trim(), country });
+      setUser && setUser(prev => prev ? { ...prev, name: name.trim() || prev.name, region: region.trim(), country } : prev);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e) { setErr(e?.message || "Error"); } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="max-w-xl mx-auto w-full pb-24">
+      <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
+        <button onClick={() => go("profile")} className="text-stone-300 hover:text-stone-100"><ChevronLeft size={20} /></button>
+        <h1 className="font-display text-2xl text-stone-50 tracking-tight">{it ? "Il tuo profilo" : "Your profile"}</h1>
+      </header>
+      <div className="p-5 md:p-8 space-y-4">
+        <div>
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.nameLabel}</div>
+          <input className="form-input" value={name} onChange={e => setName(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{it ? "Paese" : "Country"}</div>
+            <select className="form-input" value={country} onChange={e => { setCountry(e.target.value); setRegion(""); }}>
+              {[...COUNTRIES].sort((a,b)=> a.code==="IT"?-1:b.code==="IT"?1:a[lang].localeCompare(b[lang],lang)).map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.region}</div>
+            {regionsForCountry(country).length ? (
+              <select className="form-input" value={region} onChange={e => setRegion(e.target.value)}>
+                <option value="">{t.chooseRegion}</option>
+                {regionsForCountry(country).map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            ) : (
+              <input className="form-input" value={region} onChange={e => setRegion(e.target.value)} placeholder={t.region} />
+            )}
+          </div>
+        </div>
+        {err && <p className="text-xs text-rose-400 font-bold">{err}</p>}
+        <button onClick={save} disabled={busy}
+                className="w-full py-3 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 text-stone-950 transition-colors inline-flex items-center justify-center gap-2">
+          {saved ? <><Check size={16} />{it ? "Salvato" : "Saved"}</> : busy ? t.processing : (it ? "Salva" : "Save")}
+        </button>
+        <p className="text-[11px] text-stone-500">{it ? "La tua zona viene usata per mostrarti annunci vicino a te." : "Your area is used to show you listings near you."}</p>
       </div>
     </div>
   );
@@ -7405,6 +7520,8 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
   const [consentTos, setConsentTos] = useState(false);
   const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [consentMarketing, setConsentMarketing] = useState(false);  // optional
+  const [suCountry, setSuCountry] = useState("IT");
+  const [suRegion, setSuRegion] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -7425,7 +7542,7 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
         await api.resetPasswordForEmail(email);
         setInfo(t.resetEmailSent);
       } else if (mode === "signup") {
-        const data = await api.signUp(email, password, name, { marketing: consentMarketing });
+        const data = await api.signUp(email, password, name, { marketing: consentMarketing }, suRegion || null, suCountry || "IT");
         // With email confirmation ON, no session is returned yet → tell them to check email.
         if (!data?.session) { setInfo(t.checkEmailConfirm); }
         else { onAuthSuccess(); }
@@ -7480,6 +7597,23 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
               <label className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5 block">{t.nameLabel}</label>
               <input value={name} onChange={e => setName(e.target.value)} placeholder={t.nameLabel}
                      className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <select value={suCountry} onChange={e => { setSuCountry(e.target.value); setSuRegion(""); }}
+                        className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all">
+                  {[...COUNTRIES].sort((a,b)=> a.code==="IT"?-1:b.code==="IT"?1:a[lang].localeCompare(b[lang],lang)).map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+                </select>
+                {regionsForCountry(suCountry).length ? (
+                  <select value={suRegion} onChange={e => setSuRegion(e.target.value)}
+                          className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all">
+                    <option value="">{t.chooseRegion}</option>
+                    {regionsForCountry(suCountry).map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                ) : (
+                  <input value={suRegion} onChange={e => setSuRegion(e.target.value)} placeholder={t.region}
+                         className="w-full bg-stone-800 ring-1 ring-stone-700 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all" />
+                )}
+              </div>
+              <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "La tua zona (puoi cambiarla dopo nel profilo)." : "Your area (you can change it later in your profile)."}</p>
             </div>
           )}
           {mode === "forgot" && (
@@ -8358,8 +8492,23 @@ function BreedingProjectsScreen({ t, go, lang }) {
       </header>
 
       <div className="p-5 md:p-8">
+        {/* Reptile care & maintenance — partner app (live now) */}
+        <div className="bg-gradient-to-br from-emerald-500/10 to-stone-900/40 ring-1 ring-emerald-500/20 rounded-2xl p-5">
+          <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-widest mb-2">{lang === "it" ? "Cura e gestione dei rettili" : "Reptile care & maintenance"}</div>
+          <p className="text-sm text-stone-300 leading-relaxed">
+            {lang === "it"
+              ? "Nel frattempo, per tenere traccia di alimentazione, mute, peso, accoppiamenti, schiuse e manutenzione del terrario — con promemoria — ti consigliamo l'app partner ReptileEat."
+              : "In the meantime, to track feeding, sheds, weight, pairings, hatchings and terrarium maintenance — with reminders — we recommend our partner app ReptileEat."}
+          </p>
+          <a href="https://www.reptileat.com/" target="_blank" rel="noopener noreferrer"
+             className="mt-3 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-sm px-4 py-2.5 rounded-xl transition-colors">
+            {lang === "it" ? "Scopri ReptileEat" : "Get ReptileEat"} <ChevronRight size={16} />
+          </a>
+          <p className="text-[10px] text-stone-500 mt-2">{lang === "it" ? "App partner indipendente, disponibile sull'App Store." : "Independent partner app, available on the App Store."}</p>
+        </div>
+
         {/* Hero coming-soon card */}
-        <div className="bg-gradient-to-br from-amber-500/10 to-stone-900/40 ring-1 ring-amber-500/20 rounded-2xl p-6 text-center">
+        <div className="mt-5 bg-gradient-to-br from-amber-500/10 to-stone-900/40 ring-1 ring-amber-500/20 rounded-2xl p-6 text-center">
           <div className="w-14 h-14 mx-auto bg-amber-500/15 ring-1 ring-amber-500/30 rounded-2xl flex items-center justify-center text-amber-400 mb-4">
             <GitBranch size={26} />
           </div>
