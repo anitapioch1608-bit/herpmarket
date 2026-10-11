@@ -15,7 +15,7 @@ export function mapListing(row) {
     category: row.category,
     traits: row.traits || [],
     price: Number(row.price),
-    deposit: row.deposit ? Number(row.deposit) : Math.round(Number(row.price) * 0.1),
+    deposit: row.deposit ? Number(row.deposit) : null,
     sex: row.sex,
     ageMonths: row.age_months,
     birthDate: row.birth_date || null,

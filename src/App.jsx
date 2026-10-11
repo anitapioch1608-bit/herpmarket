@@ -1294,6 +1294,7 @@ const EXPOS = [
 /* Returns upcoming expos sorted by date. Entries flagged `tbd` (exact date not
    announced yet) stay visible regardless of their approximate anchor date —
    they only leave the list when an admin adds a real date or removes them. */
+const isExpoUpcoming = (expo, todayISO = new Date().toISOString().slice(0, 10)) => !!expo && (expo.tbd || expo.dateISO >= todayISO);
 function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().slice(0, 10)) {
   return allExpos
     .filter(e => e.tbd || e.dateISO >= todayISO)
@@ -1347,7 +1348,7 @@ const formatBirth = (listing, t) => {
   return formatAge(listing?.ageMonths, t);
 };
 const formatPrice = (n) => (n == null || isNaN(n)) ? "—" : `€${Number(n).toLocaleString("it-IT")}`;
-const FREE_LISTING_LIMIT = 3;  // free sellers; Pro = unlimited (active listings only)
+const FREE_LISTING_LIMIT = 9999;  // beta: effectively unlimited for everyone (tighten later if needed)
 // Compact relative time for chat list ("now", "5m", "3h", "2d", or a date).
 const relTime = (iso, t) => {
   if (!iso) return "";
@@ -2128,12 +2129,12 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
         {/* Expo flag bottom-left */}
         {(() => {
           const ids = (item.expoIds && item.expoIds.length) ? item.expoIds : (item.expoId ? [item.expoId] : []);
-          if (!ids.length) return null;
-          const expo = EXPOS.find(e => e.id === ids[0]);
-          if (!expo) return null;
+          const upc = ids.map(id => EXPOS.find(e => e.id === id)).filter(e => isExpoUpcoming(e));
+          if (!upc.length) return null;
+          const expo = upc[0];
           return (
             <div className="absolute bottom-2 left-2 bg-amber-500/95 text-stone-950 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shadow-lg">
-              ★ {expo.name.split(" ")[0]}{ids.length > 1 ? ` +${ids.length - 1}` : ""}
+              ★ {expo.name.split(" ")[0]}{upc.length > 1 ? ` +${upc.length - 1}` : ""}
             </div>
           );
         })()}
@@ -3584,7 +3585,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
   // Derive this listing's delivery options (used to set sensible defaults).
   const _expoIdList = listing ? (listing.expoIds && listing.expoIds.length ? listing.expoIds : (listing.expoId ? [listing.expoId] : [])) : [];
-  const _listingExpos = _expoIdList.map(id => EXPOS.find(e => e.id === id)).filter(Boolean);
+  const _listingExpos = _expoIdList.map(id => EXPOS.find(e => e.id === id)).filter(e => isExpoUpcoming(e));
   const _canShip = !!listing?.shipping;
   const _hasExpo = _listingExpos.length > 0;
   // Once the listing is known, default to ship if offered, else first expo.
@@ -3747,7 +3748,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         ) : (
           <div className="mt-5 flex items-baseline gap-3">
             <span className="font-display font-bold text-4xl text-stone-50">{formatPrice(a.price)}</span>
-            {isExpoFlow && <span className="text-xs text-stone-500">· {t.payDeposit.toLowerCase()} {formatPrice(a.deposit)}</span>}
+            {isExpoFlow && <span className="text-xs text-stone-500">· {a.deposit ? `${t.payDeposit.toLowerCase()} ${formatPrice(a.deposit)}` : (lang === "it" ? "acconto da concordare" : "deposit to be agreed")}</span>}
           </div>
         )}
       </div>
@@ -3956,7 +3957,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-stone-100 text-sm">{t.deliveryExpo}</span>
-                    <span className="font-display font-bold text-stone-50">{formatPrice(a.deposit)}</span>
+                    <span className="font-display font-bold text-stone-50 text-sm">{a.deposit ? formatPrice(a.deposit) : (lang === "it" ? "Da concordare" : "To agree")}</span>
                   </div>
                   <p className="text-[11px] text-stone-400 mt-0.5">{t.deliveryExpoDesc}</p>
                 </div>
@@ -4791,6 +4792,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [bornPrecision, setBornPrecision] = useState(isEdit ? detectBornPrecision(editListing?.birthDate) : "month"); // "day" | "month" | "year"
   const [isCites, setIsCites] = useState(isEdit ? !!editListing?.citesListed : !!draft.isCites);
   const [desc, setDesc] = useState(editListing?.desc || draft.desc || "");
+  const [sire, setSire] = useState(editListing?.sire || "");
+  const [dam, setDam] = useState(editListing?.dam || "");
+  const [sirePhoto, setSirePhoto] = useState(() => { const p = (editListing?.parents || []).find(x => x && x.role === "sire"); return p && p.image ? { url: p.image, existing: true } : null; });
+  const [damPhoto, setDamPhoto] = useState(() => { const p = (editListing?.parents || []).find(x => x && x.role === "dam"); return p && p.image ? { url: p.image, existing: true } : null; });
+  const [depositVal, setDepositVal] = useState(editListing?.deposit != null ? String(editListing.deposit) : "");
   const [price, setPrice] = useState(editListing?.price != null ? String(editListing.price) : (draft.price || ""));
   const [saleMode, setSaleMode] = useState("fixed");   // "fixed" | "auction" — editing keeps fixed
   const [startPrice, setStartPrice] = useState("");
@@ -4894,6 +4900,19 @@ function SellScreen({ t, lang, go, user, editListing }) {
       const uploadedUrls = newFiles.length ? await api.uploadListingPhotos(newFiles, user.id) : [];
       let ui = 0;
       const urls = photos.map(p => p.existing ? p.url : uploadedUrls[ui++]).filter(Boolean);
+      // Optional parent photos + morph labels (lineage lives only in the listing)
+      const uploadParent = async (p) => {
+        if (!p) return null;
+        if (p.file) { const [u] = await api.uploadListingPhotos([p.file], user.id); return u || null; }
+        return p.url || null;
+      };
+      const _sireImg = isEquipment ? null : await uploadParent(sirePhoto);
+      const _damImg  = isEquipment ? null : await uploadParent(damPhoto);
+      const _parents = [];
+      if (!isEquipment) {
+        if (sire.trim() || _sireImg) _parents.push({ role: "sire", label: sire.trim(), image: _sireImg });
+        if (dam.trim()  || _damImg)  _parents.push({ role: "dam",  label: dam.trim(),  image: _damImg });
+      }
       let traits = selectedTraits.map(n => {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
@@ -4926,14 +4945,14 @@ function SellScreen({ t, lang, go, user, editListing }) {
       }
       const fields = {
         species: speciesOut, common, title: headline, category: catId,
-        traits, price: basePrice, deposit: Math.round(basePrice * 0.1),
+        traits, price: basePrice, deposit: (depositVal && Number(depositVal) > 0) ? Number(depositVal) : null,
         sex: isEquipment ? null : sex,
         ageMonths: isEquipment ? null : monthsSince(born),
         weight: isEquipment ? null : (weight.trim() || null),
         birthDate: isEquipment ? null : ((born || "").trim() || null),
         citesListed: isEquipment ? false : isCites,
         country, region, city: null,
-        sire: null, dam: null, desc: desc.trim(),
+        sire: isEquipment ? null : (sire.trim() || null), dam: isEquipment ? null : (dam.trim() || null), parents: _parents, desc: desc.trim(),
         image: urls[0] || null, images: urls,
         // Delivery options chosen by the seller (shared by create + edit).
         shipping: !!shipping,
@@ -4979,7 +4998,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [expoPickup, setExpoPickup] = useState(isEdit ? !!(editListing.expoIds && editListing.expoIds.length) : !!draft.expoPickup);
   const [shipping, setShipping] = useState(isEdit ? !!editListing.shipping : !!draft.shipping);
   const [shippingCost, setShippingCost] = useState(isEdit && editListing.shippingCost ? String(editListing.shippingCost) : (draft.shippingCost || ""));
-  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds : (draft.selectedExpoIds || []));
+  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds.filter(id => isExpoUpcoming(EXPOS.find(e => e.id === id))) : (draft.selectedExpoIds || []));
 
   // Keep a draft of the in-progress listing so a reload / accidental back
   // does not wipe the work. Never for edits (that would fight the real data).
@@ -5384,6 +5403,32 @@ function SellScreen({ t, lang, go, user, editListing }) {
           <textarea rows="4" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
         </FormBlock>
 
+        {!isEquipment && (
+        <FormBlock label={lang === "it" ? "Genitori" : "Parents"}>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.sire}</div>
+              <input className="form-input" value={sire} onChange={e => setSire(e.target.value)} placeholder={lang === "it" ? "Morph del padre" : "Sire morph"} />
+              <ParentPhotoPicker photo={sirePhoto} setPhoto={setSirePhoto} lang={lang} />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.dam}</div>
+              <input className="form-input" value={dam} onChange={e => setDam(e.target.value)} placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
+              <ParentPhotoPicker photo={damPhoto} setPhoto={setDamPhoto} lang={lang} />
+            </div>
+          </div>
+          <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue con foto e morph dei genitori." : "Optional — showcase the bloodline with parent photos & morphs."}</p>
+        </FormBlock>
+        )}
+
+        {!isEquipment && (
+        <FormBlock label={lang === "it" ? "Acconto per la prenotazione (facoltativo)" : "Reservation deposit (optional)"}>
+          <div className="flex items-center gap-2"><span className="text-stone-400 text-sm">€</span>
+            <input type="number" min="0" className="form-input flex-1" value={depositVal} onChange={e => setDepositVal(e.target.value)} placeholder={lang === "it" ? "Lascia vuoto = da concordare" : "Leave empty = to be agreed"} /></div>
+          <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "L'acconto che chiedi per bloccare l'animale fino al ritiro. Se lo lasci vuoto, comparirà \"da concordare con il venditore\"." : "The deposit you ask to reserve the animal until pickup. If empty, it shows \"to be agreed with the seller\"."}</p>
+        </FormBlock>
+        )}
+
         {/* ─── Delivery options ─── */}
         <DeliverySection lang={lang} t={t} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0}
                          localPickup={localPickup} setLocalPickup={setLocalPickup}
@@ -5582,7 +5627,7 @@ function DeliverySection({ lang, t, itemPrice = 0, localPickup, setLocalPickup, 
               <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2 mt-3">
                 {lang === "it" ? `A quali fiere parteciperai? (${upcomingExpos.length} disponibili)` : `Which expos will you attend? (${upcomingExpos.length} available)`}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-72 overflow-y-auto hide-scrollbar pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {upcomingExpos.map(expo => {
                   const isSel = selectedExpoIds.includes(expo.id);
                   const dd = expo.dateISO.slice(8, 10);
@@ -6133,7 +6178,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
   const submit = () => {
     const p = Number(price);
     if (!p || p <= 0) { setErr(t.needPrice); return; }
-    onConfirm({ price: p, deposit: Math.round(p * 0.1), shipping, localPickup: true, expoIds, status: "active" });
+    onConfirm({ price: p, shipping, localPickup: true, expoIds, status: "active" });
   };
 
   return (
@@ -6155,7 +6200,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
 
       <div>
         <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.availableAtExpos}</div>
-        <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto hide-scrollbar">
+        <div className="grid grid-cols-1 gap-1.5">
           {upcoming.map(expo => {
             const sel = expoIds.includes(expo.id);
             const dd = expo.dateISO.slice(8, 10);
