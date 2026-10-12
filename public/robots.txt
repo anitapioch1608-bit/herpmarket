@@ -1,0 +1,5 @@
+# HerpMarket — allow all crawlers, point to sitemap
+User-agent: *
+Allow: /
+
+Sitemap: https://herpmarket.it/sitemap.xml
