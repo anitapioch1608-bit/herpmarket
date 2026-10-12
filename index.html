@@ -1,12 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <meta name="google" content="notranslate" />
+  <meta name="google" content="notranslate" />
+
+  <!-- Primary SEO -->
+  <title>HerpMarket — Mercato italiano di rettili e animali esotici</title>
+  <meta name="description" content="Il mercato italiano di rettili e animali esotici: compra e vendi gechi, serpenti e tartarughe, con documentazione CITES e ritiro in fiera. Gratis nella beta." />
+  <link rel="canonical" href="https://herpmarket.it/" />
+
+  <!-- Open Graph (Facebook, WhatsApp, Instagram, LinkedIn) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="HerpMarket" />
+  <meta property="og:title" content="HerpMarket — Mercato italiano di rettili e animali esotici" />
+  <meta property="og:description" content="Compra e vendi rettili e animali esotici in Italia e in Europa. Documentazione CITES, ritiro in fiera, gratis nella beta." />
+  <meta property="og:url" content="https://herpmarket.it/" />
+  <meta property="og:image" content="https://herpmarket.it/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="it_IT" />
+
+  <!-- Twitter/X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HerpMarket — Mercato italiano di rettili e animali esotici" />
+  <meta name="twitter:description" content="Compra e vendi rettili e animali esotici in Italia e in Europa. CITES, ritiro in fiera, gratis nella beta." />
+  <meta name="twitter:image" content="https://herpmarket.it/og-image.png" />
 
   <!-- HerpMarket icons & PWA -->
- <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
@@ -15,10 +37,22 @@
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0c0a09" />
 
-  <title>HerpMarket</title>
+  <style>@keyframes hmspin{to{transform:rotate(360deg)}}</style>
 </head>
-  <body>
-    <div id="root"></div>
+  <body style="margin:0;background:#0c0a09;">
+    <div id="root">
+      <!-- Branded loading screen: shown until React mounts, then replaced.
+           Prevents the white flash on slow/cold starts. -->
+      <div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0c0a09;color:#f5f5f4;font-family:Georgia,'Times New Roman',serif;gap:20px;">
+        <div style="font-size:36px;font-weight:700;letter-spacing:-0.5px;">Herp<span style="color:#e8892b;font-style:italic;">Market</span></div>
+        <div style="width:30px;height:30px;border:3px solid #2a2a28;border-top-color:#e8892b;border-radius:50%;animation:hmspin .8s linear infinite;"></div>
+      </div>
+    </div>
+    <noscript>
+      <div style="padding:24px;color:#f5f5f4;background:#0c0a09;font-family:sans-serif;text-align:center;">
+        HerpMarket richiede JavaScript. Attivalo per usare l'app. · HerpMarket requires JavaScript to run.
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
