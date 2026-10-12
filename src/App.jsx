@@ -2370,38 +2370,21 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           ))}
         </div>
 
-        {/* Quick-access: detailed search + auctions + community wanted */}
+        {/* Quick-access: icon + one clear word each (readable on phones) */}
         <div className="grid grid-cols-3 gap-2 mt-3">
-          <button onClick={() => go("search", { openFilters: true }, true)}
-                  className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
-            <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
-              <SlidersHorizontal size={16} className="text-amber-400" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-sm text-stone-100 truncate">{t.detailedSearch}</div>
-              <div className="text-[10px] text-stone-500 truncate">{t.detailedSearchSub}</div>
-            </div>
-          </button>
-          <button onClick={() => { setFilter({ ...filter, auctionOnly: true }); go("search", null, true); }}
-                  className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
-            <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
-              <ArrowUpDown size={16} className="text-amber-400" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-sm text-stone-100 truncate">{t.viewAuctions}</div>
-              <div className="text-[10px] text-stone-500 truncate">{t.viewAuctionsSub}</div>
-            </div>
-          </button>
-          <button onClick={() => go("wanted")}
-                  className="flex items-center gap-2.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all text-left">
-            <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2 shrink-0">
-              <Search size={16} className="text-amber-400" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-sm text-stone-100 truncate">{lang === "it" ? "Cerco" : "Wanted"}</div>
-              <div className="text-[10px] text-stone-500 truncate">{lang === "it" ? "Richieste community" : "Community requests"}</div>
-            </div>
-          </button>
+          {[
+            { icon: SlidersHorizontal, label: lang === "it" ? "Filtri" : "Filters", onClick: () => go("search", { openFilters: true }, true) },
+            { icon: ArrowUpDown,       label: lang === "it" ? "Aste"   : "Auctions", onClick: () => { setFilter({ ...filter, auctionOnly: true }); go("search", null, true); } },
+            { icon: Search,            label: lang === "it" ? "Cerco"  : "Wanted",   onClick: () => go("wanted") },
+          ].map(({ icon: Icon, label, onClick }, i) => (
+            <button key={i} onClick={onClick}
+                    className="flex flex-col items-center justify-center gap-1.5 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-2 py-3 transition-all">
+              <div className="bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg p-2">
+                <Icon size={18} className="text-amber-400" />
+              </div>
+              <span className="font-bold text-[13px] text-stone-100">{label}</span>
+            </button>
+          ))}
         </div>
       </section>
 
