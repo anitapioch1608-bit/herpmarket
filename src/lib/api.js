@@ -24,6 +24,7 @@ export function mapListing(row) {
     country: row.country || 'IT',
     region: row.region,
     city: row.city,
+    breederCode: row.breeder_code || null,
     distanceKm: row.distance_km,
     sire: row.sire,
     dam: row.dam,
@@ -144,6 +145,7 @@ export async function createListing(listing, sellerId) {
     sex: listing.sex, age_months: listing.ageMonths, weight: listing.weight,
     birth_date: listing.birthDate || null, cites_listed: !!listing.citesListed,
     country: listing.country, region: listing.region, city: listing.city,
+    breeder_code: listing.breederCode || null,
     sire: listing.sire, dam: listing.dam, parents: listing.parents || [], description: listing.desc,
     image_url: listing.image, images: listing.images || (listing.image ? [listing.image] : []),
     shipping: !!listing.shipping,
@@ -215,6 +217,7 @@ export async function updateListing(id, fields) {
   if (fields.citesListed != null) patch.cites_listed = fields.citesListed;
   if (fields.country != null) patch.country = fields.country;
   if (fields.region != null) patch.region = fields.region;
+  if (fields.breederCode !== undefined) patch.breeder_code = fields.breederCode || null;
   if (fields.image !== undefined) patch.image_url = fields.image;
   if (fields.images != null) patch.images = fields.images;
   const { data, error } = await supabase.from('listings')

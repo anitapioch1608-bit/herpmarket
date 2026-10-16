@@ -1289,6 +1289,8 @@ const EXPOS = [
   { id: 131, name: "Verona Reptiles · Primavera", location: "Cerea (VR)", date: "primavera 2027 · data da confermare", dateISO: "2027-05-01", tbd: true, color: "from-orange-700 to-amber-600", description: "Edizione primaverile della più grande fiera di animali esotici d'Europa. Data esatta ancora da confermare.", website: "https://www.veronareptiles.it", venue: "Area Exp · Cerea", country: "IT" },
   { id: 132, name: "Verona Reptiles · Autunno", location: "Cerea (VR)", date: "autunno 2027 · data da confermare", dateISO: "2027-10-01", tbd: true, color: "from-orange-700 to-amber-600", description: "Edizione autunnale di Verona Reptiles. Data esatta ancora da confermare.", website: "https://www.veronareptiles.it", venue: "Area Exp · Cerea", country: "IT" },
   { id: 133, name: "Terraristika Hamm · Primavera", location: "Hamm", date: "marzo 2027 · data da confermare", dateISO: "2027-03-15", tbd: true, color: "from-slate-700 to-zinc-600", description: "Edizione primaverile della più grande borsa mondiale di terraristica. Data esatta ancora da confermare.", website: "https://www.terraristika.de", venue: "Zentralhallen Hamm", country: "DE" },
+  { id: 150, name: "Napoli Exotic", location: "Napoli", date: "14-15 nov 2026", dateISO: "2026-11-14", color: "from-orange-700 to-amber-600", description: "Fiera di rettili e animali esotici nel Sud Italia, a Napoli. Sede esatta da confermare.", website: "", venue: "", country: "IT" },
+  { id: 151, name: "TerraExpo Svizzera", location: "Spreitenbach (AG)", date: "8 nov 2026", dateISO: "2026-11-08", color: "from-fuchsia-700 to-purple-600", description: "La più grande fiera di terraristica della Svizzera, alla Umwelt Arena di Spreitenbach. Orario 10:00–15:00.", website: "", venue: "Umwelt Arena · Spreitenbach", country: "CH" },
 ];
 
 /* Returns upcoming expos sorted by date. Entries flagged `tbd` (exact date not
@@ -2162,6 +2164,11 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
           )}
         </div>
 
+        {/* Breeder's own ID code (sigla), when provided */}
+        {item.breederCode && (
+          <div className="text-[9px] font-mono text-stone-500 truncate">#{item.breederCode}</div>
+        )}
+
         {/* Trait chips */}
         <div className="flex flex-wrap gap-1 min-h-[18px]">
           {item.traits.slice(0, 2).map((tr, i) => <TraitChip key={i} trait={tr} size="xs" />)}
@@ -2187,12 +2194,12 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
               <>
                 <div className="text-[8px] text-amber-400/70 font-black uppercase tracking-widest leading-none mb-0.5">{t.currentBid}</div>
                 <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.auction.currentBid)}</div>
-                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.auction.bidCount} {t.bids} · {countryByCode(item.country).flag} {item.city}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.auction.bidCount} {t.bids} · {countryByCode(item.country).flag} {[item.city, item.region].filter(Boolean).join(", ")}</div>
               </>
             ) : (
               <>
                 <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
-                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.category === "equipment" ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {item.city}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.category === "equipment" ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {[item.city, item.region].filter(Boolean).join(", ")}</div>
               </>
             )}
           </div>
@@ -3745,6 +3752,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
             <Spec label={t.sex}>{sexLabel(a.sex, t)}</Spec>
             <Spec label={t.age}>{formatBirth(a, t)}</Spec>
             {a.weight && <Spec label={t.weight}>{a.weight}</Spec>}
+            {a.breederCode && <Spec label={lang === "it" ? "Sigla / ID" : "ID code"}>{a.breederCode}</Spec>}
           </>
         )}
         <Spec label={lang === "it" ? "Località" : "Location"}>{countryByCode(a.country).flag}{a.region ? " · " + a.region : ""}</Spec>
@@ -4736,6 +4744,16 @@ const saveSellDraft = (d) => {
 const clearSellDraft = () => {
   try { localStorage.removeItem(SELL_DRAFT_KEY); } catch (e) {}
 };
+/* Remembers the expo(s) chosen on the last published listing, so a seller
+   bulk-listing many animals for the same fair doesn't re-pick them each time.
+   Survives publishing (unlike the draft, which is cleared). */
+const LAST_EXPOS_KEY = "hm_last_expos";
+const loadLastExpos = () => {
+  try { return JSON.parse(localStorage.getItem(LAST_EXPOS_KEY) || "[]") || []; } catch (e) { return []; }
+};
+const saveLastExpos = (ids) => {
+  try { localStorage.setItem(LAST_EXPOS_KEY, JSON.stringify(ids || [])); } catch (e) {}
+};
 
 function SellScreen({ t, lang, go, user, editListing }) {
   const isEdit = !!editListing;
@@ -4763,6 +4781,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [sex, setSex] = useState(editListing?.sex || draft.sex || "M");
   const [born, setBorn] = useState(editListing?.birthDate || draft.born || "");
   const [weight, setWeight] = useState(editListing?.weight || draft.weight || "");
+  const [breederCode, setBreederCode] = useState(editListing?.breederCode || draft.breederCode || "");
   // Pick the date-precision that matches the stored birthDate, so the right
   // input type renders with a valid value (a "month" input rejects "YYYY-MM-DD").
   const detectBornPrecision = (v) => {
@@ -4932,6 +4951,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
         sex: isEquipment ? null : sex,
         ageMonths: isEquipment ? null : monthsSince(born),
         weight: isEquipment ? null : (weight.trim() || null),
+        breederCode: isEquipment ? null : (breederCode.trim() || null),
         birthDate: isEquipment ? null : ((born || "").trim() || null),
         citesListed: isEquipment ? false : isCites,
         country, region, city: null,
@@ -4955,6 +4975,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
         auction,
       }, seller.id);
       setCreatedListing(created);
+      saveLastExpos(expoPickup ? selectedExpoIds : []);   // remember the fair(s) for the next listing
       clearSellDraft();   // published — the draft is no longer needed
       setSuccess(true);
     } catch (err) {
@@ -4978,22 +4999,22 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // Delivery options — owned here (DeliverySection is a controlled child) so
   // they are actually saved. Pre-filled from the listing when editing.
   const [localPickup, setLocalPickup] = useState(isEdit ? !!editListing.localPickup : (draft.localPickup !== undefined ? draft.localPickup : true));
-  const [expoPickup, setExpoPickup] = useState(isEdit ? !!(editListing.expoIds && editListing.expoIds.length) : !!draft.expoPickup);
+  const [expoPickup, setExpoPickup] = useState(isEdit ? !!(editListing.expoIds && editListing.expoIds.length) : (draft.expoPickup !== undefined ? !!draft.expoPickup : loadLastExpos().some(id => isExpoUpcoming(EXPOS.find(e => e.id === id)))));
   const [shipping, setShipping] = useState(isEdit ? !!editListing.shipping : !!draft.shipping);
   const [shippingCost, setShippingCost] = useState(isEdit && editListing.shippingCost ? String(editListing.shippingCost) : (draft.shippingCost || ""));
-  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds.filter(id => isExpoUpcoming(EXPOS.find(e => e.id === id))) : (draft.selectedExpoIds || []));
+  const [selectedExpoIds, setSelectedExpoIds] = useState(isEdit && editListing.expoIds ? editListing.expoIds.filter(id => isExpoUpcoming(EXPOS.find(e => e.id === id))) : (draft.selectedExpoIds || loadLastExpos().filter(id => isExpoUpcoming(EXPOS.find(e => e.id === id)))));
 
   // Keep a draft of the in-progress listing so a reload / accidental back
   // does not wipe the work. Never for edits (that would fight the real data).
   useEffect(() => {
     if (isEdit || success) return;
     saveSellDraft({
-      title, sex, born, weight, isCites, desc, price,
+      title, sex, born, weight, breederCode, isCites, desc, price,
       catId, subcatId, speciesVal, country, region,
       shipping, shippingCost, localPickup, expoPickup, selectedExpoIds,
       selectedTraits,
     });
-  }, [isEdit, success, title, sex, born, weight, isCites, desc, price,
+  }, [isEdit, success, title, sex, born, weight, breederCode, isCites, desc, price,
       catId, subcatId, speciesVal, country, region,
       shipping, shippingCost, localPickup, expoPickup, selectedExpoIds, selectedTraits]);
   const toggleExpoId = (id) => setSelectedExpoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -5320,6 +5341,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
         <FormBlock label={t.weight}>
           <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)}
                  placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
+        </FormBlock>
+
+        <FormBlock label={lang === "it" ? "Sigla / ID allevatore (facoltativo)" : "Breeder ID / code (optional)"}>
+          <input className="form-input" value={breederCode} onChange={e => setBreederCode(e.target.value)}
+                 placeholder={lang === "it" ? "es. FP-24-017" : "e.g. FP-24-017"} />
         </FormBlock>
 
         {/* CITES self-declaration — the SELLER decides. Never auto-ticked.
