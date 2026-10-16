@@ -630,10 +630,21 @@ export async function fetchWishlist(userId) {
   return (data || []).map(r => r.listing_id);
 }
 export async function addToWishlist(userId, listingId) {
-  return supabase.from('wishlists').insert({ user_id: userId, listing_id: listingId });
+  // Idempotent: a double-tap or re-save shouldn't error on the unique key.
+  return supabase.from('wishlists')
+    .upsert({ user_id: userId, listing_id: listingId }, { onConflict: 'user_id,listing_id', ignoreDuplicates: true });
 }
 export async function removeFromWishlist(userId, listingId) {
   return supabase.from('wishlists').delete().eq('user_id', userId).eq('listing_id', listingId);
+}
+// How many people have saved each of the caller's own listings. Returns a map
+// { [listingId]: count }. Counts only — never who saved.
+export async function fetchMyWishlistCounts() {
+  const { data, error } = await supabase.rpc('my_wishlist_counts');
+  if (error) throw error;
+  const map = {};
+  (data || []).forEach(r => { map[r.listing_id] = Number(r.cnt) || 0; });
+  return map;
 }
 
 // ── TRANSACTIONS ────────────────────────────────────────────────────────────

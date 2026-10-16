@@ -1252,13 +1252,9 @@ const EXPOS = [
     venue: "Bienwaldhalle Wörth am Rhein", country: "DE",
   },
   // ── Added Oct 2026: upcoming Italian circuit + international + date-TBD ──
-  { id: 100, name: "Esotika Pet Show · Brescia", location: "Brescia", date: "10-11 ott 2026", dateISO: "2026-10-10", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
-  { id: 101, name: "Esotika Pet Show · Casale Monferrato", location: "Casale Monferrato (AL)", date: "17-18 ott 2026", dateISO: "2026-10-17", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
   { id: 102, name: "Esotika Pet Show · Bastia Umbra", location: "Bastia Umbra (PG)", date: "24-25 ott 2026", dateISO: "2026-10-24", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
-  { id: 103, name: "Esotika Pet Show · Busto Arsizio", location: "Busto Arsizio (VA)", date: "7-8 nov 2026", dateISO: "2026-11-07", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
   { id: 104, name: "Esotika Pet Show · Fermo", location: "Fermo", date: "21-22 nov 2026", dateISO: "2026-11-21", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
   { id: 105, name: "Esotika Pet Show · Pordenone", location: "Pordenone", date: "28-29 nov 2026", dateISO: "2026-11-28", color: "from-sky-700 to-cyan-600", description: "Tappa del circuito Esotika Pet Show, salone di rettili e animali esotici.", website: "https://www.esotikapetshow.it", venue: "", country: "IT" },
-  { id: 106, name: "Terraristika Hamm · Inverno", location: "Hamm", date: "12 dic 2026", dateISO: "2026-12-12", color: "from-slate-700 to-zinc-600", description: "Edizione invernale della più grande borsa mondiale di terraristica.", website: "https://www.terraristika.de", venue: "Zentralhallen Hamm", country: "DE" },
   { id: 107, name: "Terraria Houten · Inverno", location: "Houten", date: "6 dic 2026", dateISO: "2026-12-06", color: "from-blue-700 to-indigo-600", description: "Grande fiera di rettili e anfibi dei Paesi Bassi, Expo Houten.", website: "https://vhm-events.com", venue: "Expo Houten · Meidoornkade 24", country: "NL" },
   { id: 108, name: "Ziva Exotika · Praga", location: "Praga", date: "17 ott 2026", dateISO: "2026-10-17", color: "from-violet-700 to-purple-600", description: "La più grande fiera di animali e piante esotiche dell'Europa centrale.", website: "https://zivaexotika.cz", venue: "Top Hotel Praha", country: "CZ" },
   { id: 109, name: "Ziva Exotika · Praga", location: "Praga", date: "21 nov 2026", dateISO: "2026-11-21", color: "from-violet-700 to-purple-600", description: "La più grande fiera di animali e piante esotiche dell'Europa centrale.", website: "https://zivaexotika.cz", venue: "Top Hotel Praha", country: "CZ" },
@@ -1559,6 +1555,8 @@ export default function HerpMarket() {
     api.fetchProfile(u.id).then(p => {
       if (p) setUser(prev => prev ? { ...prev, name: p.display_name || prev.name, region: p.region || prev.region, country: p.country || prev.country || "IT", verified: !!p.verified } : prev);
     }).catch(() => {});
+    // Load saved favorites from the account so they persist across restarts/devices.
+    api.fetchWishlist(u.id).then(ids => { if (Array.isArray(ids)) setFavorites(ids); }).catch(() => {});
   };
   useEffect(() => {
     let unsub;
@@ -1684,7 +1682,14 @@ export default function HerpMarket() {
   const toggleFav = (id, e) => {
     e?.stopPropagation();
     if (!user) { setAuthModal({ mode: "login", reason: t.loginToFavorite, after: null }); return; }
+    const willAdd = !favorites.includes(id);
     setFavorites(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    // Persist to the account so saves survive restarts and sync across devices.
+    if (user.id) {
+      loadApi()
+        .then(api => willAdd ? api.addToWishlist(user.id, id) : api.removeFromWishlist(user.id, id))
+        .catch(() => {});
+    }
   };
   // Demo shortcut (DemoToggle) — fake local login for quick UI testing only.
   // Must NOT grant verification: the blue check only reflects the real DB flag.
@@ -5343,9 +5348,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
                  placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
         </FormBlock>
 
-        <FormBlock label={lang === "it" ? "Sigla / ID allevatore (facoltativo)" : "Breeder ID / code (optional)"}>
+        <FormBlock label={lang === "it" ? "Sigla / ID allevatore" : "Breeder ID / code"}>
           <input className="form-input" value={breederCode} onChange={e => setBreederCode(e.target.value)}
-                 placeholder={lang === "it" ? "es. FP-24-017" : "e.g. FP-24-017"} />
+                 placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
         </FormBlock>
 
         {/* CITES self-declaration — the SELLER decides. Never auto-ticked.
@@ -6254,6 +6259,7 @@ function MyListingsScreen({ t, lang, go, user }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");   // transient success message (e.g. "Listing deleted.")
+  const [favCounts, setFavCounts] = useState({});   // { listingId: how many people saved it }
 
   const doRelist = async (id, fields) => {
     setBusy(true); setErr("");
@@ -6298,6 +6304,8 @@ function MyListingsScreen({ t, lang, go, user }) {
       .then(api => api.fetchMyListings(user.id))
       .then(setItems)
       .catch(e => { setErr(e?.message || "Error"); setItems([]); });
+    // How many people have saved each of my listings (counts only).
+    loadApi().then(api => api.fetchMyWishlistCounts()).then(setFavCounts).catch(() => {});
   };
   useEffect(() => { if (user?.id) load(); }, [user?.id]);
   // Auto-dismiss the transient success toast after a couple of seconds.
@@ -6465,6 +6473,11 @@ function MyListingsScreen({ t, lang, go, user }) {
                 )}
                 {l.price != null && bucket(l) !== "held" && bucket(l) !== "breeder" && (
                   <div className="text-[11px] text-amber-400 font-bold mt-0.5">{formatPrice(l.price)}</div>
+                )}
+                {favCounts[l.id] > 0 && (
+                  <div className="text-[10px] text-rose-400 font-bold mt-0.5 flex items-center gap-1">
+                    <Heart size={10} className="fill-rose-400" />{favCounts[l.id]} {lang === "it" ? (favCounts[l.id] === 1 ? "salvato" : "salvati") : "saved"}
+                  </div>
                 )}
               </button>
 
@@ -9337,9 +9350,24 @@ function AboutContact({ t, go, lang, user }) {
           </div>
           <p className="text-sm text-stone-300 leading-relaxed">
             {lang === "it"
-              ? "HerpMarket è il marketplace italiano dedicato agli appassionati di rettili e animali esotici. Connettiamo allevatori verificati e acquirenti con strumenti pensati per il mercato italiano: documentazione CITES integrata, prenotazioni sicure per le fiere e una community basata sulla fiducia."
-              : "HerpMarket is the Italian marketplace for reptile and exotic-animal enthusiasts. We connect verified breeders with buyers through tools tailored to the Italian market: integrated CITES paperwork, secure expo reservations and a trust-based community."}
+              ? "HerpMarket è il marketplace italiano ed europeo dedicato agli appassionati di rettili e animali esotici. È nato per rendere la vita più facile agli allevatori e dare alla community uno spazio curato e affidabile dove incontrarsi, invece di perdersi tra gruppi e bacheche generaliste."
+              : "HerpMarket is the Italian and European marketplace for reptile and exotic-animal enthusiasts. It was built to make breeders' lives easier and give the community a curated, trustworthy place to meet — instead of getting lost in generic groups and classifieds."}
           </p>
+          <p className="text-[11px] font-bold text-amber-500/80 uppercase tracking-widest mt-3">For keepers · by keepers</p>
+        </div>
+
+        <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-6">
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">
+            {lang === "it" ? "Cosa offriamo" : "What we offer"}
+          </div>
+          <ul className="space-y-2.5 text-sm text-stone-300">
+            <li className="flex gap-2.5"><span className="shrink-0">📅</span><span><b className="text-stone-100">{lang === "it" ? "Tutte le fiere d'Europa" : "Every expo in Europe"}</b> — {lang === "it" ? "calendario completo, Italia e EU." : "full calendar, Italy & EU."}</span></li>
+            <li className="flex gap-2.5"><span className="shrink-0">🤝</span><span><b className="text-stone-100">{lang === "it" ? "Ritiro sicuro in fiera" : "Secure pickup at expos"}</b> — {lang === "it" ? "organizza la consegna di persona." : "arrange an in-person handover."}</span></li>
+            <li className="flex gap-2.5"><span className="shrink-0">📄</span><span><b className="text-stone-100">{lang === "it" ? "Documenti CITES integrati" : "Built-in CITES documents"}</b> — {lang === "it" ? "inventario tracciabile e in regola." : "traceable, compliant inventory."}</span></li>
+            <li className="flex gap-2.5"><span className="shrink-0">🧬</span><span><b className="text-stone-100">{lang === "it" ? "Genitori nell'annuncio" : "Parents in the listing"}</b> — {lang === "it" ? "foto e morph per più trasparenza." : "photos & morphs for transparency."}</span></li>
+            <li className="flex gap-2.5"><span className="shrink-0">🔍</span><span><b className="text-stone-100">{lang === "it" ? "Bacheca «Cerco»" : "“Wanted” board"}</b> — {lang === "it" ? "cerchi un animale? Chiedilo." : "looking for an animal? Just ask."}</span></li>
+            <li className="flex gap-2.5"><span className="shrink-0">📲</span><span><b className="text-stone-100">{lang === "it" ? "Installabile sul telefono" : "Installable on your phone"}</b> — {lang === "it" ? "usala come una vera app." : "use it like a real app."}</span></li>
+          </ul>
         </div>
         <div className="bg-stone-900/60 ring-1 ring-stone-800 rounded-xl p-5">
           <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.expoInfo}</div>
@@ -9349,6 +9377,10 @@ function AboutContact({ t, go, lang, user }) {
           <a href="https://www.instagram.com/herpmarket.it/" target="_blank" rel="noopener noreferrer"
              className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors mt-3">
             <Camera size={16} />Instagram @herpmarket.it
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=61591676050199" target="_blank" rel="noopener noreferrer"
+             className="flex items-center gap-2.5 text-amber-400 hover:text-amber-300 font-bold text-sm transition-colors mt-3">
+            <Globe size={16} />Facebook
           </a>
         </div>
         <button onClick={() => setShowReport(true)}
