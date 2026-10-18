@@ -1287,6 +1287,12 @@ const EXPOS = [
   { id: 133, name: "Terraristika Hamm · Primavera", location: "Hamm", date: "marzo 2027 · data da confermare", dateISO: "2027-03-15", tbd: true, color: "from-slate-700 to-zinc-600", description: "Edizione primaverile della più grande borsa mondiale di terraristica. Data esatta ancora da confermare.", website: "https://www.terraristika.de", venue: "Zentralhallen Hamm", country: "DE" },
   { id: 150, name: "Napoli Exotic", location: "Napoli", date: "14-15 nov 2026", dateISO: "2026-11-14", color: "from-orange-700 to-amber-600", description: "Fiera di rettili e animali esotici nel Sud Italia, a Napoli. Sede esatta da confermare.", website: "", venue: "", country: "IT" },
   { id: 151, name: "TerraExpo Svizzera", location: "Spreitenbach (AG)", date: "8 nov 2026", dateISO: "2026-11-08", color: "from-fuchsia-700 to-purple-600", description: "La più grande fiera di terraristica della Svizzera, alla Umwelt Arena di Spreitenbach. Orario 10:00–15:00.", website: "", venue: "Umwelt Arena · Spreitenbach", country: "CH" },
+  { id: 152, name: "Bourse Aqua-Terra · Friburgo", location: "Friburgo (Fribourg)", date: "18 ott 2026", dateISO: "2026-10-18", color: "from-rose-700 to-red-600", description: "Borsa di rettili, anfibi, aracnidi, pesci, coralli e materiale. Salle communale St-Léonard, Friburgo (Svizzera). Orario 10:00–16:00.", website: "", venue: "Salle communale St-Léonard · Chemin St-Léonard 1, 1700 Fribourg", country: "CH" },
+  { id: 153, name: "Naturaria Fair · Anversa", location: "Anversa (Antwerp)", date: "18 ott 2026", dateISO: "2026-10-18", color: "from-amber-700 to-orange-600", description: "Fiera di rettili e animali da terrario ad Anversa, in Belgio. Orario 10:00–16:00.", website: "", venue: "", country: "BE" },
+  { id: 154, name: "Reptilienbörse Francoforte", location: "Francoforte (Frankfurt)", date: "25 ott 2026", dateISO: "2026-10-25", color: "from-slate-700 to-gray-600", description: "Borsa di rettili e terraristica a Francoforte, al SAALBAU Titus Forum.", website: "", venue: "SAALBAU Titus Forum", country: "DE" },
+  { id: 155, name: "Terrarienbörse Hannover", location: "Hannover", date: "1 nov 2026", dateISO: "2026-11-01", color: "from-zinc-700 to-slate-600", description: "Borsa di rettili e terraristica all'Hannover Congress Centrum (HCC).", website: "", venue: "HCC · Hannover Congress Centrum", country: "DE" },
+  { id: 156, name: "Reptile Expo Böblingen", location: "Böblingen (Stoccarda)", date: "28 nov 2026", dateISO: "2026-11-28", color: "from-stone-700 to-neutral-600", description: "Fiera di rettili e animali esotici vicino a Stoccarda, alla Kongresshalle di Böblingen.", website: "", venue: "Kongresshalle Böblingen", country: "DE" },
+  { id: 157, name: "Reptilienbörse Ulm", location: "Ulm", date: "3 apr 2027", dateISO: "2027-04-03", color: "from-gray-700 to-zinc-600", description: "Borsa di rettili e terraristica alla Messe Ulm, nel sud della Germania.", website: "", venue: "Messe Ulm", country: "DE" },
 ];
 
 /* Returns upcoming expos sorted by date. Entries flagged `tbd` (exact date not
@@ -2447,8 +2453,10 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
       </div>
 
 
-      {/* Near you */}
-      {near.length > 0 && (
+      {/* Near you — shows listings in the user's region. If they're logged in
+          but haven't set a region yet, prompt them (otherwise the section just
+          silently disappears and "near me" looks broken). */}
+      {userRegion && near.length > 0 ? (
         <section className="px-5 md:px-8 pt-8">
           <div className="flex items-baseline justify-between mb-3">
             <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight flex items-center gap-2">
@@ -2460,7 +2468,19 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             {near.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
           </div>
         </section>
-      )}
+      ) : user && !userRegion ? (
+        <section className="px-5 md:px-8 pt-8">
+          <button onClick={() => go("profile")}
+                  className="w-full text-left bg-stone-900/50 ring-1 ring-stone-800 hover:ring-amber-500/40 rounded-xl p-4 flex items-center gap-3 transition-colors">
+            <MapPin size={18} className="text-amber-500 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-stone-100">{lang === "it" ? "Vedi gli annunci vicino a te" : "See listings near you"}</div>
+              <div className="text-[11px] text-stone-500 leading-snug">{lang === "it" ? "Imposta la tua regione nel profilo per vedere gli animali più vicini." : "Set your region in your profile to see the animals closest to you."}</div>
+            </div>
+            <span className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-stone-950">{lang === "it" ? "Imposta" : "Set"}</span>
+          </button>
+        </section>
+      ) : null}
 
       {/* All */}
       <section className="px-5 md:px-8 pt-8 pb-10">
@@ -9066,6 +9086,7 @@ async function printAnimalRecord(a, t, lang) {
   F(it ? "Specie" : "Species", a.species);
   F(it ? "Nome comune" : "Common name", a.common);
   F(it ? "Tipo di animale" : "Animal type", a.category);
+  F(it ? "Sigla / ID allevatore" : "Breeder ID / code", a.breederCode);
   F(it ? "Morph / Tratti" : "Morphs / Traits", traitNames(a.traits));
 
   // ── Animal details ────────────────────────────────────────
@@ -9133,11 +9154,12 @@ async function printInventory(animals, t, lang, ownerName) {
   y += 8;
 
   // Column layout (landscape gives room for species AND morphs)
-  const C = { name: M, species: M + 48, morph: M + 105, sex: M + 175, born: M + 192, weight: M + 220, cites: M + 243, status: M + 258 };
+  const C = { name: M, id: M + 40, species: M + 65, morph: M + 113, sex: M + 173, born: M + 189, weight: M + 215, cites: M + 237, status: M + 251 };
 
   const drawHead = () => {
     doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(120);
     doc.text(it ? "NOME" : "NAME", C.name, y);
+    doc.text(it ? "SIGLA" : "ID", C.id, y);
     doc.text(it ? "SPECIE" : "SPECIES", C.species, y);
     doc.text(it ? "MORPH" : "MORPHS", C.morph, y);
     doc.text(it ? "SESSO" : "SEX", C.sex, y);
@@ -9159,12 +9181,13 @@ async function printInventory(animals, t, lang, ownerName) {
       doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(30);
     }
     const cut = (txt, w) => doc.splitTextToSize(String(txt == null || txt === "" ? "—" : txt), w)[0];
-    doc.text(cut(a.title || a.common || a.species, 45), C.name, y);
-    doc.text(cut(a.species, 54), C.species, y);
-    doc.text(cut(traitNames(a.traits), 67), C.morph, y);
-    doc.text(cut(a.sex, 15), C.sex, y);
-    doc.text(cut(a.birthDate, 26), C.born, y);
-    doc.text(cut(a.weight, 21), C.weight, y);
+    doc.text(cut(a.title || a.common || a.species, 38), C.name, y);
+    doc.text(cut(a.breederCode, 22), C.id, y);
+    doc.text(cut(a.species, 44), C.species, y);
+    doc.text(cut(traitNames(a.traits), 56), C.morph, y);
+    doc.text(cut(a.sex, 14), C.sex, y);
+    doc.text(cut(a.birthDate, 24), C.born, y);
+    doc.text(cut(a.weight, 20), C.weight, y);
     doc.text(a.citesListed ? (it ? "Si" : "Yes") : "—", C.cites, y);
     doc.text(cut(a.status, 30), C.status, y);
     y += 6;
