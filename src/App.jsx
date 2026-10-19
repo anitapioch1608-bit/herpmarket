@@ -9142,7 +9142,6 @@ async function printAnimalRecord(a, t, lang) {
   heading(it ? "Dettagli animale" : "Animal details");
   F(it ? "Sesso" : "Sex", a.sex);
   F(it ? "Data di nascita" : "Date of birth", a.birthDate);
-  F(it ? "Et\u00e0" : "Age", a.ageMonths != null ? (it ? `${a.ageMonths} mesi` : `${a.ageMonths} months`) : null);
   F(it ? "Peso" : "Weight", a.weight);
   F(it ? "Padre (sire)" : "Sire", a.sire);
   F(it ? "Madre (dam)" : "Dam", a.dam);
