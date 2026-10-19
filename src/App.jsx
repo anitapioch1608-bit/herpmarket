@@ -1640,6 +1640,23 @@ export default function HerpMarket() {
       setScroll(typeof saved === "number" ? saved : 0);
     });
   };
+  // Deep link: if the URL is herpmarket.it/?s=<store>, open straight to that
+  // seller's page (lets sellers share a link to their store, e.g. on Instagram).
+  // Runs once on mount, then strips the param so Back/refresh behave normally.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get("s");
+      if (s) {
+        go("seller", s);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("s");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+      }
+    } catch (e) { /* ignore malformed URLs */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Safety net: after any view change, if we don't have a remembered scroll
   // position for this exact page, make sure the container is at the top. Runs
   // after the new (possibly taller) content has rendered, so it can't be undone
@@ -7975,6 +7992,7 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
    ═════════════════════════════════════════════════════════════════ */
 function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, listingsData }) {
   const [tab, setTab] = useState("animals");
+  const [shareCopied, setShareCopied] = useState(false);
   // Live seller row from Supabase — used when the name isn't in the demo SELLERS
   // table (i.e. every real breeder account). Demo entries keep their rich data.
   const [liveSeller, setLiveSeller] = useState(null);
@@ -8045,6 +8063,19 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   // Prefer live reviews; fall back to any demo reviews on the seller object.
   const reviewsToShow = liveReviews != null ? liveReviews : (data.reviews || []);
 
+  // Share this store: a link (herpmarket.it/?s=<store>) that opens straight to
+  // this page, so sellers can post it in an Instagram story etc. Uses the native
+  // share sheet on mobile, falls back to copying the link.
+  const shareStore = async () => {
+    const url = `${window.location.origin}/?s=${encodeURIComponent(sellerName)}`;
+    const text = lang === "it" ? `Scopri ${storeTitle} su HerpMarket 🦎` : `Check out ${storeTitle} on HerpMarket 🦎`;
+    if (navigator.share) {
+      try { await navigator.share({ title: storeTitle, text, url }); } catch (e) { /* cancelled */ }
+      return;
+    }
+    try { await navigator.clipboard.writeText(url); setShareCopied(true); setTimeout(() => setShareCopied(false), 2500); } catch (e) { /* clipboard unavailable */ }
+  };
+
   return (
     <div className="max-w-5xl mx-auto w-full pb-24 md:pb-10">
       {/* Header / banner */}
@@ -8053,6 +8084,10 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
         <button onClick={goBack}
                 className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors">
           <ChevronLeft size={20} />
+        </button>
+        <button onClick={shareStore}
+                className="absolute top-5 right-4 pl-3 pr-3.5 py-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors flex items-center gap-1.5 text-xs font-bold">
+          <Share2 size={16} />{shareCopied ? (lang === "it" ? "Copiato!" : "Copied!") : (lang === "it" ? "Condividi" : "Share")}
         </button>
       </div>
 
