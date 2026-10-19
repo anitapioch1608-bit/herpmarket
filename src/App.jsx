@@ -2264,7 +2264,6 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
   const [showAllExpos, setShowAllExpos] = useState(false);
   const [homeSort, setHomeSort] = useState("newest");   // newest | near | price_asc | price_desc
   const LIST = listingsData || [];
-  const near = LIST.filter(l => l.region === userRegion);
   const priceOf = (l) => (l.auction ? (l.auction.currentBid ?? l.price) : l.price) || 0;
   const all = (() => {
     let xs = [...LIST];
@@ -2453,36 +2452,8 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
       </div>
 
 
-      {/* Near you — shows listings in the user's region. If they're logged in
-          but haven't set a region yet, prompt them (otherwise the section just
-          silently disappears and "near me" looks broken). */}
-      {userRegion && near.length > 0 ? (
-        <section className="px-5 md:px-8 pt-8">
-          <div className="flex items-baseline justify-between mb-3">
-            <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight flex items-center gap-2">
-              <MapPin size={16} className="text-amber-500" />{t.nearYou} · <span className="text-stone-400 text-sm not-italic">{userRegion}</span>
-            </h3>
-            <button onClick={() => go("search")} className="text-[11px] text-amber-400 font-bold hover:underline">{t.seeAll} →</button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
-            {near.map(item => <ListingCard key={item.id} item={item} go={go} favorites={favorites} toggleFav={toggleFav} t={t} />)}
-          </div>
-        </section>
-      ) : user && !userRegion ? (
-        <section className="px-5 md:px-8 pt-8">
-          <button onClick={() => go("profile")}
-                  className="w-full text-left bg-stone-900/50 ring-1 ring-stone-800 hover:ring-amber-500/40 rounded-xl p-4 flex items-center gap-3 transition-colors">
-            <MapPin size={18} className="text-amber-500 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-stone-100">{lang === "it" ? "Vedi gli annunci vicino a te" : "See listings near you"}</div>
-              <div className="text-[11px] text-stone-500 leading-snug">{lang === "it" ? "Imposta la tua regione nel profilo per vedere gli animali più vicini." : "Set your region in your profile to see the animals closest to you."}</div>
-            </div>
-            <span className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-stone-950">{lang === "it" ? "Imposta" : "Set"}</span>
-          </button>
-        </section>
-      ) : null}
-
-      {/* All */}
+      {/* One unified listings list — sorted via the chips below (Newest by
+          default, plus Near me and price). No separate "Near you" list. */}
       <section className="px-5 md:px-8 pt-8 pb-10">
         <div className="flex items-baseline justify-between mb-3">
           <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight">{t.allListings}</h3>
@@ -5716,12 +5687,12 @@ function DeliverySection({ lang, t, itemPrice = 0, localPickup, setLocalPickup, 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-0.5">
                 <Truck size={16} className="text-stone-300" />
-                <span className="font-bold text-stone-100 text-sm">{lang === "it" ? "Spedizione con corriere" : "Courier shipping"}</span>
+                <span className="font-bold text-stone-100 text-sm">{lang === "it" ? "Spedizione (trasportatore autorizzato)" : "Shipping (authorised transporter)"}</span>
               </div>
               <p className="text-[11px] text-stone-400 leading-relaxed">
                 {lang === "it"
-                  ? "Spedizione tramite corriere abilitato (Lun-Mer). Imballaggio a norma IATA."
-                  : "Authorised live-animal courier (Mon-Wed). IATA-compliant packaging."}
+                  ? "Per gli animali vivi serve un trasportatore autorizzato (Reg. UE 1/2005): la spedizione viene organizzata dal venditore. In alternativa consigliamo il ritiro a mano o in fiera."
+                  : "Live animals require an authorised transporter (EU Reg. 1/2005): shipping is arranged by the seller. We otherwise recommend local or expo pickup."}
               </p>
             </div>
           </label>
@@ -5929,7 +5900,7 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
              onError={(e) => { e.target.onerror = null; e.target.src = fallback(t.realPhoto); }}
              className="w-10 h-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-sm text-stone-100 truncate">{chat?.iAmSeller ? t.chatBuyer : (target.seller || t.chatSeller)}</div>
+          <div className="font-bold text-sm text-stone-100 truncate">{chat?.iAmSeller ? (chat?.buyerName || t.chatBuyer) : (target.seller || t.chatSeller)}</div>
           <div className="text-[10px] text-stone-500 font-medium truncate font-display italic">{target.common}</div>
         </div>
         <button onClick={() => go("detail", target)}
@@ -6987,6 +6958,9 @@ function EditStoreScreen({ t, lang, go, user }) {
   const [storeName, setStoreName] = useState("");
   const [sellerType, setSellerType] = useState("private");
   const [city, setCity] = useState("");
+  const [country, setCountry] = useState("IT");
+  const [region, setRegion] = useState("");
+  const [moveListings, setMoveListings] = useState(true);
   const [bio, setBio] = useState("");
   const [specs, setSpecs] = useState("");
   const [website, setWebsite] = useState("");
@@ -7018,6 +6992,8 @@ function EditStoreScreen({ t, lang, go, user }) {
           setStoreName(s.storeName || "");
           setSellerType(s.sellerType === "professional" ? "professional" : "private");
           setCity(s.city || "");
+          setCountry(s.country || "IT");
+          setRegion(s.region || "");
           setBio(s.bioIt || "");
           setSpecs((s.specialties || []).join(", "));
           setWebsite(s.website || "");
@@ -7053,13 +7029,21 @@ function EditStoreScreen({ t, lang, go, user }) {
         storeName: storeName.trim(),
         sellerType,
         city: city.trim(),
+        region: region || null,
+        country: country || "IT",
         bio: bio.trim(),
         specialties: specs.split(",").map(s => s.trim()).filter(Boolean),
         website: isPro ? website.trim() : "",
         instagram: instagram.trim().replace(/^@+/, ""),
       };
       if (avatarUrl) fields.avatarUrl = avatarUrl;
+      const regionChanged = (seller.region || "") !== (region || "");
       const updated = await api.updateMySeller(seller.id, fields);
+      // If the seller corrected their region, optionally move their existing
+      // listings too (the fp-reptiles case: wrong region inherited by listings).
+      if (regionChanged && moveListings) {
+        try { await api.updateMyListingsRegion(seller.id, region, country); } catch (e) { /* non-fatal */ }
+      }
       setSeller(updated);
       setAvatarFile(null);
       setSaved(true);
@@ -7119,6 +7103,35 @@ function EditStoreScreen({ t, lang, go, user }) {
                 ))}
               </div>
               <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">{t.spSellerTypeHint}</p>
+            </FormBlock>
+
+            <FormBlock label={lang === "it" ? "Paese" : "Country"}>
+              <select className="form-input" value={country} onChange={e => { setCountry(e.target.value); setRegion(""); }}>
+                {[...COUNTRIES].sort((a,b)=> a.code==="IT"?-1:b.code==="IT"?1:a[lang].localeCompare(b[lang],lang)).map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+              </select>
+            </FormBlock>
+
+            <FormBlock label={t.region}>
+              {regionsForCountry(country).length ? (
+                <select className="form-input" value={region} onChange={e => setRegion(e.target.value)}>
+                  <option value="">{t.chooseRegion}</option>
+                  {regionsForCountry(country).map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              ) : (
+                <input className="form-input" value={region} onChange={e => setRegion(e.target.value)} placeholder={t.region} />
+              )}
+              <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed">
+                {lang === "it" ? "Usata per mostrare i tuoi annunci agli acquirenti della tua zona." : "Used to show your listings to buyers in your area."}
+              </p>
+              {seller && (seller.region || "") !== (region || "") && (
+                <label className="flex items-start gap-2.5 cursor-pointer mt-3 bg-amber-500/5 ring-1 ring-amber-500/20 rounded-lg p-3">
+                  <input type="checkbox" checked={moveListings} onChange={() => setMoveListings(!moveListings)}
+                         className="mt-0.5 w-4 h-4 rounded accent-amber-500 cursor-pointer shrink-0" />
+                  <span className="text-[11px] text-stone-300 leading-relaxed">
+                    {lang === "it" ? "Sposta anche i miei annunci esistenti in questa regione." : "Also move my existing listings to this region."}
+                  </span>
+                </label>
+              )}
             </FormBlock>
 
             <FormBlock label={t.spCity}>
@@ -7617,11 +7630,12 @@ function AuthModal({ modal, setModal, onAuthSuccess, t, lang, go }) {
     ? (email && password)
     : mode === "forgot"
     ? !!email
-    : (name && email && password && consentTos && consentPrivacy);
+    : (name && email && password && consentTos && consentPrivacy && suRegion);
 
   const submit = async () => {
     if (!canSubmit || loading) return;
     if (mode === "signup" && (!consentTos || !consentPrivacy)) { setError(t.consentRequired); return; }
+    if (mode === "signup" && (!suRegion || !suRegion.trim())) { setError(t.needRegion); return; }
     setError(""); setInfo(""); setLoading(true);
     try {
       const api = await loadApi();

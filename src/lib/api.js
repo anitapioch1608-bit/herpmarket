@@ -465,6 +465,8 @@ export async function updateMySeller(sellerId, fields) {
   if (fields.name != null) patch.name = fields.name;
   if (fields.storeName !== undefined) patch.store_name = fields.storeName ? fields.storeName : null;
   if (fields.city != null) patch.city = fields.city;
+  if (fields.region !== undefined) patch.region = fields.region || null;
+  if (fields.country != null) patch.country = fields.country;
   if (fields.bio != null) { patch.bio_it = fields.bio; patch.bio_en = fields.bio; }
   if (fields.specialties != null) patch.specialties = fields.specialties;
   if (fields.avatarUrl != null) patch.avatar_url = fields.avatarUrl;
@@ -477,6 +479,16 @@ export async function updateMySeller(sellerId, fields) {
     .update(patch).eq('id', sellerId).select().single();
   if (error) throw error;
   return mapSeller(data);
+}
+
+// Move all of a seller's listings to a new region/country. Used when a seller
+// corrects their store region and wants their existing animals to follow.
+// RLS already limits this to the owner's own listings.
+export async function updateMyListingsRegion(sellerId, region, country) {
+  const patch = { region: region || null };
+  if (country) patch.country = country;
+  const { error } = await supabase.from('listings').update(patch).eq('seller_id', sellerId);
+  if (error) throw error;
 }
 
 // ── CHAT (real threads + messages) ──────────────────────────────────────────
@@ -519,7 +531,7 @@ export async function fetchMyThreads(userId) {
       sellerId: thr.seller_id,
       buyerId: thr.buyer_id,
       iAmSeller: sellerIds.includes(thr.seller_id),
-      buyerName: thr.buyer?.display_name || null,
+      buyerName: thr.buyer_name || thr.buyer?.display_name || null,
       listing: thr.listings ? mapListing(thr.listings) : null,
       lastMsg: last ? last.body : "",
       lastAt: last ? last.created_at : thr.created_at,
