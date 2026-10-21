@@ -137,6 +137,14 @@ export async function fetchListingsBySeller(sellerName) {
   return (data || []).map(mapListing);
 }
 
+// Fetch a single listing by its id (used for shareable deep links: ?l=<id>).
+export async function fetchListingById(id) {
+  const { data, error } = await supabase.from('listings')
+    .select('*, sellers(*)').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data ? mapListing(data) : null;
+}
+
 export async function createListing(listing, sellerId) {
   const { data, error } = await supabase.from('listings').insert({
     seller_id: sellerId,
@@ -158,15 +166,53 @@ export async function createListing(listing, sellerId) {
   return mapListing(data);
 }
 
+// Downscale + re-encode a photo in the browser before upload, so listings stay
+// sharp but don't burn storage/egress. Good quality (max 1600px, ~82% JPEG):
+// a 4–5 MB phone photo becomes a few hundred KB. Falls back to the original on
+// any error so an upload is never blocked.
+async function compressImage(file, maxDim = 1600, quality = 0.82) {
+  try {
+    if (!file || !file.type || !file.type.startsWith('image/') || file.type === 'image/gif') return file;
+    const dataUrl = await new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.onerror = rej;
+      fr.readAsDataURL(file);
+    });
+    const img = await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = dataUrl;
+    });
+    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+    // Already small and modest file size → leave it as-is.
+    if (scale >= 1 && file.size < 600 * 1024) return file;
+    const w = Math.round(img.naturalWidth * scale);
+    const h = Math.round(img.naturalHeight * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality));
+    if (!blob || blob.size >= file.size) return file; // didn't help → keep original
+    return new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  } catch (e) {
+    return file; // never block an upload on a compression hiccup
+  }
+}
+
 // Upload listing photos to the public "listing-photos" bucket. Returns public URLs.
+// Each photo is compressed first (keeps quality, cuts size ~10x) and served with
+// a long browser cache so repeat views don't re-download (less egress).
 export async function uploadListingPhotos(files, userId) {
   const urls = [];
   for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase();
+    const file = await compressImage(files[i]);
+    const ext = file.type === 'image/jpeg' ? 'jpg' : (file.name?.split('.').pop() || 'jpg').toLowerCase();
     const path = `${userId}/${Date.now()}-${i}.${ext}`;
     const { error } = await supabase.storage.from('listing-photos')
-      .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || 'image/jpeg' });
+      .upload(path, file, { cacheControl: '2592000', upsert: false, contentType: file.type || 'image/jpeg' });
     if (error) throw error;
     const { data } = supabase.storage.from('listing-photos').getPublicUrl(path);
     urls.push(data.publicUrl);

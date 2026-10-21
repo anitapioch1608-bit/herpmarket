@@ -1640,17 +1640,26 @@ export default function HerpMarket() {
       setScroll(typeof saved === "number" ? saved : 0);
     });
   };
-  // Deep link: if the URL is herpmarket.it/?s=<store>, open straight to that
-  // seller's page (lets sellers share a link to their store, e.g. on Instagram).
+  // Deep links: herpmarket.it/?s=<store> opens a seller's page, and
+  // herpmarket.it/?l=<listingId> opens a specific listing. Lets sellers share
+  // a link to their store or a single animal (e.g. in an Instagram story).
   // Runs once on mount, then strips the param so Back/refresh behave normally.
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const s = params.get("s");
+      const l = params.get("l");
       if (s) {
         go("seller", s);
+      } else if (l) {
+        loadApi().then(api => api.fetchListingById(l))
+          .then(listing => { if (listing) go("detail", listing); })
+          .catch(() => {});
+      }
+      if (s || l) {
         const url = new URL(window.location.href);
         url.searchParams.delete("s");
+        url.searchParams.delete("l");
         window.history.replaceState({}, "", url.pathname + url.search + url.hash);
       }
     } catch (e) { /* ignore malformed URLs */ }
@@ -3535,9 +3544,10 @@ async function shareListingImage(a, t, lang) {
   const blob = await new Promise((res) => canvas.toBlob(res, "image/png", 0.92));
   if (!blob) { alert(lang === "it" ? "Impossibile creare l'immagine. Riprova." : "Couldn't create the image. Try again."); return; }
   const file = new File([blob], "herpmarket.png", { type: "image/png" });
+  const listingUrl = a.id ? `herpmarket.it/?l=${a.id}` : "herpmarket.it";
   const caption = lang === "it"
-    ? `${title}${a.species ? " — " + a.species : ""}\n${formatPrice(priceVal)}\n\nDisponibile su HerpMarket 👉 herpmarket.it\n\n#HerpMarket #rettili #terraristica #animaliesotici`
-    : `${title}${a.species ? " — " + a.species : ""}\n${formatPrice(priceVal)}\n\nAvailable on HerpMarket 👉 herpmarket.it\n\n#HerpMarket #reptiles #geckos #exoticpets`;
+    ? `${title}${a.species ? " — " + a.species : ""}\n${formatPrice(priceVal)}\n\nDisponibile su HerpMarket 👉 ${listingUrl}\n\n#HerpMarket #rettili #terraristica #animaliesotici`
+    : `${title}${a.species ? " — " + a.species : ""}\n${formatPrice(priceVal)}\n\nAvailable on HerpMarket 👉 ${listingUrl}\n\n#HerpMarket #reptiles #geckos #exoticpets`;
   try {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], text: caption }); return;
