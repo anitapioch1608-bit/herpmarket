@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://herpmarket.it/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://herpmarket.it/chi-siamo.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <url><loc>https://herpmarket.it/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://herpmarket.it/chi-siamo.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://herpmarket.it/calendario-fiere-rettili.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://herpmarket.it/cura-geco-crestato.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://herpmarket.it/cura-geco-leopardino.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://herpmarket.it/cura-phelsuma-grandis.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://herpmarket.it/cura-pogona.html</loc><changefreq>weekly</changefreq></url>
 </urlset>
