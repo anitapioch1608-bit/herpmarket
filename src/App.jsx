@@ -2240,7 +2240,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
               </>
             )}
           </div>
-          {item.verified && <ShieldCheck size={12} className="text-sky-400 mb-1 shrink-0" />}
+          {KYC_ENABLED && item.verified && <ShieldCheck size={12} className="text-sky-400 mb-1 shrink-0" />}
         </div>
       </div>
     </div>
@@ -2992,6 +2992,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                        onChange={() => setFilter({ ...filter, expoOnly: !filter.expoOnly })}
                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
               </label>
+              {KYC_ENABLED && (
               <label className="flex items-center justify-between bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-3 cursor-pointer">
                 <span className="text-sm text-stone-200 font-medium flex items-center gap-2">
                   <ShieldCheck size={15} className="text-sky-400" />{t.verifiedOnlyLabel}
@@ -3000,6 +3001,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
                        onChange={() => setFilter({ ...filter, verifiedOnly: !filter.verifiedOnly })}
                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
               </label>
+              )}
               <label className="flex items-center justify-between bg-stone-900/60 ring-1 ring-stone-800 rounded-lg px-3 py-3 cursor-pointer">
                 <span className="text-sm text-stone-200 font-medium flex items-center gap-2">
                   <ArrowUpDown size={15} className="text-amber-400" />{t.viewAuctions}
@@ -3464,6 +3466,31 @@ function ParentPhotoPicker({ photo, setPhoto, lang }) {
   );
 }
 
+/* Parent (sire/dam) field with autocomplete from the seller's own animals.
+   Typing suggests animals in the seller's collection; picking one autofills its
+   photo, so a whole clutch of siblings doesn't need the parents re-typed and
+   re-uploaded each time. Free text still works for parents not in the collection. */
+function ParentField({ label, value, setValue, photo, setPhoto, candidates, listId, placeholder, lang }) {
+  const onChange = (v) => {
+    setValue(v);
+    const match = candidates.find(c => c.name === v);
+    if (match && match.image) setPhoto({ url: match.image, existing: true });
+  };
+  return (
+    <div>
+      <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{label}</div>
+      <input className="form-input" list={candidates.length ? listId : undefined} value={value}
+             onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      {candidates.length > 0 && (
+        <datalist id={listId}>
+          {candidates.map(c => <option key={c.id} value={c.name} />)}
+        </datalist>
+      )}
+      <ParentPhotoPicker photo={photo} setPhoto={setPhoto} lang={lang} />
+    </div>
+  );
+}
+
 /* ─── Share to Instagram / social ────────────────────────────────────
    Builds a clean, HerpMarket-branded card from a listing (photo + morph +
    price) on a canvas, then shares it via the native share sheet (mobile) or
@@ -3719,9 +3746,9 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   return (
     <div className="max-w-3xl mx-auto w-full pb-40 md:pb-32">
       {/* Hero image */}
-      <div className="group relative aspect-square md:aspect-[16/10] bg-stone-800 overflow-hidden">
+      <div className="group relative aspect-square md:aspect-[16/10] bg-stone-950 overflow-hidden">
         <ImageCarousel images={a.images} alt={a.common} fallbackLabel={t.realPhoto} showCounter zoomable
-                       imgClass="w-full h-full object-cover" />
+                       imgClass="w-full h-full object-contain" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-stone-950/80 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-stone-950 to-transparent pointer-events-none" />
         <button onClick={goBack}
@@ -3867,7 +3894,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           <div className="flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="font-bold text-stone-100 text-sm group-hover:text-amber-300 transition-colors">{a.seller || "—"}</span>
-              {a.verified && <ShieldCheck size={14} className="text-sky-400" />}
+              {KYC_ENABLED && a.verified && <ShieldCheck size={14} className="text-sky-400" />}
               <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ring-1 ${a.sellerType === "professional" ? "text-emerald-300 bg-emerald-500/10 ring-emerald-500/25" : "text-stone-400 bg-stone-800/60 ring-stone-700"}`}>
                 {a.sellerType === "professional" ? t.sellerBadgePro : t.sellerBadgePrivate}
               </span>
@@ -4801,7 +4828,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
   };
   // Captured listing fields — pre-filled from editListing when editing.
   const [title, setTitle] = useState(editListing?.title || draft.title || "");
-  const [sex, setSex] = useState(editListing?.sex || draft.sex || "M");
+  const [sex, setSex] = useState(editListing?.sex || draft.sex || "U");
   const [born, setBorn] = useState(editListing?.birthDate || draft.born || "");
   const [weight, setWeight] = useState(editListing?.weight || draft.weight || "");
   const [breederCode, setBreederCode] = useState(editListing?.breederCode || draft.breederCode || "");
@@ -4821,6 +4848,23 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [dam, setDam] = useState(editListing?.dam || "");
   const [sirePhoto, setSirePhoto] = useState(() => { const p = (editListing?.parents || []).find(x => x && x.role === "sire"); return p && p.image ? { url: p.image, existing: true } : null; });
   const [damPhoto, setDamPhoto] = useState(() => { const p = (editListing?.parents || []).find(x => x && x.role === "dam"); return p && p.image ? { url: p.image, existing: true } : null; });
+  // The seller's own animals — offered as sire/dam suggestions so a clutch of
+  // siblings can reuse the parents' morph + photo instead of re-entering them.
+  const [myAnimals, setMyAnimals] = useState([]);
+  useEffect(() => {
+    if (!user?.id) return;
+    let on = true;
+    loadApi().then(api => api.fetchMyListings(user.id))
+      .then(rows => {
+        if (!on) return;
+        setMyAnimals((rows || [])
+          .filter(l => l.id !== editListing?.id)
+          .map(l => ({ id: l.id, name: l.title || l.common || l.species || "", image: (l.images && l.images[0]) || l.image || null }))
+          .filter(a => a.name));
+      })
+      .catch(() => {});
+    return () => { on = false; };
+  }, [user?.id]);
   const [depositVal, setDepositVal] = useState(editListing?.deposit != null ? String(editListing.deposit) : "");
   const [price, setPrice] = useState(editListing?.price != null ? String(editListing.price) : (draft.price || ""));
   const [saleMode, setSaleMode] = useState("fixed");   // "fixed" | "auction" — editing keeps fixed
@@ -5438,18 +5482,14 @@ function SellScreen({ t, lang, go, user, editListing }) {
         {!isEquipment && (
         <FormBlock label={lang === "it" ? "Genitori" : "Parents"}>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.sire}</div>
-              <input className="form-input" value={sire} onChange={e => setSire(e.target.value)} placeholder={lang === "it" ? "Morph del padre" : "Sire morph"} />
-              <ParentPhotoPicker photo={sirePhoto} setPhoto={setSirePhoto} lang={lang} />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.dam}</div>
-              <input className="form-input" value={dam} onChange={e => setDam(e.target.value)} placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
-              <ParentPhotoPicker photo={damPhoto} setPhoto={setDamPhoto} lang={lang} />
-            </div>
+            <ParentField label={t.sire} value={sire} setValue={setSire} photo={sirePhoto} setPhoto={setSirePhoto}
+                         candidates={myAnimals} listId="hm-parent-sire" lang={lang}
+                         placeholder={lang === "it" ? "Morph del padre" : "Sire morph"} />
+            <ParentField label={t.dam} value={dam} setValue={setDam} photo={damPhoto} setPhoto={setDamPhoto}
+                         candidates={myAnimals} listId="hm-parent-dam" lang={lang}
+                         placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
           </div>
-          <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue con foto e morph dei genitori." : "Optional — showcase the bloodline with parent photos & morphs."}</p>
+          <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue. Scrivi il morph o scegli un animale dalla tua collezione (foto inclusa)." : "Optional — showcase the bloodline. Type the morph, or pick an animal from your collection (photo included)."}</p>
         </FormBlock>
         )}
 
@@ -5791,6 +5831,21 @@ function DeliveryCard({ icon, title, subtitle, checked, onChange }) {
 /* ═══════════════════════════════════════════════════════════════════
    CHAT
    ═════════════════════════════════════════════════════════════════ */
+// Short time label for a single message: just the clock time if it's today,
+// otherwise day + month + time (and year if it's a past year).
+function msgTime(iso, lang) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const now = new Date();
+  const loc = lang === "it" ? "it-IT" : "en-GB";
+  const time = d.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === now.toDateString()) return time;
+  const dateOpts = { day: "numeric", month: "short" };
+  if (d.getFullYear() !== now.getFullYear()) dateOpts.year = "numeric";
+  return `${d.toLocaleDateString(loc, dateOpts)}, ${time}`;
+}
+
 function ChatList({ t, go, user }) {
   const [threads, setThreads] = useState(null);
   const [err, setErr] = useState("");
@@ -5949,7 +6004,10 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
           const senderName = mine ? t.chatYou : (chat?.iAmSeller ? (chat?.buyerName || t.chatBuyer) : (target.seller || t.chatSeller));
           return (
             <div key={m.id} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
-              <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider mb-0.5 px-1">{senderName}</span>
+              <div className={`flex items-baseline gap-1.5 mb-0.5 px-1 ${mine ? "flex-row-reverse" : ""}`}>
+                <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider">{senderName}</span>
+                <span className="text-[9px] text-stone-600 font-medium">{msgTime(m.created_at, lang)}</span>
+              </div>
               <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
                 mine ? "bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"
               }`}>
@@ -5995,7 +6053,7 @@ function Profile({ t, go, lang, user, handleLogout, favorites }) {
           </div>
           <div>
             <h1 className="font-display text-2xl text-stone-50 tracking-tight flex items-center gap-2">
-              {user?.name || "Anita Pioch"} {user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
+              {user?.name || "Anita Pioch"} {KYC_ENABLED && user?.verified && <ShieldCheck size={16} className="text-sky-400" />}
             </h1>
             <p className="text-xs text-stone-400 mt-0.5">{t.verifiedBreeder}{user?.region ? " · " + user.region : ""}</p>
             <button onClick={() => go("editprofile")} className="text-[11px] text-amber-400 font-bold hover:underline mt-1">
@@ -6641,7 +6699,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
   const [subcatId, setSubcatId] = useState("");
   const [speciesVal, setSpeciesVal] = useState("");
   const [name, setName] = useState("");
-  const [sex, setSex] = useState("M");
+  const [sex, setSex] = useState("U");
   const [born, setBorn] = useState("");
   const [bornPrecision, setBornPrecision] = useState("month");
   const [weight, setWeight] = useState("");
@@ -8077,7 +8135,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   // this page, so sellers can post it in an Instagram story etc. Uses the native
   // share sheet on mobile, falls back to copying the link.
   const shareStore = async () => {
-    const url = `${window.location.origin}/?s=${encodeURIComponent(sellerName)}`;
+    const url = `${window.location.origin}/?s=${encodeURIComponent(storeTitle)}`;
     const text = lang === "it" ? `Scopri ${storeTitle} su HerpMarket 🦎` : `Check out ${storeTitle} on HerpMarket 🦎`;
     if (navigator.share) {
       try { await navigator.share({ title: storeTitle, text, url }); } catch (e) { /* cancelled */ }
@@ -8110,7 +8168,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
           <div className="flex-1 pb-1 min-w-0">
             <h1 className="font-display text-2xl md:text-3xl text-stone-50 tracking-tight flex items-center gap-2 leading-tight">
               <span className="truncate">{storeTitle}</span>
-              {data.verified && <ShieldCheck size={20} className="text-sky-400 shrink-0" />}
+              {KYC_ENABLED && data.verified && <ShieldCheck size={20} className="text-sky-400 shrink-0" />}
             </h1>
             <div className="flex items-center gap-1.5 text-stone-400 text-xs md:text-sm mt-1">
               <MapPin size={12} />{countryByCode(data.country).flag} {data.city}, {data.region}

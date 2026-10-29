@@ -341,13 +341,16 @@ export async function markListingSold(opts) {
 
 // People who messaged the seller about a listing — candidates for "sold to user".
 export async function fetchListingInquirers(listingId) {
+  // Read the buyer's name straight off the thread (captured at creation). We
+  // cannot join profiles here: RLS only lets a user read their OWN profile, so
+  // the buyer's display_name comes back null and we'd fall back to a raw id.
   const { data, error } = await supabase.from('threads')
-    .select('buyer_id, profiles:buyer_id(id, display_name)')
+    .select('buyer_id, buyer_name')
     .eq('listing_id', listingId);
   if (error) throw error;
   // de-dup by buyer
   const seen = {};
-  (data || []).forEach(t => { if (t.buyer_id && !seen[t.buyer_id]) seen[t.buyer_id] = t.profiles?.display_name || t.buyer_id; });
+  (data || []).forEach(t => { if (t.buyer_id && !seen[t.buyer_id]) seen[t.buyer_id] = t.buyer_name || 'HerpMarket user'; });
   return Object.entries(seen).map(([id, name]) => ({ id, name }));
 }
 
@@ -560,7 +563,7 @@ export async function fetchMyThreads(userId) {
   const { data: mySellers } = await supabase.from('sellers').select('id').eq('owner_id', userId);
   const sellerIds = (mySellers || []).map(s => s.id);
   let q = supabase.from('threads')
-    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id), buyer:buyer_id(id, display_name)')
+    .select('*, listings(*, sellers(*)), messages(body, created_at, sender_id, read_at), buyer:buyer_id(id, display_name)')
     .order('created_at', { ascending: false });
   // buyer_id = me OR seller_id in my seller ids
   const orParts = [`buyer_id.eq.${userId}`];
@@ -667,8 +670,10 @@ export async function getOrCreateSeller(user) {
 
 // ── SELLERS ─────────────────────────────────────────────────────────────────
 export async function fetchSeller(name) {
+  // Quote so names with spaces/commas/parens don't break the .or() syntax.
+  const safe = `"${String(name).replace(/"/g, '')}"`;
   const { data, error } = await supabase.from('sellers').select('*')
-    .or(`name.eq.${name},store_name.eq.${name}`).limit(1).maybeSingle();
+    .or(`name.eq.${safe},store_name.eq.${safe}`).limit(1).maybeSingle();
   if (error) throw error;
   return mapSeller(data);
 }
