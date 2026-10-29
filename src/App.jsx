@@ -2283,6 +2283,29 @@ function VeronaThanksBanner({ lang }) {
   );
 }
 
+// Seasonal Halloween touch. Date-gated so it turns itself ON for Halloween week
+// and OFF automatically afterwards — no manual revert needed.
+function isHalloweenSeason() {
+  try {
+    const n = new Date();
+    return (n.getMonth() === 9 && n.getDate() >= 26) || (n.getMonth() === 10 && n.getDate() === 1);
+  } catch (e) { return false; }
+}
+function HalloweenBanner({ lang }) {
+  if (!isHalloweenSeason()) return null;
+  return (
+    <div className="mx-4 md:mx-auto md:max-w-3xl mt-3 rounded-xl px-4 py-2.5 bg-gradient-to-r from-orange-600/25 via-stone-900 to-stone-900 ring-1 ring-orange-500/30 flex items-center gap-2.5">
+      <span className="text-lg leading-none">🎃</span>
+      <p className="text-[12px] md:text-sm text-orange-200/90 font-semibold leading-snug">
+        {lang === "it"
+          ? "Spooky season! Trova il tuo piccolo mostro su HerpMarket 🦎🐍🖤"
+          : "Spooky season! Find your little monster on HerpMarket 🦎🐍🖤"}
+      </p>
+      <span className="text-lg leading-none ml-auto">🦇</span>
+    </div>
+  );
+}
+
 function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, user, setAuthModal, requireAuth, listingsData, listingsStatus, retryListings }) {
   const userRegion = user?.region || "";
   // Use real data when we have it. While loading/erroring with nothing yet,
@@ -2310,6 +2333,8 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
     <div className="max-w-7xl mx-auto w-full">
       {/* Temporary post-Verona thank-you banner (remove when no longer needed) */}
       <VeronaThanksBanner lang={lang} />
+      {/* Seasonal Halloween banner — auto-hides after Nov 1 */}
+      <HalloweenBanner lang={lang} />
       {/* Mobile header */}
       <header className="md:hidden px-5 pt-14 pb-5 bg-gradient-to-b from-stone-900 to-stone-950 border-b border-stone-800/60">
         <div className="flex items-start justify-between gap-3">
