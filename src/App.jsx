@@ -3472,20 +3472,40 @@ function ParentPhotoPicker({ photo, setPhoto, lang }) {
    re-typed and re-uploaded each time. Below it, the morph text and photo can
    still be entered/edited by hand for parents not in the collection. */
 function ParentField({ label, value, setValue, photo, setPhoto, candidates, placeholder, lang }) {
-  const pick = (id) => {
-    const a = candidates.find(c => c.id === id);
-    if (!a) return;
+  const [open, setOpen] = useState(false);
+  const pick = (a) => {
     setValue(a.name);
     if (a.image) setPhoto({ url: a.image, existing: true });
+    setOpen(false);
   };
   return (
     <div>
       <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{label}</div>
       {candidates.length > 0 && (
-        <select className="form-input mb-2 text-amber-300" value="" onChange={e => pick(e.target.value)}>
-          <option value="" className="text-stone-400">{lang === "it" ? "↓ Scegli dalla collezione" : "↓ Pick from your collection"}</option>
-          {candidates.map(c => <option key={c.id} value={c.id} className="text-stone-100">{c.name}</option>)}
-        </select>
+        <div className="relative mb-2">
+          <button type="button" onClick={() => setOpen(o => !o)}
+                  className="form-input w-full flex items-center justify-between text-left text-amber-300">
+            <span className="truncate">{lang === "it" ? "Scegli dalla collezione" : "Pick from collection"}</span>
+            <span className={`shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+          </button>
+          {open && (
+            <>
+              <button type="button" aria-hidden="true" onClick={() => setOpen(false)}
+                      className="fixed inset-0 z-10 cursor-default" />
+              <div className="absolute z-20 mt-1 left-0 right-0 max-h-56 overflow-y-auto bg-stone-900 ring-1 ring-stone-700 rounded-lg shadow-2xl py-1">
+                {candidates.map(c => (
+                  <button key={c.id} type="button" onClick={() => pick(c)}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 hover:bg-stone-800 text-left">
+                    {c.image
+                      ? <img src={c.image} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                      : <div className="w-8 h-8 rounded bg-stone-800 shrink-0" />}
+                    <span className="text-sm text-stone-100 truncate">{c.name}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
       <input className="form-input" value={value} onChange={e => setValue(e.target.value)} placeholder={placeholder} />
       <ParentPhotoPicker photo={photo} setPhoto={setPhoto} lang={lang} />
