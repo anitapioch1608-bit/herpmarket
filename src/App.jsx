@@ -3466,26 +3466,28 @@ function ParentPhotoPicker({ photo, setPhoto, lang }) {
   );
 }
 
-/* Parent (sire/dam) field with autocomplete from the seller's own animals.
-   Typing suggests animals in the seller's collection; picking one autofills its
-   photo, so a whole clutch of siblings doesn't need the parents re-typed and
-   re-uploaded each time. Free text still works for parents not in the collection. */
-function ParentField({ label, value, setValue, photo, setPhoto, candidates, listId, placeholder, lang }) {
-  const onChange = (v) => {
-    setValue(v);
-    const match = candidates.find(c => c.name === v);
-    if (match && match.image) setPhoto({ url: match.image, existing: true });
+/* Parent (sire/dam) field. A visible dropdown lets the seller pick a parent
+   straight from their own collection — choosing one fills in the morph and the
+   photo automatically, so a whole clutch of siblings doesn't need the parents
+   re-typed and re-uploaded each time. Below it, the morph text and photo can
+   still be entered/edited by hand for parents not in the collection. */
+function ParentField({ label, value, setValue, photo, setPhoto, candidates, placeholder, lang }) {
+  const pick = (id) => {
+    const a = candidates.find(c => c.id === id);
+    if (!a) return;
+    setValue(a.name);
+    if (a.image) setPhoto({ url: a.image, existing: true });
   };
   return (
     <div>
       <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{label}</div>
-      <input className="form-input" list={candidates.length ? listId : undefined} value={value}
-             onChange={e => onChange(e.target.value)} placeholder={placeholder} />
       {candidates.length > 0 && (
-        <datalist id={listId}>
-          {candidates.map(c => <option key={c.id} value={c.name} />)}
-        </datalist>
+        <select className="form-input mb-2 text-amber-300" value="" onChange={e => pick(e.target.value)}>
+          <option value="" className="text-stone-400">{lang === "it" ? "↓ Scegli dalla collezione" : "↓ Pick from your collection"}</option>
+          {candidates.map(c => <option key={c.id} value={c.id} className="text-stone-100">{c.name}</option>)}
+        </select>
       )}
+      <input className="form-input" value={value} onChange={e => setValue(e.target.value)} placeholder={placeholder} />
       <ParentPhotoPicker photo={photo} setPhoto={setPhoto} lang={lang} />
     </div>
   );
@@ -4858,7 +4860,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
       .then(rows => {
         if (!on) return;
         setMyAnimals((rows || [])
-          .filter(l => l.id !== editListing?.id)
+          // Parents come from your collection (held/breeder animals), not the
+          // babies you're currently selling.
+          .filter(l => l.id !== editListing?.id && (l.status === "held" || l.status === "breeder"))
           .map(l => ({ id: l.id, name: l.title || l.common || l.species || "", image: (l.images && l.images[0]) || l.image || null }))
           .filter(a => a.name));
       })
@@ -5483,10 +5487,10 @@ function SellScreen({ t, lang, go, user, editListing }) {
         <FormBlock label={lang === "it" ? "Genitori" : "Parents"}>
           <div className="grid grid-cols-2 gap-3">
             <ParentField label={t.sire} value={sire} setValue={setSire} photo={sirePhoto} setPhoto={setSirePhoto}
-                         candidates={myAnimals} listId="hm-parent-sire" lang={lang}
+                         candidates={myAnimals} lang={lang}
                          placeholder={lang === "it" ? "Morph del padre" : "Sire morph"} />
             <ParentField label={t.dam} value={dam} setValue={setDam} photo={damPhoto} setPhoto={setDamPhoto}
-                         candidates={myAnimals} listId="hm-parent-dam" lang={lang}
+                         candidates={myAnimals} lang={lang}
                          placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
           </div>
           <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue. Scrivi il morph o scegli un animale dalla tua collezione (foto inclusa)." : "Optional — showcase the bloodline. Type the morph, or pick an animal from your collection (photo included)."}</p>
