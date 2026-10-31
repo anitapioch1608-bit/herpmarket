@@ -678,6 +678,15 @@ export async function fetchSeller(name) {
   return mapSeller(data);
 }
 
+// Fetch a seller by its unique id (used for clean, collision-proof store
+// share links: ?s=<id>). A plain id avoids the special characters (spaces, |)
+// that break a store-name link in places like Instagram's story link sticker.
+export async function fetchSellerById(id) {
+  const { data, error } = await supabase.from('sellers').select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return mapSeller(data);
+}
+
 // ── EXPOS ───────────────────────────────────────────────────────────────────
 export async function fetchExpos() {
   const { data, error } = await supabase.from('expos').select('*').order('date_iso');

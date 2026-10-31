@@ -1650,7 +1650,15 @@ export default function HerpMarket() {
       const s = params.get("s");
       const l = params.get("l");
       if (s) {
-        go("seller", s);
+        // New links use the seller's id (clean + collision-proof); resolve it
+        // to the seller and open their page. Old name-based links still work.
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) {
+          loadApi().then(api => api.fetchSellerById(s))
+            .then(seller => { if (seller) go("seller", seller.storeName || seller.name); })
+            .catch(() => {});
+        } else {
+          go("seller", s);
+        }
       } else if (l) {
         loadApi().then(api => api.fetchListingById(l))
           .then(listing => { if (listing) go("detail", listing); })
@@ -5958,26 +5966,20 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
   const [err, setErr] = useState("");
   const scrollRef = useRef(null);
 
-  // Resolve (or create) the real thread for this listing, then load its messages.
+  // Load an existing conversation's messages. A brand-new conversation is NOT
+  // created here — only when the first message is actually sent (see send()),
+  // so just opening the chat from a listing never leaves an empty thread behind.
   useEffect(() => {
     if (!user?.id) return;
     let on = true;
     (async () => {
       try {
+        if (!threadId) { if (on) setLoading(false); return; }
         const api = await loadApi();
-        let tid = threadId;
-        if (!tid) {
-          // Need the seller_id of this listing to open a thread.
-          const sellerId = target.sellerId || target.seller_id;
-          if (!sellerId || !target.id) { if (on) { setErr(t.chatNoThread); setLoading(false); } return; }
-          const thread = await api.getOrCreateThread(target.id, sellerId, user.id);
-          tid = thread.id;
-          if (on) setThreadId(tid);
-        }
-        const msgs = await api.fetchMessages(tid);
+        const msgs = await api.fetchMessages(threadId);
         if (on) { setMessages(msgs); setLoading(false); }
         // Mark the other party's messages as read now that the thread is open.
-        try { await api.markThreadRead(tid, user.id); if (on && onRead) onRead(); } catch {}
+        try { await api.markThreadRead(threadId, user.id); if (on && onRead) onRead(); } catch {}
       } catch (e) { if (on) { setErr(e?.message || "Error"); setLoading(false); } }
     })();
     return () => { on = false; };
@@ -6004,14 +6006,24 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
 
   const send = async () => {
     const body = input.trim();
-    if (!body || !threadId || !user?.id) return;
+    if (!body || !user?.id) return;
     setInput("");
     // Optimistic add; real row arrives via subscription (dedup by id).
     const optimistic = { id: `tmp-${Date.now()}`, sender_id: user.id, body, created_at: new Date().toISOString() };
     setMessages(prev => [...prev, optimistic]);
     try {
       const api = await loadApi();
-      const saved = await api.sendMessage(threadId, user.id, body);
+      // Create the thread lazily on the first message — so simply opening a chat
+      // from a listing (without writing) never leaves an empty conversation.
+      let tid = threadId;
+      if (!tid) {
+        const sellerId = target.sellerId || target.seller_id;
+        if (!sellerId || !target.id) throw new Error(t.chatNoThread || "Error");
+        const thread = await api.getOrCreateThread(target.id, sellerId, user.id);
+        tid = thread.id;
+        setThreadId(tid);
+      }
+      const saved = await api.sendMessage(tid, user.id, body);
       setMessages(prev => prev.map(m => m.id === optimistic.id ? saved : m));
     } catch (e) {
       setErr(e?.message || "Error");
@@ -6021,6 +6033,10 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
       setInput(prev => prev ? prev : body);
     }
   };
+
+  // The composer is usable as soon as we can reach a seller; the thread row
+  // itself is created on the first send, not when the chat opens.
+  const canSend = !!(threadId || (target?.id && (target.sellerId || target.seller_id)));
 
   return (
     <div className="max-w-3xl mx-auto w-full h-full flex flex-col">
@@ -6078,9 +6094,9 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
       <div className="px-3 py-3 border-t border-stone-800 flex gap-2 bg-stone-950">
         <input value={input} onChange={e => setInput(e.target.value)}
                onKeyDown={e => e.key === "Enter" && send()}
-               placeholder={t.typeMessage} disabled={!threadId}
+               placeholder={t.typeMessage} disabled={!canSend}
                className="flex-1 bg-stone-900 ring-1 ring-stone-800 rounded-full px-4 py-2.5 text-sm text-stone-100 outline-none focus:ring-amber-500/60 transition-all disabled:opacity-50" />
-        <button onClick={send} disabled={!threadId}
+        <button onClick={send} disabled={!canSend}
                 className="bg-amber-500 hover:bg-amber-400 disabled:bg-stone-700 text-stone-950 p-2.5 rounded-full transition-colors">
           <Send size={18} />
         </button>
@@ -8184,7 +8200,10 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
   // this page, so sellers can post it in an Instagram story etc. Uses the native
   // share sheet on mobile, falls back to copying the link.
   const shareStore = async () => {
-    const url = `${window.location.origin}/?s=${encodeURIComponent(storeTitle)}`;
+    const shareId = data.id || reviewSellerId;
+    const url = shareId
+      ? `${window.location.origin}/?s=${shareId}`
+      : `${window.location.origin}/?s=${encodeURIComponent(storeTitle)}`;
     const text = lang === "it" ? `Scopri ${storeTitle} su HerpMarket 🦎` : `Check out ${storeTitle} on HerpMarket 🦎`;
     if (navigator.share) {
       try { await navigator.share({ title: storeTitle, text, url }); } catch (e) { /* cancelled */ }
