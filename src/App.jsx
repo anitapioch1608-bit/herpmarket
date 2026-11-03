@@ -1032,6 +1032,7 @@ const CATEGORIES = [
   { id: "inverts",     it: "Invertebrati",en: "Invertebrates",emoji: "🕷️" },
   { id: "exotics",     it: "Altri esotici",en: "Other exotics", emoji: "🦔" },
   { id: "equipment",   it: "Attrezzatura", en: "Equipment",     emoji: "🧰" },
+  { id: "livefood",    it: "Cibo vivo",    en: "Live food",     emoji: "🦗" },
 ];
 
 /* Equipment listings carry no species / morph / CITES. The chosen TYPE is
@@ -1057,6 +1058,26 @@ const eqTypeLabel = (id, lang) => EQUIPMENT_TYPES.find(x => x.id === id)?.[lang]
 const eqTypeIdFromLabel = (label) => EQUIPMENT_TYPES.find(x => x.it === label || x.en === label)?.id || "";
 const eqCondLabel = (id, lang) => EQUIPMENT_CONDITIONS.find(x => x.id === id)?.[lang] || id || "";
 const eqCondIdFromLabel = (label) => EQUIPMENT_CONDITIONS.find(x => x.it === label || x.en === label)?.id || "";
+
+/* Live-food (feeder) listings: crickets, roaches, worms, clean-up crews, etc.
+   Like equipment they carry no species / morph / sex / CITES. The chosen TYPE
+   is stored in `common`; an optional FORMAT/size (e.g. "100 pz", "taglia media")
+   rides in `traits` as the first chip, so it renders and round-trips on edit. */
+const LIVEFOOD_TYPES = [
+  { id: "grilli",        it: "Grilli",                    en: "Crickets" },
+  { id: "blatte",        it: "Blatte (dubia, ecc.)",      en: "Roaches (dubia, etc.)" },
+  { id: "locuste",       it: "Locuste / cavallette",      en: "Locusts" },
+  { id: "camole_farina", it: "Camole della farina",       en: "Mealworms" },
+  { id: "zophobas",      it: "Zophobas (camole giganti)", en: "Superworms (zophobas)" },
+  { id: "camole_miele",  it: "Camole del miele",          en: "Waxworms" },
+  { id: "coleotteri",    it: "Coleotteri / larve",        en: "Beetles / larvae" },
+  { id: "moscerini",     it: "Moscerini (drosophila)",    en: "Fruit flies (drosophila)" },
+  { id: "isopodi",       it: "Isopodi (clean-up)",        en: "Isopods (clean-up)" },
+  { id: "collemboli",    it: "Collemboli (clean-up)",     en: "Springtails (clean-up)" },
+  { id: "altro",         it: "Altro",                     en: "Other" },
+];
+const lfTypeLabel = (id, lang) => LIVEFOOD_TYPES.find(x => x.id === id)?.[lang] || id || "";
+const lfTypeIdFromLabel = (label) => LIVEFOOD_TYPES.find(x => x.it === label || x.en === label)?.id || "";
 
 const REGIONS = [
   "Tutte le regioni","Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna",
@@ -2244,7 +2265,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             ) : (
               <>
                 <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
-                <div className="text-[9px] text-stone-500 mt-1 truncate">{item.category === "equipment" ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {[item.city, item.region].filter(Boolean).join(", ")}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{(item.category === "equipment" || item.category === "livefood") ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {[item.city, item.region].filter(Boolean).join(", ")}</div>
               </>
             )}
           </div>
@@ -3850,7 +3871,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
       {/* Specs grid */}
       <div className="px-5 mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
-        {a.category === "equipment" ? (
+        {(a.category === "equipment" || a.category === "livefood") ? (
           a.common && <Spec label={lang === "it" ? "Tipo" : "Type"}>{a.common}</Spec>
         ) : (
           <>
@@ -4862,6 +4883,9 @@ const saveLastExpos = (ids) => {
 
 function SellScreen({ t, lang, go, user, editListing }) {
   const isEdit = !!editListing;
+  // Editing an animal that lives in the breeder's collection (held/breeder):
+  // it's not on the market, so a price must NOT be forced on it.
+  const isCollectionEdit = isEdit && (editListing?.status === "held" || editListing?.status === "breeder");
   // Drafts only apply to NEW listings — never resurrect a draft over an edit.
   const draft = useMemo(() => (isEdit ? {} : loadSellDraft()), [isEdit]);
   const hadDraft = !isEdit && Object.keys(draft).length > 0;
@@ -4996,10 +5020,12 @@ function SellScreen({ t, lang, go, user, editListing }) {
     if (isEquipment) {
       if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di attrezzatura" : "Choose the equipment type"); return; }
       if (!condition) { setSaveErr(lang === "it" ? "Scegli la condizione" : "Choose the condition"); return; }
+    } else if (isLiveFood) {
+      if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di cibo vivo" : "Choose the live food type"); return; }
     } else if (!speciesVal.trim() || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
     const isAuction = saleMode === "auction";
     const basePrice = isAuction ? Number(startPrice) : Number(price);
-    if (!basePrice || basePrice <= 0) { setSaveErr(t.needPrice); return; }
+    if (!isCollectionEdit && (!basePrice || basePrice <= 0)) { setSaveErr(t.needPrice); return; }
     if (isAuction && reserve && Number(reserve) < basePrice) { setSaveErr(t.reserveTooLow); return; }
     if (!user?.id) { setSaveErr(t.needLoginPub); return; }
     if (!region || !region.trim()) { setSaveErr(t.needRegion); return; }
@@ -5032,10 +5058,10 @@ function SellScreen({ t, lang, go, user, editListing }) {
         if (p.file) { const [u] = await api.uploadListingPhotos([p.file], user.id); return u || null; }
         return p.url || null;
       };
-      const _sireImg = isEquipment ? null : await uploadParent(sirePhoto);
-      const _damImg  = isEquipment ? null : await uploadParent(damPhoto);
+      const _sireImg = isGoods ? null : await uploadParent(sirePhoto);
+      const _damImg  = isGoods ? null : await uploadParent(damPhoto);
       const _parents = [];
-      if (!isEquipment) {
+      if (!isGoods) {
         if (sire.trim() || _sireImg) _parents.push({ role: "sire", label: sire.trim(), image: _sireImg });
         if (dam.trim()  || _damImg)  _parents.push({ role: "dam",  label: dam.trim(),  image: _damImg });
       }
@@ -5051,6 +5077,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
         speciesOut = null;
         traits = [{ name: eqCondLabel(condition, "it"), cls: "wild" }];
         if (brand.trim()) traits.push({ name: brand.trim(), cls: "line" });
+      } else if (isLiveFood) {
+        // Live food: TYPE -> common; optional FORMAT/size -> first trait chip.
+        common = lfTypeLabel(subcatId, "it");
+        speciesOut = null;
+        traits = brand.trim() ? [{ name: brand.trim(), cls: "line" }] : [];
       } else if (isExotic) {
         speciesOut = speciesVal.trim();
         common = speciesVal.trim();
@@ -5071,15 +5102,15 @@ function SellScreen({ t, lang, go, user, editListing }) {
       }
       const fields = {
         species: speciesOut, common, title: headline, category: catId,
-        traits, price: basePrice, deposit: (depositVal && Number(depositVal) > 0) ? Number(depositVal) : null,
-        sex: isEquipment ? null : sex,
-        ageMonths: isEquipment ? null : monthsSince(born),
-        weight: isEquipment ? null : (weight.trim() || null),
-        breederCode: isEquipment ? null : (breederCode.trim() || null),
-        birthDate: isEquipment ? null : ((born || "").trim() || null),
-        citesListed: isEquipment ? false : isCites,
+        traits, price: (isCollectionEdit && !(basePrice > 0)) ? null : basePrice, deposit: (depositVal && Number(depositVal) > 0) ? Number(depositVal) : null,
+        sex: isGoods ? null : sex,
+        ageMonths: isGoods ? null : monthsSince(born),
+        weight: isGoods ? null : (weight.trim() || null),
+        breederCode: isGoods ? null : (breederCode.trim() || null),
+        birthDate: isGoods ? null : ((born || "").trim() || null),
+        citesListed: isGoods ? false : isCites,
         country, region, city: null,
-        sire: isEquipment ? null : (sire.trim() || null), dam: isEquipment ? null : (dam.trim() || null), parents: _parents, desc: desc.trim(),
+        sire: isGoods ? null : (sire.trim() || null), dam: isGoods ? null : (dam.trim() || null), parents: _parents, desc: desc.trim(),
         image: urls[0] || null, images: urls,
         // Delivery options chosen by the seller (shared by create + edit).
         shipping: !!shipping,
@@ -5111,12 +5142,20 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // Cascading category → subcategory → species
   const [catId, setCatId] = useState(editListing?.category || draft.catId || "");
   const _editEquip = isEdit && editListing?.category === "equipment";
-  const [subcatId, setSubcatId] = useState(_editEquip ? eqTypeIdFromLabel(editListing.common) : (draft.subcatId || ""));
+  const _editLF = isEdit && editListing?.category === "livefood";
+  const [subcatId, setSubcatId] = useState(
+    _editEquip ? eqTypeIdFromLabel(editListing.common)
+    : _editLF ? lfTypeIdFromLabel(editListing.common)
+    : (draft.subcatId || ""));
   const [speciesVal, setSpeciesVal] = useState(editListing?.species || draft.speciesVal || "");
-  // Equipment-only fields (condition + brand). Stored as the first two trait
-  // chips at publish, so they round-trip when editing an equipment listing.
+  // Equipment: condition + brand ride in the first two trait chips.
+  // Live food: the optional format/size rides in the first trait chip (reuses
+  // the `brand` state). Both round-trip when editing.
   const [condition, setCondition] = useState(_editEquip ? eqCondIdFromLabel(editListing.traits?.[0]?.name) : "");
-  const [brand, setBrand] = useState(_editEquip ? (editListing.traits?.[1]?.name || "") : "");
+  const [brand, setBrand] = useState(
+    _editEquip ? (editListing.traits?.[1]?.name || "")
+    : _editLF ? (editListing.traits?.[0]?.name || "")
+    : "");
   // Country → region
   const [country, setCountry] = useState(editListing?.country || draft.country || "IT");
   const [region, setRegion] = useState(editListing?.region || draft.region || "");   // empty until chosen/prefilled — prevents silent wrong default
@@ -5190,8 +5229,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // New listing kinds that skip the herp cascade: equipment (no species/morph/
   // CITES) and "other exotics" (free-text species, no morphs).
   const isEquipment = catId === "equipment";
+  const isLiveFood = catId === "livefood";
   const isExotic = catId === "exotics";
-  const isSimple = isEquipment || isExotic;
+  // Goods = non-animal listings (equipment, live food): no species/sex/morph/CITES.
+  const isGoods = isEquipment || isLiveFood;
+  const isSimple = isGoods || isExotic;
 
   if (success) {
     return (
@@ -5322,6 +5364,22 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </>
           )}
 
+          {/* Live food: feeder type + optional format/size (no condition/morphs) */}
+          {isLiveFood && (
+            <>
+              <FormBlock label={lang === "it" ? "Tipo di cibo vivo" : "Live food type"} required done={!!subcatId}>
+                <select className="form-input" value={subcatId} onChange={e => setSubcatId(e.target.value)}>
+                  <option value="">{lang === "it" ? "Scegli tipo" : "Choose type"}</option>
+                  {LIVEFOOD_TYPES.map(x => <option key={x.id} value={x.id}>{x[lang]}</option>)}
+                </select>
+              </FormBlock>
+              <FormBlock label={lang === "it" ? "Formato / taglia (facoltativo)" : "Format / size (optional)"}>
+                <input className="form-input" value={brand} onChange={e => setBrand(e.target.value)}
+                       placeholder={lang === "it" ? "es. 100 pz, taglia media, 50 g" : "e.g. 100 pcs, medium, 50 g"} />
+              </FormBlock>
+            </>
+          )}
+
           {/* Other exotics: free-text species, no morphs */}
           {isExotic && (
             <FormBlock label={lang === "it" ? "Specie / animale" : "Species / animal"}
@@ -5377,8 +5435,8 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </FormBlock>
           )}
 
-          {/* Sex — animals & other exotics, not equipment */}
-          {!isEquipment && (
+          {/* Sex — animals & other exotics, not goods (equipment/live food) */}
+          {!isGoods && (
             <FormBlock label={t.sex}>
               <select className="form-input" value={sex} onChange={e => setSex(e.target.value)}>
                 <option value="M">{t.male}</option><option value="F">{t.female}</option><option value="P">{t.pair}</option><option value="U">{t.unsexed}</option>
@@ -5423,9 +5481,18 @@ function SellScreen({ t, lang, go, user, editListing }) {
                      startPrice={startPrice} setStartPrice={setStartPrice}
                      reserve={reserve} setReserve={setReserve}
                      durationDays={durationDays} setDurationDays={setDurationDays}
-                     done={saleMode === "auction" ? Number(startPrice) > 0 : Number(price) > 0} />
+                     done={isCollectionEdit || (saleMode === "auction" ? Number(startPrice) > 0 : Number(price) > 0)} />
 
-        {!isEquipment && (<>
+        {isCollectionEdit && (
+          <p className="text-[11px] text-stone-400 -mt-3 flex items-start gap-1.5">
+            <Info size={13} className="text-amber-400 shrink-0 mt-0.5" />
+            {lang === "it"
+              ? "Questo animale è nella tua collezione (non in vendita): il prezzo è facoltativo. Lascialo vuoto per tenerlo fuori dal mercato."
+              : "This animal is in your collection (not for sale): the price is optional. Leave it empty to keep it off the market."}
+          </p>
+        )}
+
+        {!isGoods && (<>
         <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
           {/* Precision chooser — some breeders only know the year or month. */}
           <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
@@ -5536,7 +5603,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
           <textarea rows="4" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
         </FormBlock>
 
-        {!isEquipment && (
+        {!isGoods && (
         <FormBlock label={lang === "it" ? "Genitori" : "Parents"}>
           <div className="grid grid-cols-2 gap-3">
             <ParentField label={t.sire} value={sire} setValue={setSire} photo={sirePhoto} setPhoto={setSirePhoto}
@@ -5550,7 +5617,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
         </FormBlock>
         )}
 
-        {!isEquipment && (
+        {!isGoods && (
         <FormBlock label={lang === "it" ? "Acconto per la prenotazione (facoltativo)" : "Reservation deposit (optional)"}>
           <div className="flex items-center gap-2"><span className="text-stone-400 text-sm">€</span>
             <input type="number" min="0" className="form-input flex-1" value={depositVal} onChange={e => setDepositVal(e.target.value)} placeholder={lang === "it" ? "Lascia vuoto = da concordare" : "Leave empty = to be agreed"} /></div>
@@ -5559,7 +5626,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
         )}
 
         {/* ─── Delivery options ─── */}
-        <DeliverySection lang={lang} t={t} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0}
+        <DeliverySection lang={lang} t={t} goods={isGoods} itemPrice={Number(saleMode === "auction" ? startPrice : price) || 0}
                          localPickup={localPickup} setLocalPickup={setLocalPickup}
                          expoPickup={expoPickup} setExpoPickup={setExpoPickup}
                          shipping={shipping} setShipping={setShipping}
@@ -5577,8 +5644,8 @@ function SellScreen({ t, lang, go, user, editListing }) {
               {t.termsLegal}
             </button>
             {lang === "it"
-              ? ", in particolare le regole per i venditori, e confermo di essere il legittimo detentore di questo animale."
-              : ", in particular the seller rules, and confirm I am the lawful keeper of this animal."}
+              ? (isGoods ? ", in particolare le regole per i venditori." : ", in particolare le regole per i venditori, e confermo di essere il legittimo detentore di questo animale.")
+              : (isGoods ? ", in particular the seller rules." : ", in particular the seller rules, and confirm I am the lawful keeper of this animal.")}
           </span>
         </label>
         )}
@@ -5709,7 +5776,7 @@ function SellPricing({ t, lang, price, setPrice, mode, setMode, startPrice, setS
    Expo pickup is positioned as HerpMarket's signature feature: amber accent,
    highlighted card, deposit explanation; all upcoming expos available
    as multi-select chips with date right on the chip.                       */
-function DeliverySection({ lang, t, itemPrice = 0, localPickup, setLocalPickup, expoPickup, setExpoPickup, shipping, setShipping, shippingCost, setShippingCost, selectedExpoIds, toggleExpo }) {
+function DeliverySection({ lang, t, goods = false, itemPrice = 0, localPickup, setLocalPickup, expoPickup, setExpoPickup, shipping, setShipping, shippingCost, setShippingCost, selectedExpoIds, toggleExpo }) {
   const [internationalShipping, setInternationalShipping] = useState(false);
   const upcomingExpos = getUpcomingExpos();
 
@@ -5811,12 +5878,16 @@ function DeliverySection({ lang, t, itemPrice = 0, localPickup, setLocalPickup, 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-0.5">
                 <Truck size={16} className="text-stone-300" />
-                <span className="font-bold text-stone-100 text-sm">{lang === "it" ? "Spedizione (trasportatore autorizzato)" : "Shipping (authorised transporter)"}</span>
+                <span className="font-bold text-stone-100 text-sm">{goods ? (lang === "it" ? "Spedizione" : "Shipping") : (lang === "it" ? "Spedizione (trasportatore autorizzato)" : "Shipping (authorised transporter)")}</span>
               </div>
               <p className="text-[11px] text-stone-400 leading-relaxed">
-                {lang === "it"
-                  ? "Per gli animali vivi serve un trasportatore autorizzato (Reg. UE 1/2005): la spedizione viene organizzata dal venditore. In alternativa consigliamo il ritiro a mano o in fiera."
-                  : "Live animals require an authorised transporter (EU Reg. 1/2005): shipping is arranged by the seller. We otherwise recommend local or expo pickup."}
+                {goods
+                  ? (lang === "it"
+                    ? "Spedizione tramite corriere, organizzata dal venditore. In alternativa, ritiro a mano o in fiera."
+                    : "Courier shipping, arranged by the seller. Alternatively, local or expo pickup.")
+                  : (lang === "it"
+                    ? "Per gli animali vivi serve un trasportatore autorizzato (Reg. UE 1/2005): la spedizione viene organizzata dal venditore. In alternativa consigliamo il ritiro a mano o in fiera."
+                    : "Live animals require an authorised transporter (EU Reg. 1/2005): shipping is arranged by the seller. We otherwise recommend local or expo pickup.")}
               </p>
             </div>
           </label>
@@ -6950,7 +7021,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         <FormBlock label={t.category} required done={!!catId}>
           <select className="form-input" value={catId} onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
             <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
-            {CATEGORIES.filter(c => c.id !== "equipment" && c.id !== "exotics").map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
+            {CATEGORIES.filter(c => c.id !== "equipment" && c.id !== "exotics" && c.id !== "livefood").map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
           </select>
         </FormBlock>
         {catId && (
