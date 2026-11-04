@@ -8309,8 +8309,13 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
               <span className="truncate">{storeTitle}</span>
               {KYC_ENABLED && data.verified && <ShieldCheck size={20} className="text-sky-400 shrink-0" />}
             </h1>
-            <div className="flex items-center gap-1.5 text-stone-400 text-xs md:text-sm mt-1">
-              <MapPin size={12} />{countryByCode(data.country).flag} {data.city}, {data.region}
+            <div className="flex items-center gap-2 flex-wrap mt-1.5">
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ring-1 ${data.sellerType === "professional" ? "text-emerald-300 bg-emerald-500/10 ring-emerald-500/25" : "text-stone-400 bg-stone-800/60 ring-stone-700"}`}>
+                {data.sellerType === "professional" ? t.sellerBadgePro : t.sellerBadgePrivate}
+              </span>
+              <span className="flex items-center gap-1.5 text-stone-400 text-xs md:text-sm">
+                <MapPin size={12} />{countryByCode(data.country).flag} {data.city}, {data.region}
+              </span>
             </div>
           </div>
         </div>
