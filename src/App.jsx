@@ -574,6 +574,277 @@ const I18N = {
     payNow: "Pay",
     paymentSuccess: "Payment received",
     paymentSuccessSub: "The animal is now reserved for you.",
+  },
+  de: {
+    tagline: "Der Reptilienmarktplatz Italiens",
+    home: "Entdecken", search: "Suchen", sell: "Verkaufen", chat: "Nachrichten", profile: "Profil",
+    nearYou: "In deiner Nähe", upcomingExpos: "Kommende Börsen", browseByCategory: "Welches Tier suchst du?",
+    category: "Kategorie",
+    breedingProjects: "Zuchtprojekte",
+    breedingIntro: "Plane und visualisiere deine Verpaarungen — ersetze Excel-Tabellen durch einen visuellen Planer.",
+    breedingSoon: "Demnächst verfügbar",
+    breedingSoonText: "Wir entwickeln ein visuelles Tool, um Verpaarungen zu planen, die genetischen Wahrscheinlichkeiten der Nachkommen zu berechnen und jedes Projekt Saison für Saison zu verfolgen. Schluss mit Excel-Tabellen.",
+    breedingFeat1: "Automatische Berechnung der genetischen Wahrscheinlichkeiten (Punnett)",
+    breedingFeat2: "Visueller Verpaarungsplaner nach Saison",
+    breedingFeat3: "Verknüpft mit den Tieren in deinem Bestand",
+    breedingFeat4: "Projekte exportieren und teilen",
+    breedingNotify: "Benachrichtige mich, wenn es fertig ist",
+    reportListing: "Diese Anzeige melden",
+    reportTitle: "Anzeige melden",
+    reportProblem: "Ein Problem melden",
+    reportReasonLabel: "Grund",
+    reportNoteLabel: "Details (optional)",
+    reportNotePlaceholder: "Füge Details hinzu, die uns bei der Prüfung helfen…",
+    reportSend: "Meldung senden",
+    reportSending: "Senden…",
+    reportThanks: "Danke. Wir haben deine Meldung erhalten und werden sie prüfen.",
+    reportReasons: ["Verbotene oder illegale Art", "Möglicher Betrug", "Krankes Tier / Tierschutzbedenken", "Irreführende Anzeige oder Spam", "Unangemessener Inhalt", "Sonstiges"],
+    reportEmailLabel: "Deine E-Mail (optional)",
+    reportEmailPlaceholder: "du@beispiel.de",
+    reportEmailHint: "Lass sie da, wenn du möchtest, dass wir uns bei dir melden.",
+    detailedSearch: "Detailsuche", detailedSearchSub: "Nach Merkmalen, Preis, Land filtern", viewAuctions: "Auktionen ansehen", viewAuctionsSub: "Nur Auktionen",
+    allListings: "Alle Anzeigen", seeAll: "Alle ansehen",
+    heroTitle: "Reptilien & exotische Tiere, von Liebhabern aus Italien und Europa.",
+    heroSub: "Egal ob du deinen nächsten Gecko, deine nächste Schlange oder Vogelspinne suchst oder die Tiere aus deiner Zucht zeigen möchtest – HerpMarket ist der Treffpunkt für alle, die Reptilien und Exoten in Italien und Europa lieben. Stöbern und Inserieren sind kostenlos.",
+    heroCta: "📲 Füge sie zum Startbildschirm hinzu und nutze sie wie eine App – inseriere dein Tier in 2 Minuten.",
+    heroBtn: "Zum Marktplatz",
+    browseListings: "Anzeigen durchsuchen", sellCta: "Ein Tier verkaufen", orSep: "oder",
+    filters: "Filter", sort: "Sortieren", apply: "Anwenden", reset: "Zurücksetzen",
+    sortNewest: "Neueste zuerst", sortPriceAsc: "Preis: aufsteigend", sortPriceDesc: "Preis: absteigend", sortDistance: "Nächste zuerst", sortRating: "Top bewertet",
+    advFilters: "Erweiterte Filter", priceRange: "Preisspanne", anyPrice: "Beliebig", min: "Min", max: "Max",
+    traitsLabel: "Gene & Merkmale", traitClassLabel: "Genetiktyp", subCategoryLabel: "Art",
+    sellerLabel: "Züchter", anySeller: "Alle Züchter", anySpecies: "Alle Arten",
+    anyRegion: "Alle Regionen", geneticsBreeding: "Zucht & Haltung",
+    expoOnlyLabel: "Nur Abholung auf Börse", verifiedOnlyLabel: "Nur verifizierte Züchter",
+    clearAll: "Alles zurücksetzen", classRecessive: "Rezessiv", classDominant: "Dominant", classIncDom: "Ko-dominant", classLine: "Linie/Polygen", classLocality: "Lokalform", classHet: "Het (Träger)",
+    selectCategoryFirst: "Wähle zuerst eine Kategorie, um verfügbare Merkmale zu sehen",
+    species: "Art", traits: "Merkmale / Morph", sex: "Geschlecht", age: "Alter", price: "Preis", region: "Region", expoOnly: "Nur Abholung auf Börse",
+    male: "Männlich", female: "Weiblich", unsexed: "Unbestimmt", pair: "Paar",
+    months: "Monate", year: "Jahr", years: "Jahre",
+    seller: "Verkäufer", country: "IT", verifiedBreeder: "Verifizierter Züchter", message: "Nachricht",
+    sellerStorefront: "Shop", sellerAnimals: "Anzeigen", sellerReviews: "Bewertungen", sellerAbout: "Über",
+    sellerMemberSince: "Mitglied seit", sellerTotalSales: "Verkäufe insgesamt", sellerSpecialties: "Spezialgebiete",
+    sellerAttendsExpos: "Besucht Börsen", sellerNoExpos: "Keine kommenden Börsen",
+    sellerNoReviews: "Noch keine Bewertungen",
+    reserveAtExpo: "Für Börse reservieren", payDeposit: "Anzahlung leisten",
+    reservationPending: "Warte auf Bestätigung…", reserved: "Für dich reserviert",
+    txRequest: "Kaufanfrage senden", txRequestExpo: "Börsen-Reservierung anfragen",
+    deliveryChoose: "Wie möchtest du das Tier erhalten?",
+    deliveryShip: "Kaufen & Versand", deliveryShipDesc: "Vollständige Zahlung, Lieferung per autorisiertem Transporteur",
+    deliveryExpo: "Für Börse reservieren", deliveryExpoDesc: "Anzahlung nach Absprache, Abholung am Stand des Verkäufers",
+    noShipping: "Versand nicht verfügbar", noShippingDesc: "Dieser Verkäufer versendet dieses Tier nicht. Nur Abholung auf den unten aufgeführten Börsen möglich.",
+    availableAtExpos: "Verfügbar auf diesen Börsen", noExpoNoShip: "Der Verkäufer hat keine Liefermethode angegeben. Kontaktiere ihn per Nachricht.",
+    buyAndShip: "Kaufen & Versand",
+    txPending: "Anfrage gesendet · warte auf Verkäufer",
+    txDeclined: "Verkäufer hat die Anfrage abgelehnt",
+    txApproved: "Vom Verkäufer bestätigt",
+    txPayDeposit: "Anzahlung leisten", txPayFull: "Gesamtbetrag zahlen",
+    txPaid: "Bezahlt · warte auf Übergabe",
+    txConfirmReceived: "Erhalt des Tieres bestätigen",
+    txWaitingBuyer: "Warte auf Übergabebestätigung des Verkäufers",
+    txWaitingSeller: "Warte auf Übergabebestätigung des Verkäufers",
+    txWaitingBuyerConfirm: "Warte auf deine Empfangsbestätigung",
+    txCompleted: "Transaktion abgeschlossen", txViewDocument: "Dokument ansehen",
+    txCancel: "Anfrage abbrechen",
+    txStatus: "Transaktionsstatus",
+    txStepRequest: "Anfrage", txStepApproval: "Bestätigung", txStepPayment: "Zahlung", txStepHandover: "Übergabe", txStepComplete: "Abgeschlossen",
+    docCitesTitle: "CITES-Übergabeerklärung",
+    docOriginTitle: "Herkunftsnachweis",
+    docSubtitle: "Von HerpMarket nach Übergabebestätigung erstellt",
+    docBuyer: "Käufer", docSellerLabel: "Verkäufer (Übergebender)",
+    docSpecies: "Art", docMorph: "Morph / Merkmale", docBirth: "Geburtsdatum",
+    docSex: "Geschlecht", docDate: "Transaktionsdatum", docId: "Transaktions-ID",
+    docDeclaration: "Erklärung",
+    docDeclarationCites: "Der unterzeichnende Übergebende erklärt, das oben beschriebene, in Gefangenschaft gezüchtete Exemplar an den genannten Käufer zu übergeben. Diese Übergabe erfolgt gemäß der EU-Verordnung 338/97.",
+    docDeclarationOrigin: "Der unterzeichnende Übergebende erklärt, das oben beschriebene, in der eigenen Anlage gezüchtete Exemplar an den genannten Käufer zu übergeben.",
+    docSignSeller: "Unterschrift Verkäufer", docSignBuyer: "Unterschrift Käufer",
+    demoSimSeller: "Demo: Verkäufer simulieren",
+    demoApprove: "Bestätigen", demoDecline: "Ablehnen", demoConfirmHandover: "Übergabe bestätigen",
+    description: "Beschreibung", parentage: "Abstammung", sire: "Vatertier", dam: "Muttertier", unknown: "Unbekannt",
+    listedOn: "Inseriert am", lastUpdated: "Zuletzt aktualisiert",
+    born: "Geboren", weight: "Gewicht", origin: "Herkunft", captiveBred: "Nachzucht",
+    cites: "CITES-Papiere", citesNotice: "Übergabedokument für Anhang A/B erforderlich",
+    listingTitle: "Anzeigentitel", uploadPhotos: "Fotos hochladen (min. 1, max. 5)", publishListing: "Anzeige veröffentlichen",
+    photoHint: "Hierher ziehen oder tippen, um vom Gerät auszuwählen", photoNeed: "Füge mindestens ein Foto hinzu",
+    needSpecies: "Wähle oder gib eine Art ein", needPrice: "Gib einen Preis ein", needLoginPub: "Zum Veröffentlichen anmelden", publishing: "Veröffentlichen…", uploadingPhotos: "Fotos werden hochgeladen…", uploadingHint: "Schließe die App nicht, das kann ein paar Sekunden dauern.",
+    reserveTooLow: "Der Mindestpreis darf nicht niedriger als der Startpreis sein",
+    shippingHighWarn: "Die Versandkosten wirken hoch im Verhältnis zum Preis. Bist du sicher?",
+    fieldRequired: "erforderlich",
+    needRegion: "Wähle die Region", chooseRegion: "Region wählen…",
+    needTitle: "Gib einen Anzeigentitel ein", needCategory: "Wähle eine Kategorie",
+    citesCheckLabel: "CITES-Art (Anhang A/B/C/D, EU-VO 338/97)",
+    citesCheckHint: "Du bist für den CITES-Status deines Tieres verantwortlich. CITES-Arten erfordern ein genaues Geburtsdatum.",
+    needFullBirth: "CITES-Arten erfordern ein genaues Geburtsdatum (Tag, Monat und Jahr)",
+    mlIntro: "Deine veröffentlichten Anzeigen. Bearbeite Preis und Beschreibung oder lösche eine Anzeige.",
+    mlEmpty: "Du hast noch keine Anzeigen veröffentlicht.", mlEdit: "Bearbeiten", mlSave: "Speichern", mlDelete: "Löschen",
+    mlConfirmDelete: "Diese Anzeige endgültig löschen?", mlDeleted: "Anzeige gelöscht.",
+    markSold: "Als verkauft markieren", soldBadge: "Verkauft", markSoldTitle: "Verkauf erfassen",
+    soldWalkin: "Börsen- / Laufkäufer", soldAppUser: "HerpMarket-Nutzer",
+    soldPickBuyer: "Käufer wählen…", soldNoInquirers: "Kein Nutzer hat dich zu dieser Anzeige kontaktiert. Nutze 'Börsen- / Laufkäufer'.",
+    soldBuyerName: "Vollständiger Name des Käufers", soldBuyerAddress: "Adresse (für CITES-Dokumente)",
+    soldCitesNote: "CITES-Art: Name und Adresse des Käufers werden für die Übergabeerklärung benötigt.",
+    confirmSold: "Verkauf bestätigen",
+    colActive: "Zu verkaufen", colSold: "Verkauft", colHeld: "Zurückbehalten", colBreeder: "Zuchttiere",
+    addAnimal: "Tier hinzufügen", addAnimalTitle: "Zur Sammlung hinzufügen",
+    addAnimalIntro: "Füge ein Tier zu deiner Sammlung hinzu (nicht zum Verkauf). Du kannst es später zum Verkauf anbieten.",
+    animalStatus: "Status", statusHeld: "Zurückbehalten", statusBreeder: "Zuchttier",
+    addAnimalSave: "Zur Sammlung hinzufügen", animalAdded: "Tier zu deiner Sammlung hinzugefügt!",
+    removeListingTitle: "Aus dem Verkauf nehmen?",
+    removeListingIntro: "Was möchtest du mit diesem Tier machen?",
+    removeToHeld: "In meine Sammlung verschieben", removeToBreeder: "Zu den Zuchttieren verschieben",
+    colCollection: "Meine Sammlung", colEmptyCollection: "Keine Tiere in deiner Sammlung.",
+    mlManage: "Verwalten",
+    removeToSold: "Als verkauft markieren", removeDelete: "Endgültig löschen",
+    colEmptyActive: "Keine Tiere zum Verkauf.", colEmptySold: "Keine verkauften Tiere.",
+    colEmptyHeld: "Keine zurückbehaltenen Tiere.", colEmptyBreeder: "Keine Zuchttiere.",
+    relist: "Zum Verkauf anbieten", relistTitle: "Zum Verkauf anbieten", relistConfirm: "Zum Verkauf veröffentlichen",
+    spTitle: "Mein Shop", spIntro: "Gestalte deine Züchterseite: Foto, Beschreibung und Details.",
+    spPhoto: "Profilfoto", spUpload: "Foto hochladen", spCity: "Stadt", spBio: "Beschreibung",
+    spSpecialties: "Spezialgebiete (kommagetrennt)", spSpecialtiesPh: "z. B. Correlophus ciliatus, Python regius",
+    spSave: "Änderungen speichern", spSaved: "Änderungen gespeichert!", spNameTaken: "Dieser Name ist bereits vergeben, wähle einen anderen.",
+    spStoreName: "Shop-Name", spStoreNameHint: "Optional. Wenn festgelegt, sehen und suchen Käufer diesen Namen statt deines echten Namens.",
+    spSellerType: "Ich verkaufe als", spSellerTypePro: "Gewerblich (USt-IdNr.)", spSellerTypePrivate: "Privatperson",
+    spSellerTypeHint: "Gib an, ob du gewerblich (mit USt-IdNr.) oder als Privatperson verkaufst. Dies wird auf deinen Anzeigen angezeigt: Einige Verbraucherschutzrechte gelten nicht für Käufe bei Privatverkäufern.",
+    sellerBadgePro: "Gewerblicher Verkäufer", sellerBadgePrivate: "Privatverkäufer",
+    spView: "Deine öffentliche Seite ansehen",
+    pickSpecies: "Art wählen", pickTraits: "Merkmale hinzufügen", describePlaceholder: "Temperament, Fütterung, Gesundheit…",
+    typeMessage: "Nachricht schreiben…",
+    chatEmpty: "Noch keine Nachrichten. Schreib als Erster!",
+    chatNoThreads: "Noch keine Unterhaltungen. Kontaktiere einen Züchter über eine Anzeige.",
+    chatNoThread: "Die Unterhaltung zu dieser Anzeige konnte nicht geöffnet werden.",
+    chatBuyer: "Käufer", chatSeller: "Züchter", tNow: "jetzt", chatYou: "Du",
+    noReviewsYet: "Noch keine Bewertungen",
+    proCapReached: "Du hast das Limit von 3 aktiven Anzeigen im kostenlosen Plan erreicht. Upgrade auf Pro für unbegrenzte Anzeigen – schreib uns, um es freizuschalten!",
+    spWebsite: "Webseite", spWebsitePh: "https://deine-seite.de", proOnly: "Nur Pro", spWebsiteProNote: "Zeige einen Link zu deiner Seite auf deiner öffentlichen Seite (Pro-Funktion).",
+    visitWebsite: "Webseite besuchen", onlineNow: "Online", translateIT: "Ins Italienische übersetzen",
+    yourAccount: "Dein Konto", wishlist: "Gespeichert", myListings: "Meine Anzeigen", manageListing: "Anzeige verwalten", documents: "Dokumente", reviews: "Bewertungen", settings: "Einstellungen", legalGuide: "Rechtlicher Leitfaden", logout: "Abmelden",
+    inventory: "Tierbestand", lineage: "Genetik & Abstammung", transport: "Öko-Taxi (Transport)",
+    invIntro: "Verwalte deine Sammlung: Zuchttiere, Tiere zum Verkauf und verkaufte Tiere.",
+    invBreeders: "Zuchttiere", invForSale: "Zu verkaufen", invSold: "Verkauft", invAdd: "Tier hinzufügen",
+    invStatus: "Status", invStatusBreeder: "Zuchttier", invStatusSale: "Zu verkaufen", invStatusSold: "Verkauft", invStatusHeld: "Zurückbehalten",
+    invEmpty: "Keine Tiere in dieser Kategorie",
+    lineageIntro: "Stammbaum und genetische Verfolgung deiner Tiere.",
+    lineageSire: "Vatertier", lineageDam: "Muttertier", lineageOffspring: "Nachkommen", lineagePairings: "Verpaarungen",
+    lineageProjects: "Zuchtprojekte", lineageExpected: "Erwartet", lineageHatched: "Geschlüpft",
+    reviewsIntro: "Bewertungen von deinen Käufern.",
+    reviewsAvg: "Durchschnittsbewertung", reviewsTotal: "Bewertungen insgesamt", reviewsEmpty: "Noch keine Bewertungen",
+    reviewsFrom: "von", reviewsReply: "Antworten", reviewsReplied: "Beantwortet",
+    aboutContact: "Über uns & Kontakt", termsLegal: "Nutzungsbedingungen", settingsKyc: "Einstellungen & KYC",
+    storePolicyLabel: "Marktplatz-Richtlinien",
+    privacyLabel: "Datenschutzerklärung",
+    plansLabel: "Tarife", plansComingSoon: "Pro-Tarife werden in Zukunft verfügbar sein. HerpMarket ist derzeit für alle kostenlos.",
+    plansDescription: "Wenn wir Pro-Tarife für Züchter einführen (unbegrenzte Anzeigen, eigener Shop, bevorzugte Platzierung), erhältst du 30 Tage Vorlauf und kannst den kostenlosen Tarif weiter nutzen.",
+    sponsorLabel: "Sponsor",
+    cookieTitle: "Datenschutz & Cookies",
+    cookieBody: "HerpMarket verwendet technisch notwendige Cookies für den Betrieb der Seite. Für anonyme Statistiken nutzen wir Vercel Analytics (datenschutzfreundlich, kein individuelles Tracking). Details findest du in unserer Datenschutzerklärung.",
+    cookieAccept: "Akzeptieren",
+    cookieDecline: "Statistiken ablehnen",
+    cookieMore: "Mehr Infos",
+    consentTosLabel: "Ich akzeptiere die Nutzungsbedingungen und Marktplatz-Richtlinien",
+    consentPrivacyLabel: "Ich habe die Datenschutzerklärung gelesen und stimme der beschriebenen Datenverarbeitung zu",
+    consentMarketingLabel: "Ich möchte Updates zu Börsen und neuen Anzeigen erhalten (optional, jederzeit abbestellbar)",
+    consentRequired: "Akzeptiere Nutzungsbedingungen und Datenschutz, um fortzufahren",
+    consentReadHere: "Hier lesen",
+    deleteAccount: "Konto löschen", deleteAccountIntro: "Lösche dein Konto und alle zugehörigen Daten endgültig.",
+    deleteWarning: "Diese Aktion ist unwiderruflich. Alle deine personenbezogenen Daten werden innerhalb von 30 Tagen gelöscht. Abgeschlossene Transaktionen und CITES-Dokumente müssen aus rechtlichen Gründen (bis zu 10 Jahre) aufbewahrt werden, sind aber pseudonymisiert.",
+    deleteConfirmPrompt: "Zum Bestätigen tippe unten LÖSCHEN:",
+    deleteConfirmWord: "LÖSCHEN",
+    deleteButton: "Endgültig löschen",
+    deleteCancel: "Abbrechen",
+    deleteSuccess: "Anfrage gesendet. Dein Konto wird innerhalb von 30 Tagen gelöscht.",
+    privacySection: "Datenschutz & Daten",
+    dataExport: "Meine Daten herunterladen", dataExportDesc: "Exportiere alle deine personenbezogenen Daten als JSON (DSGVO Art. 20)",
+    dataExportDone: "Export gestartet. Du erhältst die Datei innerhalb von 30 Tagen per E-Mail.",
+    kycTitle: "Identitätsprüfung", kycVerified: "Verifiziert", kycPending: "In Prüfung", kycUnverified: "Nicht verifiziert",
+    kycIntro: "Der blaue Haken bestätigt, dass du eine echte Person bist. Alles, was du brauchst, ist ein Ausweisdokument – keine USt-IdNr. oder Gewerbeerlaubnis nötig.",
+    kycVisura: "Gewerbeanmeldung oder USt-IdNr.", kycAsl: "ASL-Registrierungsnummer", kycDoc: "Ausweisdokument",
+    kycRequired: "Erforderlich", kycOptional: "Optional · gewerbliche Züchter",
+    kycDocHint: "Personalausweis, Reisepass oder Führerschein. Dient nur der Bestätigung, dass du eine echte Person bist; wird nie öffentlich gezeigt.",
+    kycOptionalHint: "Wenn du gewerblicher Züchter bist, kannst du diese für zusätzliche Glaubwürdigkeit hinzufügen. Sie sind nicht erforderlich.",
+    kycAslHint: "Nur Italien: Registrierung bei der lokalen Gesundheitsbehörde (ASL) für gewerbliche Züchter. Leer lassen, falls nicht zutreffend.",
+    kycUpload: "Dokument hochladen", kycUploaded: "Hochgeladen", kycSubmit: "Zur Prüfung einreichen",
+    kycSubmitted: "Dokumente eingereicht. Wir benachrichtigen dich innerhalb von 48 Stunden.",
+    kycWhy: "Warum verifizieren?", kycWhyText: "Käufer vertrauen verifizierten Verkäufern mehr. Der blaue Haken erscheint auf allen deinen Anzeigen und deinem Profil.",
+    notifTitle: "Push-Benachrichtigungen", notifIntro: "Erhalte Benachrichtigungen in Echtzeit, auch wenn die App geschlossen ist.",
+    notifComingSoon: "Push-Benachrichtigungen kommen bald. Öffne vorerst die App, um neue Nachrichten, Gebote und Börsen-Erinnerungen zu sehen.",
+    notifEnable: "Benachrichtigungen aktivieren", notifEnabled: "Benachrichtigungen an", notifMessages: "Neue Nachrichten",
+    notifReservations: "Reservierungsbestätigungen", notifPriceDrops: "Preissenkungen auf der Merkliste", notifExpo: "Börsen-Erinnerungen",
+    accountSection: "Konto", notifSection: "Benachrichtigungen", verificationSection: "Verifizierung",
+    langSection: "Sprache",
+    citesArchive: "CITES-Archiv",
+    citesDataTitle: "Meine CITES-Daten",
+    citesDataSub: "Eine Übersicht deiner abgeschlossenen Verkäufe, die dir beim Ausfüllen der offiziellen CITES-Dokumentation hilft. Diese Daten ersetzen NICHT die offiziellen Dokumente.",
+    citesDataEmpty: "Noch keine Verkäufe erfasst. Wenn du ein Tier als verkauft markierst, erscheinen hier die Daten für deine Dokumentation.",
+    citesDataDisclaimer: "Hinweis: Dies ist eine Übersicht deiner Daten zur Vereinfachung. Es ist kein offizielles CITES-Dokument. Die rechtmäßige Übergabe (insbesondere bei Anhang-A-Arten) erfordert die gesetzlich vorgeschriebene offizielle Dokumentation.",
+    citesDataBuyer: "Käufer",
+    citesDataAddress: "Adresse",
+    citesDataDate: "Verkaufsdatum",
+    citesDataCites: "CITES-Art angegeben",
+    citesDataChannel: "Kanal",
+    citesDataCopy: "Daten kopieren",
+    citesDataPrint: "Drucken / PDF",
+    printAnimalTitle: "Tierdatenblatt",
+    printInventoryTitle: "Bestandsliste",
+    printRecord: "Datenblatt drucken",
+    printInventory: "Bestand drucken",
+    printing: "Wird erstellt…",
+    citesDataCopied: "Kopiert",
+    breedingMgmt: "Zuchtverwaltung", bureaucracyLegal: "Bürokratie & Recht", infoSupport: "Information & Support", configuration: "Konfiguration",
+    login: "Anmelden", signup: "Registrieren", joinCommunity: "Mitmachen", loginOrJoin: "Anmelden / Registrieren",
+    loginRequired: "Melde dich an, um fortzufahren",
+    loginToMessage: "Melde dich an, um dem Züchter zu schreiben.",
+    loginToReserve: "Melde dich an, um dieses Tier auf der Börse zu reservieren.",
+    loginToSell: "Melde dich an, um deine Anzeigen zu veröffentlichen.",
+    loginToFavorite: "Melde dich an, um Favoriten zu speichern.",
+    emailPlaceholder: "E-Mail", passwordPlaceholder: "Passwort", continueWithEmail: "Mit E-Mail fortfahren",
+    noAccount: "Noch kein Konto?", alreadyMember: "Schon dabei?",
+    welcomeBack: "Willkommen zurück", createAccount: "Erstelle dein Konto",
+    forgotPassword: "Passwort vergessen?", resetTitle: "Passwort zurücksetzen",
+    resetIntro: "Gib deine E-Mail ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+    sendResetLink: "Link zum Zurücksetzen senden", resetEmailSent: "E-Mail gesendet! Sieh in deinem Postfach nach.",
+    backToLogin: "Zurück zur Anmeldung", processing: "Bitte warten…",
+    newPasswordTitle: "Neues Passwort festlegen", newPasswordLabel: "Neues Passwort",
+    savePassword: "Passwort speichern", passwordUpdated: "Passwort aktualisiert. Du kannst dich jetzt anmelden.",
+    checkEmailConfirm: "Konto erstellt! Prüfe deine E-Mails, um deine Adresse zu bestätigen.",
+    deleteAccountDesc: "Lösche dein Konto und die zugehörigen Daten.",
+    deleteAccountWarn: "Dies ist endgültig. Deine Anzeigen und Daten werden entfernt. Fortfahren?",
+    deleteAccountDone: "Konto zur Löschung markiert. Du wurdest abgemeldet.",
+    confirmDelete: "Ja, löschen", keepAccount: "Abbrechen",
+    nameLabel: "Name", signUpFree: "Kostenlos registrieren",
+    expoAnimals: "Auf dieser Börse verfügbare Tiere",
+    searchAtExpo: "Auf dieser Börse suchen...",
+    officialChannels: "Offizielle Kanäle", expoInfo: "Informationen",
+    noAnimalsAtExpo: "Für diese Börse wurden noch keine Tiere inseriert.",
+    pickupAtExpo: "Abholung auf Börse",
+    availableAt: "Verfügbar auf",
+    emptyWishlist: "Noch keine gespeicherten Tiere. Tippe auf das Herz, um hinzuzufügen.",
+    backToBrowse: "Zurück zu den Anzeigen",
+    legalIntro: "Der italienische Reptilienmarkt unterliegt dem Gesetz D.Lgs. 135/2022 und der EU-VO 338/97. Prüfe vor dem Kauf immer den CITES-Anhang.",
+    depositNotice: "Eine optionale Anzahlung, mit dem Verkäufer vereinbart, reserviert das Tier bis zur Abholung auf der Börse.",
+    realPhoto: "Tierfoto",
+    auction: "Auktion", auctionLabel: "AUKTION", auctionLive: "Auktion läuft", startPrice: "Startpreis", currentBid: "Aktuelles Gebot",
+    placeBid: "Gebot abgeben", yourBid: "Dein Gebot", bidCount: "Gebote", bids: "Gebote",
+    reserveMet: "Mindestpreis erreicht", reserveNotMet: "Mindestpreis nicht erreicht",
+    auctionEnds: "Endet in", auctionEnded: "Auktion beendet", minimumBid: "Mindestgebot",
+    bidPlaced: "Gebot abgegeben!", outbid: "Du wurdest überboten", winning: "Du führst",
+    days: "T", hours: "Std", minutes: "Min", buyNow: "Sofort kaufen",
+    bidTooLow: "Das Gebot muss über dem aktuellen Gebot liegen",
+    auctionInfo: "Gib bei einer Auktion ein Gebot über dem aktuellen ab. Wenn du bei Ende der Höchstbietende bist und der Mindestpreis erreicht ist, gewinnst du das Tier.",
+    auctionWon: "🎉 Du hast die Auktion gewonnen! Kontaktiere den Verkäufer, um den Kauf abzuschließen.",
+    auctionEndedWinner: "Auktion beendet. Das Tier ging an den Höchstbietenden.",
+    auctionEndedNoReserve: "Auktion beendet: Mindestpreis nicht erreicht. Der Verkäufer ist nicht zum Verkauf verpflichtet.",
+    auctionEndedNoBids: "Auktion ohne Gebote beendet.",
+    auctionContactToComplete: "Verkäufer kontaktieren",
+    crossBorderTitle: "Grenzüberschreitender Verkauf",
+    crossBorderEu: "Dieses Tier befindet sich in einem anderen EU-Land. Der Transport erfordert eine TRACES-Registrierung und, bei CITES-Anhang-A/B-Arten, Dokumente für den innergemeinschaftlichen Transport.",
+    crossBorderCh: "Hinweis: Dieses Land gehört nicht zur EU. Der Transport lebender Tiere in die/aus der EU überquert eine Zollgrenze und erfordert grenztierärztliche Kontrollen sowie Ein-/Ausfuhrgenehmigungen. Prüfe die Anforderungen, bevor du fortfährst.",
+    sellerCountryLabel: "Land des Verkäufers", countryLabel: "Land", anyCountry: "Alle Länder", clearFilters: "Filter zurücksetzen", viewMyListing: "Meine Anzeige ansehen", msgSending: "Senden…", msgSent: "Gesendet", verifyBannerTitle: "Verifiziere dein Konto", verifyBannerSub: "Hol dir den blauen Haken und schaffe Vertrauen bei Käufern.",
+    nextStepsTitle: "Nächste Schritte", nextStepsExpo: (name, date) => `Der Verkäufer trifft dich auf ${name}${date ? " am " + date : ""}. Vereinbare eine eventuelle Anzahlung und den Restbetrag bei der Abholung direkt mit dem Verkäufer.`, nextStepsExpoGeneric: "Der Verkäufer trifft dich auf der vereinbarten Börse. Vereinbare eine eventuelle Anzahlung und den Restbetrag bei der Abholung direkt mit dem Verkäufer.", nextStepsShipping: "Der Verkäufer meldet sich im Chat, um den Versand zu bestätigen (meist Mo–Mi). Die Sendungsverfolgung erhältst du hier.",
+    resultsCount: (n) => `${n} ${n === 1 ? "Anzeige" : "Anzeigen"} gefunden`,
+    secureCheckout: "Sicherer Checkout",
+    payNow: "Bezahlen",
+    paymentSuccess: "Zahlung erhalten",
+    paymentSuccessSub: "Das Tier ist jetzt für dich reserviert.",
   }
 };
 
@@ -1036,6 +1307,27 @@ const CATEGORIES = [
   { id: "livefood",    it: "Cibo vivo",    en: "Live food",     emoji: "🦗" },
   { id: "educativo",   it: "Educativo",    en: "Educational",   emoji: "📚" },
 ];
+
+// Localise expo names + dates for non-Italian UIs: swap seasonal words and
+// Italian month abbreviations only. Proper names (Verona Reptiles, Esotika…)
+// stay untouched; full prose (descriptions) is translated via DeepL instead.
+const EXPO_SEASONS = {
+  autunno: { en: "Autumn", de: "Herbst" }, primavera: { en: "Spring", de: "Frühling" },
+  estate: { en: "Summer", de: "Sommer" }, inverno: { en: "Winter", de: "Winter" },
+};
+const IT_MONTHS = {
+  gen: { en: "Jan", de: "Jan" }, feb: { en: "Feb", de: "Feb" }, mar: { en: "Mar", de: "Mär" },
+  apr: { en: "Apr", de: "Apr" }, mag: { en: "May", de: "Mai" }, giu: { en: "Jun", de: "Jun" },
+  lug: { en: "Jul", de: "Jul" }, ago: { en: "Aug", de: "Aug" }, set: { en: "Sep", de: "Sep" },
+  ott: { en: "Oct", de: "Okt" }, nov: { en: "Nov", de: "Nov" }, dic: { en: "Dec", de: "Dez" },
+};
+function localizeExpoText(str, lang) {
+  if (!str || lang === "it") return str;
+  let out = str;
+  for (const k in EXPO_SEASONS) out = out.replace(new RegExp(`\\b${k}\\b`, "gi"), EXPO_SEASONS[k][lang] || k);
+  for (const k in IT_MONTHS) out = out.replace(new RegExp(`\\b${k}\\b`, "gi"), IT_MONTHS[k][lang] || k);
+  return out;
+}
 
 /* Equipment listings carry no species / morph / CITES. The chosen TYPE is
    stored in the listing's `common` field; CONDITION + BRAND ride in `traits`
@@ -1557,7 +1849,9 @@ export default function HerpMarket() {
     try { return localStorage.getItem("hm_site_unlock") === "yes"; } catch (e) { return false; }
   });
 
-  const t = I18N[lang];
+  // Merge over English so any key not yet translated for the active language
+  // falls back to English (never blank/undefined). Italian is complete, so it wins.
+  const t = useMemo(() => (I18N[lang] ? { ...I18N.en, ...I18N[lang] } : I18N.it), [lang]);
 
   // ── Live data from Supabase (Option B bridge) ──
   // Fetches listings on load. We track status explicitly so a FAILED fetch
@@ -1919,7 +2213,7 @@ export default function HerpMarket() {
       {/* Global mobile language toggle — fixed, always reachable on any screen.
           Hidden on desktop where the sidebar Brand toggle already exists.
           z-[80] keeps it above every sticky header and modal backdrop. */}
-      <button onClick={() => setLang(lang === "it" ? "en" : "it")}
+      <button onClick={() => setLang(lang === "it" ? "en" : lang === "en" ? "de" : "it")}
               aria-label="Toggle language"
               className="md:hidden fixed top-2 right-2 z-[80] flex items-center gap-1
                          bg-amber-500/90 backdrop-blur text-stone-950 font-black
@@ -2022,9 +2316,9 @@ function Brand({ t, lang, setLang }) {
         </h1>
       </div>
       <p className="text-[10px] text-stone-400 mt-2 leading-snug max-w-[180px]">{t.tagline}</p>
-      <button onClick={() => setLang(lang === "it" ? "en" : "it")}
+      <button onClick={() => setLang(lang === "it" ? "en" : lang === "en" ? "de" : "it")}
               className="mt-4 inline-flex items-center gap-1.5 text-[10px] text-stone-400 hover:text-amber-400 transition-colors">
-        <Languages size={11} /> <span className="uppercase tracking-widest font-bold">{lang === "it" ? "EN" : "IT"}</span>
+        <Languages size={11} /> <span className="uppercase tracking-widest font-bold">{lang === "it" ? "EN" : lang === "en" ? "DE" : "IT"}</span>
       </button>
     </div>
   );
@@ -2523,7 +2817,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-base leading-none shrink-0">{countryByCode(expo.country).flag}</span>
-                    <div className="text-[9px] text-white/80 uppercase tracking-widest font-bold truncate">{expo.date}</div>
+                    <div className="text-[9px] text-white/80 uppercase tracking-widest font-bold truncate">{localizeExpoText(expo.date, lang)}</div>
                   </div>
                   {expoAnimalsCount > 0 && (
                     <div className="bg-white/15 backdrop-blur ring-1 ring-white/20 rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white shrink-0">
@@ -2531,7 +2825,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
                     </div>
                   )}
                 </div>
-                <h4 className="font-display text-base text-white mt-1.5 leading-tight">{expo.name}</h4>
+                <h4 className="font-display text-base text-white mt-1.5 leading-tight">{localizeExpoText(expo.name, lang)}</h4>
                 <div className="flex items-center gap-1 text-white/80 text-[11px] mt-1">
                   <MapPin size={10} />{expo.location}
                 </div>
@@ -2651,7 +2945,7 @@ function AllExposModal({ onClose, go, t, lang }) {
                         <div className="font-display text-base text-white leading-none mt-0.5">{expo.dateISO.slice(8, 10)}</div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-white text-[13px] leading-tight truncate">{expo.name}</div>
+                        <div className="font-bold text-white text-[13px] leading-tight truncate">{localizeExpoText(expo.name, lang)}</div>
                         <div className="flex items-center gap-1.5 text-white/80 text-[11px] mt-0.5">
                           <span className="text-sm leading-none shrink-0">{countryByCode(expo.country).flag}</span>
                           <span className="truncate">{expo.location}</span>
@@ -3680,6 +3974,30 @@ async function shareListingImage(a, t, lang) {
   alert(lang === "it" ? "Immagine salvata e testo copiato! Aprila su Instagram e incolla il testo." : "Image saved and caption copied! Open Instagram and paste the text.");
 }
 
+// Share a listing as a LINK (not an image), so it unfurls as a clickable card
+// in WhatsApp/Instagram — the same approach as shareStore. The branded-image
+// version (shareListingImage, above) is kept for a future "share to Stories".
+async function shareListing(a, t, lang) {
+  const listingUrl = a.id
+    ? `${window.location.origin}/?l=${a.id}`
+    : window.location.origin;
+  const title = (a.title || a.common || a.species || "").trim();
+  const priceVal = a.auction ? a.auction.currentBid : a.price;
+  const head = `${title}${a.species && a.species !== title ? " — " + a.species : ""}`;
+  const text = lang === "it"
+    ? `${head} · ${formatPrice(priceVal)}\nDisponibile su HerpMarket 🦎`
+    : `${head} · ${formatPrice(priceVal)}\nAvailable on HerpMarket 🦎`;
+  if (navigator.share) {
+    try { await navigator.share({ title: title || "HerpMarket", text, url: listingUrl }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  // Fallback for browsers without the Web Share API: copy the link.
+  try {
+    await navigator.clipboard.writeText(`${text}\n${listingUrl}`);
+    alert(lang === "it" ? "Link copiato!" : "Link copied!");
+  } catch (e) { alert(listingUrl); }
+}
+
 function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAuth, lang }) {
   // Single state machine. Possible values:
   // "idle" | "requested" | "approved" | "declined" | "paid" | "handover" | "completed"
@@ -3870,7 +4188,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                 className="absolute top-5 left-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
           <ChevronLeft size={20} />
         </button>
-        <button onClick={(e) => { e.stopPropagation(); shareListingImage(a, t, lang); }} aria-label="Condividi / Share"
+        <button onClick={(e) => { e.stopPropagation(); shareListing(a, t, lang); }} aria-label="Condividi / Share"
                 className="absolute top-5 right-[4.5rem] p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
           <Share2 size={20} />
         </button>
@@ -4402,7 +4720,7 @@ function TxStatusPanel({
               <p className="text-[11px] text-stone-300 leading-relaxed">
                 {isExpoFlow
                   ? (expo
-                      ? t.nextStepsExpo(expo.name, expo.dateISO ? new Date(expo.dateISO).toLocaleDateString() : "")
+                      ? t.nextStepsExpo(localizeExpoText(expo.name, lang), expo.dateISO ? new Date(expo.dateISO).toLocaleDateString() : "")
                       : t.nextStepsExpoGeneric)
                   : t.nextStepsShipping}
               </p>
@@ -5922,7 +6240,7 @@ function DeliverySection({ lang, t, goods = false, itemPrice = 0, localPickup, s
                       <div className="flex-1 min-w-0">
                         <div className={`text-[12px] font-bold leading-tight truncate ${
                           isSel ? "text-amber-100" : "text-stone-200"
-                        }`}>{expo.name}</div>
+                        }`}>{localizeExpoText(expo.name, lang)}</div>
                         <div className="text-[10px] text-stone-500 truncate flex items-center gap-1">
                           {expo.location}
                           {expo.country !== "IT" && <span className="text-[8px] uppercase font-black bg-stone-800 text-stone-400 px-1 rounded">{expo.country}</span>}
@@ -6509,7 +6827,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
               <button key={expo.id} type="button" aria-label={expo.name} aria-pressed={sel} onClick={() => toggleExpo(expo.id)}
                       className={`text-left rounded-lg ring-1 px-2.5 py-1.5 flex items-center gap-2 transition-all ${sel ? "bg-amber-500/15 ring-amber-500/40" : "bg-stone-900/60 ring-stone-800"}`}>
                 <span className="text-[10px] font-bold text-stone-400 shrink-0 min-w-[34px]">{mm} {dd}</span>
-                <span className={`text-[11px] truncate flex-1 ${sel ? "text-amber-100" : "text-stone-300"}`}>{expo.name}</span>
+                <span className={`text-[11px] truncate flex-1 ${sel ? "text-amber-100" : "text-stone-300"}`}>{localizeExpoText(expo.name, lang)}</span>
                 {sel && <Check size={13} className="text-amber-400 shrink-0" />}
               </button>
             );
@@ -8187,6 +8505,22 @@ function AuthGate({ reason, t, go, setAuthModal }) {
    ═════════════════════════════════════════════════════════════════ */
 function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
   const [expoSearch, setExpoSearch] = useState("");
+  // Auto-translate the (Italian) expo description to the viewer's language.
+  const [trExpoDesc, setTrExpoDesc] = useState(null);
+  useEffect(() => {
+    let alive = true; setTrExpoDesc(null);
+    if (!expo || lang === "it" || !expo.description) return;
+    (async () => {
+      try {
+        const api = await loadApi();
+        const out = await api.translateTexts([expo.description], lang);
+        const tx = out && out[0];
+        if (alive && tx && tx !== expo.description) setTrExpoDesc(tx);
+      } catch { /* keep original */ }
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expo?.id, lang]);
   if (!expo) return null;
 
   const expoAnimals = (listingsData || LISTINGS).filter(l => (l.expoIds && l.expoIds.includes(expo.id)) || l.expoId === expo.id);
@@ -8207,12 +8541,12 @@ function ExpoDetail({ expo, t, lang, go, favorites, toggleFav, listingsData }) {
                 className="p-2 bg-black/30 hover:bg-black/50 backdrop-blur rounded-full text-white transition-colors mb-4">
           <ChevronLeft size={20} />
         </button>
-        <div className="text-[11px] text-white/80 uppercase tracking-widest font-bold">{expo.date}</div>
-        <h1 className="font-display text-3xl md:text-4xl text-white mt-1 tracking-tight leading-tight">{expo.name}</h1>
+        <div className="text-[11px] text-white/80 uppercase tracking-widest font-bold">{localizeExpoText(expo.date, lang)}</div>
+        <h1 className="font-display text-3xl md:text-4xl text-white mt-1 tracking-tight leading-tight">{localizeExpoText(expo.name, lang)}</h1>
         <div className="flex items-center gap-1.5 text-white/90 text-sm mt-2">
           <MapPin size={14} />{expo.location} · <span className="text-white/70">{expo.venue}</span>
         </div>
-        <p className="text-sm text-white/85 mt-4 leading-relaxed max-w-2xl">{expo.description}</p>
+        <p className="text-sm text-white/85 mt-4 leading-relaxed max-w-2xl">{trExpoDesc || expo.description}</p>
 
         {/* Official links */}
         <div className="flex flex-wrap gap-2 mt-5">
@@ -8653,12 +8987,12 @@ function SettingsScreen({ t, go, lang, setLang, user }) {
         <section>
           <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-3">{t.langSection}</h2>
           <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1">
-            {["it", "en"].map(lng => (
+            {["it", "en", "de"].map(lng => (
               <button key={lng} onClick={() => setLang(lng)}
                       className={`flex-1 py-2.5 rounded-md text-sm font-bold transition-colors ${
                         lang === lng ? "bg-amber-500 text-stone-950" : "text-stone-400 hover:text-stone-200"
                       }`}>
-                {lng === "it" ? "Italiano" : "English"}
+                {lng === "it" ? "Italiano" : lng === "en" ? "English" : "Deutsch"}
               </button>
             ))}
           </div>
