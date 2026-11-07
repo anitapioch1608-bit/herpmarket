@@ -1031,8 +1031,10 @@ const CATEGORIES = [
   { id: "amphibians",  it: "Anfibi",      en: "Amphibians",  emoji: "🐸" },
   { id: "inverts",     it: "Invertebrati",en: "Invertebrates",emoji: "🕷️" },
   { id: "exotics",     it: "Altri esotici",en: "Other exotics", emoji: "🦔" },
+  { id: "gasteropodi", it: "Gasteropodi",  en: "Gastropods",    emoji: "🐌" },
   { id: "equipment",   it: "Attrezzatura", en: "Equipment",     emoji: "🧰" },
   { id: "livefood",    it: "Cibo vivo",    en: "Live food",     emoji: "🦗" },
+  { id: "educativo",   it: "Educativo",    en: "Educational",   emoji: "📚" },
 ];
 
 /* Equipment listings carry no species / morph / CITES. The chosen TYPE is
@@ -1078,6 +1080,20 @@ const LIVEFOOD_TYPES = [
 ];
 const lfTypeLabel = (id, lang) => LIVEFOOD_TYPES.find(x => x.id === id)?.[lang] || id || "";
 const lfTypeIdFromLabel = (label) => LIVEFOOD_TYPES.find(x => x.it === label || x.en === label)?.id || "";
+
+/* Educational listings: books, e-books, courses, posters, etc. Non-animal, like
+   equipment/live-food: no species / morph / sex / CITES. The chosen TYPE is
+   stored in `common`; an optional AUTHOR rides in `traits` as the first chip,
+   so it renders on cards + detail and round-trips on edit. */
+const EDU_TYPES = [
+  { id: "libro",  it: "Libro",           en: "Book" },
+  { id: "ebook",  it: "E-book",          en: "E-book" },
+  { id: "corso",  it: "Corso",           en: "Course" },
+  { id: "poster", it: "Poster / stampa", en: "Poster / print" },
+  { id: "altro",  it: "Altro",           en: "Other" },
+];
+const eduTypeLabel = (id, lang) => EDU_TYPES.find(x => x.id === id)?.[lang] || id || "";
+const eduTypeIdFromLabel = (label) => EDU_TYPES.find(x => x.it === label || x.en === label)?.id || "";
 
 const REGIONS = [
   "Tutte le regioni","Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna",
@@ -2265,7 +2281,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             ) : (
               <>
                 <div className="font-display font-bold text-amber-400 text-base leading-none">{formatPrice(item.price)}</div>
-                <div className="text-[9px] text-stone-500 mt-1 truncate">{(item.category === "equipment" || item.category === "livefood") ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {[item.city, item.region].filter(Boolean).join(", ")}</div>
+                <div className="text-[9px] text-stone-500 mt-1 truncate">{(item.category === "equipment" || item.category === "livefood" || item.category === "educativo") ? (item.traits?.[0]?.name || "") : formatBirth(item, t)} · {countryByCode(item.country).flag} {[item.city, item.region].filter(Boolean).join(", ")}</div>
               </>
             )}
           </div>
@@ -3712,6 +3728,29 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing?.id]);
 
+  // ── Auto-translate the description to the viewer's language (listings-first).
+  // Calls the `translate` edge function (DeepL, cached). Fails silently to the
+  // original text, so a missing key / network error never breaks the page.
+  const [trDesc, setTrDesc] = useState(null);
+  const [showOrig, setShowOrig] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    setTrDesc(null); setShowOrig(false);
+    if (!listing || lang === "it") return;          // IT UI → content already readable
+    const src = (listing.desc || "").trim();
+    if (!src) return;
+    (async () => {
+      try {
+        const api = await loadApi();
+        const out = await api.translateTexts([src], lang);
+        const tx = out && out[0];
+        if (alive && tx && tx !== src) setTrDesc(tx);
+      } catch { /* keep original */ }
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing?.id, lang]);
+
   if (!listing) return null;
   const a = listing;
   // Is this the logged-in user's own listing? Then show Edit, not Buy/Message.
@@ -3871,7 +3910,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
       {/* Specs grid */}
       <div className="px-5 mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
-        {(a.category === "equipment" || a.category === "livefood") ? (
+        {(a.category === "equipment" || a.category === "livefood" || a.category === "educativo") ? (
           a.common && <Spec label={lang === "it" ? "Tipo" : "Type"}>{a.common}</Spec>
         ) : (
           <>
@@ -3913,7 +3952,15 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
 
       {/* Description */}
       <Section title={t.description}>
-        <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-line">{a.desc}</p>
+        <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-line">{(trDesc && !showOrig) ? trDesc : a.desc}</p>
+        {trDesc && (
+          <button type="button" onClick={() => setShowOrig(o => !o)}
+                  className="mt-2 text-[11px] text-amber-500/80 hover:text-amber-400 underline underline-offset-2">
+            {showOrig
+              ? (lang === "it" ? "Mostra traduzione" : "Show translation")
+              : (lang === "it" ? "Tradotto automaticamente · mostra originale" : "Auto-translated · show original")}
+          </button>
+        )}
       </Section>
 
       {/* Parentage — only shown when the seller has linked a parent. Hidden
@@ -5022,6 +5069,8 @@ function SellScreen({ t, lang, go, user, editListing }) {
       if (!condition) { setSaveErr(lang === "it" ? "Scegli la condizione" : "Choose the condition"); return; }
     } else if (isLiveFood) {
       if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di cibo vivo" : "Choose the live food type"); return; }
+    } else if (isEducational) {
+      if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di contenuto" : "Choose the content type"); return; }
     } else if (!speciesVal.trim() || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
     const isAuction = saleMode === "auction";
     const basePrice = isAuction ? Number(startPrice) : Number(price);
@@ -5080,6 +5129,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
       } else if (isLiveFood) {
         // Live food: TYPE -> common; optional FORMAT/size -> first trait chip.
         common = lfTypeLabel(subcatId, "it");
+        speciesOut = null;
+        traits = brand.trim() ? [{ name: brand.trim(), cls: "line" }] : [];
+      } else if (isEducational) {
+        // Educational: TYPE -> common; optional AUTHOR -> first trait chip.
+        common = eduTypeLabel(subcatId, "it");
         speciesOut = null;
         traits = brand.trim() ? [{ name: brand.trim(), cls: "line" }] : [];
       } else if (isExotic) {
@@ -5143,9 +5197,11 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [catId, setCatId] = useState(editListing?.category || draft.catId || "");
   const _editEquip = isEdit && editListing?.category === "equipment";
   const _editLF = isEdit && editListing?.category === "livefood";
+  const _editEdu = isEdit && editListing?.category === "educativo";
   const [subcatId, setSubcatId] = useState(
     _editEquip ? eqTypeIdFromLabel(editListing.common)
     : _editLF ? lfTypeIdFromLabel(editListing.common)
+    : _editEdu ? eduTypeIdFromLabel(editListing.common)
     : (draft.subcatId || ""));
   const [speciesVal, setSpeciesVal] = useState(editListing?.species || draft.speciesVal || "");
   // Equipment: condition + brand ride in the first two trait chips.
@@ -5155,6 +5211,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
   const [brand, setBrand] = useState(
     _editEquip ? (editListing.traits?.[1]?.name || "")
     : _editLF ? (editListing.traits?.[0]?.name || "")
+    : _editEdu ? (editListing.traits?.[0]?.name || "")
     : "");
   // Country → region
   const [country, setCountry] = useState(editListing?.country || draft.country || "IT");
@@ -5230,9 +5287,10 @@ function SellScreen({ t, lang, go, user, editListing }) {
   // CITES) and "other exotics" (free-text species, no morphs).
   const isEquipment = catId === "equipment";
   const isLiveFood = catId === "livefood";
-  const isExotic = catId === "exotics";
-  // Goods = non-animal listings (equipment, live food): no species/sex/morph/CITES.
-  const isGoods = isEquipment || isLiveFood;
+  const isEducational = catId === "educativo";
+  const isExotic = catId === "exotics" || catId === "gasteropodi";
+  // Goods = non-animal listings (equipment, live food, educational): no species/sex/morph/CITES.
+  const isGoods = isEquipment || isLiveFood || isEducational;
   const isSimple = isGoods || isExotic;
 
   if (success) {
@@ -5380,7 +5438,23 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </>
           )}
 
-          {/* Other exotics: free-text species, no morphs */}
+          {/* Educational: content type + optional author (no condition/morphs) */}
+          {isEducational && (
+            <>
+              <FormBlock label={lang === "it" ? "Tipo di contenuto" : "Content type"} required done={!!subcatId}>
+                <select className="form-input" value={subcatId} onChange={e => setSubcatId(e.target.value)}>
+                  <option value="">{lang === "it" ? "Scegli tipo" : "Choose type"}</option>
+                  {EDU_TYPES.map(x => <option key={x.id} value={x.id}>{x[lang]}</option>)}
+                </select>
+              </FormBlock>
+              <FormBlock label={lang === "it" ? "Autore (facoltativo)" : "Author (optional)"}>
+                <input className="form-input" value={brand} onChange={e => setBrand(e.target.value)}
+                       placeholder={lang === "it" ? "" : ""} />
+              </FormBlock>
+            </>
+          )}
+
+          {/* Other exotics & gastropods: free-text species, no morphs */}
           {isExotic && (
             <FormBlock label={lang === "it" ? "Specie / animale" : "Species / animal"}
                        required done={!!speciesVal.trim() && speciesVal !== "__other"}>
@@ -7021,7 +7095,7 @@ function AddAnimalScreen({ t, lang, go, user }) {
         <FormBlock label={t.category} required done={!!catId}>
           <select className="form-input" value={catId} onChange={e => { setCatId(e.target.value); setSubcatId(""); setSpeciesVal(""); }}>
             <option value="">{lang === "it" ? "Scegli categoria" : "Choose category"}</option>
-            {CATEGORIES.filter(c => c.id !== "equipment" && c.id !== "exotics" && c.id !== "livefood").map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
+            {CATEGORIES.filter(c => c.id !== "equipment" && c.id !== "exotics" && c.id !== "livefood" && c.id !== "gasteropodi" && c.id !== "educativo").map(c => <option key={c.id} value={c.id}>{c[lang]}</option>)}
           </select>
         </FormBlock>
         {catId && (

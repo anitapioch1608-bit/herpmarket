@@ -991,3 +991,24 @@ export async function deleteWanted(id) {
   const { error } = await supabase.from('wanted').delete().eq('id', id);
   if (error) throw error;
 }
+
+// ── TRANSLATION ─────────────────────────────────────────────────────────────
+// Calls the `translate` edge function (DeepL, cached server-side). Returns an
+// array of translated strings in the SAME order as `texts`. On ANY failure it
+// returns the original texts, so the UI silently falls back to the source
+// language and a missing key / network blip never breaks a page.
+export async function translateTexts(texts, target, source) {
+  const arr = Array.isArray(texts) ? texts : [texts];
+  if (!arr.length || !target) return arr;
+  try {
+    const { data, error } = await supabase.functions.invoke('translate', {
+      body: { q: arr, target, source: source || null },
+    });
+    if (error) throw error;
+    const out = data && data.translations;
+    return (Array.isArray(out) && out.length === arr.length) ? out : arr;
+  } catch (e) {
+    console.warn('[translate] falling back to original:', e?.message || e);
+    return arr;
+  }
+}
