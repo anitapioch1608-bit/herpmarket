@@ -4985,7 +4985,7 @@ function DocumentModal({ listing, requiresCITES, buyerName, buyerAddress = "", o
         W / 2, 287, { align: "center" }
       );
 
-      doc.save(`${requiresCITES ? "CITES" : "Origine"}_${a.species.replace(/\s+/g, "_")}_${txId}.pdf`);
+      savePdf(doc,`${requiresCITES ? "CITES" : "Origine"}_${a.species.replace(/\s+/g, "_")}_${txId}.pdf`);
     } catch (e) {
       console.error("PDF generation failed", e);
       alert(lang === "it" ? "Generazione PDF non riuscita. Riprova." : "PDF generation failed. Please try again.");
@@ -7165,9 +7165,13 @@ function MyListingsScreen({ t, lang, go, user }) {
                         {t.mlEdit}
                       </button>
                     )}
-                    <button onClick={() => { setRemoveFor(removeFor?.id === l.id ? null : l); setEditId(null); setSoldFor(null); }}
+                    <button onClick={() => changeStatus(l.id, "held")} disabled={busy}
                             className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-stone-800 text-stone-200 hover:bg-stone-700 transition-colors">
-                      {t.mlManage || (lang === "it" ? "Gestisci" : "Manage")}
+                      {t.removeToHeld}
+                    </button>
+                    <button onClick={() => { setRemoveFor(removeFor?.id === l.id ? null : l); setEditId(null); setSoldFor(null); }}
+                            className="text-[11px] font-bold px-3 py-1.5 rounded-md bg-rose-500/10 ring-1 ring-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-colors">
+                      {t.mlDelete}
                     </button>
                   </>
                 )}
@@ -7240,25 +7244,14 @@ function MyListingsScreen({ t, lang, go, user }) {
             {/* Remove-from-sale panel — choose what happens to the animal */}
             {removeFor?.id === l.id && (
               <div className="border-t border-stone-800 p-3.5 bg-rose-500/5 space-y-2.5">
-                <div className="text-[11px] font-bold text-stone-200">{t.removeListingTitle}</div>
-                <p className="text-[11px] text-stone-400">{t.removeListingIntro}</p>
-                <div className="space-y-1.5">
-                  <button onClick={() => changeStatus(l.id, "held")} disabled={busy}
-                          className="w-full py-2 rounded-lg text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors">
-                    {t.removeToHeld}
-                  </button>
-                  {bucket(l) === "active" && (
-                    <button onClick={() => { setSoldFor(l); setRemoveFor(null); }} disabled={busy}
-                            className="w-full py-2 rounded-lg text-[11px] font-bold bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-colors">
-                      {t.removeToSold}
-                    </button>
-                  )}
+                <div className="text-[11px] font-bold text-stone-200">{t.mlConfirmDelete}</div>
+                <div className="flex gap-2">
                   <button onClick={() => doDelete(l.id)} disabled={busy}
-                          className="w-full py-2 rounded-lg text-[11px] font-bold bg-rose-500 hover:bg-rose-400 disabled:bg-stone-700 text-white transition-colors">
+                          className="flex-1 py-2 rounded-lg text-[11px] font-bold bg-rose-500 hover:bg-rose-400 disabled:bg-stone-700 text-white transition-colors">
                     {busy ? t.processing : t.removeDelete}
                   </button>
                   <button onClick={() => setRemoveFor(null)}
-                          className="w-full py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
+                          className="flex-1 py-2 rounded-lg text-[11px] font-bold ring-1 ring-stone-700 text-stone-300 hover:text-stone-100 transition-colors">
                     {t.deleteCancel}
                   </button>
                 </div>
@@ -9752,11 +9745,30 @@ async function printCitesRecord(r, t, lang) {
   }
 
   pdfFooter(doc, t.citesDataDisclaimer);
-  doc.save(`cites-data-${String(r.species || "animal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+  savePdf(doc,`cites-data-${String(r.species || "animal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
 
 /* 2) Animal record / care sheet — includes the main photo and every detail
       we hold on the animal. */
+// Output a generated PDF so it PREVIEWS on phones (a silent download often does
+// nothing inside the installed app), with a download fallback if popups are
+// blocked, and the original save as a last resort.
+function savePdf(doc, filename) {
+  try {
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if (!w) {
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 60000);
+  } catch (e) {
+    try { doc.save(filename); } catch (_) {}
+  }
+}
+
 // Draw ONE animal's passport onto the current page of `doc`. Async because it
 // loads photos. Shared by the single-animal print and the bulk "all passports".
 async function drawPassportPage(doc, a, t, lang) {
@@ -9879,7 +9891,7 @@ async function printAnimalRecord(a, t, lang) {
   const jsPDF = await loadJsPDF();
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   await drawPassportPage(doc, a, t, lang);
-  doc.save(`passport-${String(a.title || a.species || "animal").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`);
+  savePdf(doc,`passport-${String(a.title || a.species || "animal").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`);
 }
 
 // All animals → one PDF, one passport per page.
@@ -9892,7 +9904,7 @@ async function printAllPassports(animals, t, lang) {
     if (i > 0) doc.addPage();
     await drawPassportPage(doc, list[i], t, lang);
   }
-  doc.save(`herpmarket-passports-${list.length}.pdf`);
+  savePdf(doc,`herpmarket-passports-${list.length}.pdf`);
 }
 
 /* 3) Collection inventory — a table of all the keeper's animals. */
@@ -9971,7 +9983,7 @@ async function printInventory(animals, t, lang, ownerName) {
     doc.text("herpmarket.it", M, 205);
   }
 
-  doc.save("collection-inventory.pdf");
+  savePdf(doc,"collection-inventory.pdf");
 }
 
 /* CITES data archive — a convenience summary of the seller's completed sales,
