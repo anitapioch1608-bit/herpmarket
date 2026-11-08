@@ -629,9 +629,9 @@ export async function fetchUnreadCount(userId) {
   return count || 0;
 }
 
-export async function sendMessage(threadId, senderId, body) {
+export async function sendMessage(threadId, senderId, body, imageUrl = null) {
   const { data, error } = await supabase.from('messages')
-    .insert({ thread_id: threadId, sender_id: senderId, body })
+    .insert({ thread_id: threadId, sender_id: senderId, body: body || '', image_url: imageUrl || null })
     .select().single();
   if (error) throw error;
   return data;

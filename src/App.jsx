@@ -6475,6 +6475,8 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const scrollRef = useRef(null);
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
   // Load an existing conversation's messages. A brand-new conversation is NOT
   // created here — only when the first message is actually sent (see send()),
@@ -6544,6 +6546,30 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
     }
   };
 
+  // Send a photo: compress + upload, then post a message carrying the image URL.
+  const sendImage = async (file) => {
+    if (!file || !user?.id || uploading) return;
+    setUploading(true); setErr("");
+    const optimistic = { id: `tmp-${Date.now()}`, sender_id: user.id, body: "", image_url: URL.createObjectURL(file), created_at: new Date().toISOString() };
+    setMessages(prev => [...prev, optimistic]);
+    try {
+      const api = await loadApi();
+      let tid = threadId;
+      if (!tid) {
+        const sellerId = target.sellerId || target.seller_id;
+        if (!sellerId || !target.id) throw new Error(t.chatNoThread || "Error");
+        const thread = await api.getOrCreateThread(target.id, sellerId, user.id);
+        tid = thread.id; setThreadId(tid);
+      }
+      const urls = await api.uploadListingPhotos([file], user.id);
+      const saved = await api.sendMessage(tid, user.id, "", urls[0]);
+      setMessages(prev => prev.map(m => m.id === optimistic.id ? saved : m));
+    } catch (e) {
+      setErr(e?.message || "Error");
+      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
+    } finally { setUploading(false); }
+  };
+
   // The composer is usable as soon as we can reach a seller; the thread row
   // itself is created on the first send, not when the chat opens.
   const canSend = !!(threadId || (target?.id && (target.sellerId || target.seller_id)));
@@ -6583,10 +6609,15 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
                 <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider">{senderName}</span>
                 <span className="text-[9px] text-stone-600 font-medium">{msgTime(m.created_at, lang)}</span>
               </div>
-              <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
-                mine ? "bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"
-              }`}>
-                {m.body}
+              <div className={`max-w-[85%] rounded-2xl text-sm overflow-hidden ${
+                m.image_url ? "p-1" : "px-3.5 py-2.5"
+              } ${mine ? "bg-amber-500 text-stone-950 rounded-tr-sm" : "bg-stone-800 text-stone-100 rounded-tl-sm"}`}>
+                {m.image_url && (
+                  <a href={m.image_url} target="_blank" rel="noopener noreferrer" className="block">
+                    <img src={m.image_url} alt="" loading="lazy" className="rounded-xl w-full max-h-64 object-cover" />
+                  </a>
+                )}
+                {m.body ? <div className={m.image_url ? "px-2 pt-1.5 pb-0.5" : ""}>{m.body}</div> : null}
               </div>
               {mine && (
                 <span className="text-[9px] text-stone-500 mt-0.5 px-1 flex items-center gap-1">
@@ -6601,7 +6632,14 @@ function ChatThread({ chat, t, lang, go, user, onRead }) {
       </div>
 
       {/* Input */}
-      <div className="px-3 py-3 border-t border-stone-800 flex gap-2 bg-stone-950">
+      <div className="px-3 py-3 border-t border-stone-800 flex gap-2 items-center bg-stone-950">
+        <input ref={fileRef} type="file" accept="image/*" className="hidden"
+               onChange={e => { const f = e.target.files?.[0]; if (f) sendImage(f); e.target.value = ""; }} />
+        <button onClick={() => fileRef.current?.click()} disabled={!canSend || uploading}
+                aria-label={lang === "it" ? "Allega foto" : "Attach photo"}
+                className="shrink-0 bg-stone-900 ring-1 ring-stone-800 hover:ring-amber-500/60 text-stone-300 hover:text-amber-400 p-2.5 rounded-full transition-colors disabled:opacity-50">
+          <Camera size={18} className={uploading ? "animate-pulse" : ""} />
+        </button>
         <input value={input} onChange={e => setInput(e.target.value)}
                onKeyDown={e => e.key === "Enter" && send()}
                placeholder={t.typeMessage} disabled={!canSend}
@@ -9753,16 +9791,35 @@ async function printCitesRecord(r, t, lang) {
 // Output a generated PDF so it PREVIEWS on phones (a silent download often does
 // nothing inside the installed app), with a download fallback if popups are
 // blocked, and the original save as a last resort.
-function savePdf(doc, filename) {
+async function savePdf(doc, filename) {
+  let blob;
+  try { blob = doc.output("blob"); }
+  catch (e) { try { doc.save(filename); } catch (_) {} return; }
+
+  // Installed app (PWA) on phones: a new tab/download can't read the app's
+  // internal blob: URL, so it shows blank. The reliable path is the native
+  // share sheet with the actual PDF file — from there it can be opened in a
+  // PDF viewer, saved to Files/Drive, or sent to someone.
   try {
-    const blob = doc.output("blob");
-    const url = URL.createObjectURL(blob);
-    const w = window.open(url, "_blank");
-    if (!w) {
-      const a = document.createElement("a");
-      a.href = url; a.download = filename; a.rel = "noopener";
-      document.body.appendChild(a); a.click(); a.remove();
+    if (typeof File !== "undefined" && navigator.canShare) {
+      const file = new File([blob], filename, { type: "application/pdf" });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return;
+      }
     }
+  } catch (e) {
+    if (e && e.name === "AbortError") return;   // user closed the share sheet
+    // otherwise fall through to the download path below
+  }
+
+  // Desktop / browsers without file sharing: download the file and open a tab.
+  try {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    window.open(url, "_blank");
     setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 60000);
   } catch (e) {
     try { doc.save(filename); } catch (_) {}
