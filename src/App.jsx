@@ -236,9 +236,11 @@ const I18N = {
     citesDataChannel: "Canale",
     citesDataCopy: "Copia i dati",
     citesDataPrint: "Stampa / PDF",
-    printAnimalTitle: "Scheda animale",
+    printAnimalTitle: "Passaporto animale",
     printInventoryTitle: "Inventario della collezione",
-    printRecord: "Stampa scheda",
+    printRecord: "Stampa passaporto",
+    printAllPassports: "Stampa tutti i passaporti",
+    passport: "Passaporto",
     printInventory: "Stampa inventario",
     printing: "Generazione…",
     citesDataCopied: "Copiato",
@@ -511,9 +513,11 @@ const I18N = {
     citesDataChannel: "Channel",
     citesDataCopy: "Copy data",
     citesDataPrint: "Print / PDF",
-    printAnimalTitle: "Animal record",
+    printAnimalTitle: "Animal passport",
     printInventoryTitle: "Collection inventory",
-    printRecord: "Print record",
+    printRecord: "Print animal passport",
+    printAllPassports: "Print all passports",
+    passport: "Passport",
     printInventory: "Print inventory",
     printing: "Generating…",
     citesDataCopied: "Copied",
@@ -783,9 +787,11 @@ const I18N = {
     citesDataChannel: "Kanal",
     citesDataCopy: "Daten kopieren",
     citesDataPrint: "Drucken / PDF",
-    printAnimalTitle: "Tierdatenblatt",
+    printAnimalTitle: "Tierpass",
     printInventoryTitle: "Bestandsliste",
-    printRecord: "Datenblatt drucken",
+    printRecord: "Tierpass drucken",
+    printAllPassports: "Alle Tierpässe drucken",
+    passport: "Tierpass",
     printInventory: "Bestand drucken",
     printing: "Wird erstellt…",
     citesDataCopied: "Kopiert",
@@ -1294,18 +1300,18 @@ function getTraitsForScope(categoryId, species) {
 
 /* ───── Categories (counts driven by mock listings; placeholders here) ── */
 const CATEGORIES = [
-  { id: "geckos",      it: "Gechi",       en: "Geckos",      emoji: "🦎" },
-  { id: "snakes",      it: "Serpenti",    en: "Snakes",      emoji: "🐍" },
-  { id: "lizards",     it: "Sauri",       en: "Lizards",     emoji: "🦖" },
-  { id: "chameleons",  it: "Camaleonti",  en: "Chameleons",  emoji: "🦎" },
-  { id: "tortoises",   it: "Testuggini",  en: "Tortoises",   emoji: "🐢" },
-  { id: "amphibians",  it: "Anfibi",      en: "Amphibians",  emoji: "🐸" },
-  { id: "inverts",     it: "Invertebrati",en: "Invertebrates",emoji: "🕷️" },
-  { id: "exotics",     it: "Altri esotici",en: "Other exotics", emoji: "🦔" },
-  { id: "gasteropodi", it: "Gasteropodi",  en: "Gastropods",    emoji: "🐌" },
-  { id: "equipment",   it: "Attrezzatura", en: "Equipment",     emoji: "🧰" },
-  { id: "livefood",    it: "Cibo vivo",    en: "Live food",     emoji: "🦗" },
-  { id: "educativo",   it: "Educativo",    en: "Educational",   emoji: "📚" },
+  { id: "geckos",      it: "Gechi",       en: "Geckos",      de: "Geckos",       emoji: "🦎" },
+  { id: "snakes",      it: "Serpenti",    en: "Snakes",      de: "Schlangen",    emoji: "🐍" },
+  { id: "lizards",     it: "Sauri",       en: "Lizards",     de: "Echsen",       emoji: "🦖" },
+  { id: "chameleons",  it: "Camaleonti",  en: "Chameleons",  de: "Chamäleons",   emoji: "🦎" },
+  { id: "tortoises",   it: "Testuggini",  en: "Tortoises",   de: "Schildkröten", emoji: "🐢" },
+  { id: "amphibians",  it: "Anfibi",      en: "Amphibians",  de: "Amphibien",    emoji: "🐸" },
+  { id: "inverts",     it: "Invertebrati",en: "Invertebrates",de: "Wirbellose",  emoji: "🕷️" },
+  { id: "exotics",     it: "Altri esotici",en: "Other exotics", de: "Andere Exoten", emoji: "🦔" },
+  { id: "gasteropodi", it: "Gasteropodi",  en: "Gastropods",    de: "Schnecken",     emoji: "🐌" },
+  { id: "equipment",   it: "Attrezzatura", en: "Equipment",     de: "Zubehör",       emoji: "🧰" },
+  { id: "livefood",    it: "Cibo vivo",    en: "Live food",     de: "Lebendfutter",  emoji: "🦗" },
+  { id: "educativo",   it: "Educativo",    en: "Educational",   de: "Lehrmaterial",  emoji: "📚" },
 ];
 
 // Localise expo names + dates for non-Italian UIs: swap seasonal words and
@@ -1397,37 +1403,37 @@ const REGIONS = [
    is NOT in the EU, so CH↔EU movement crosses a customs border (extra rules).
    The flag emoji renders on cards, seller pages, and the detail view. */
 const COUNTRIES = [
-  { code: "IT", flag: "🇮🇹", it: "Italia",          en: "Italy",          eu: true  },
-  { code: "DE", flag: "🇩🇪", it: "Germania",        en: "Germany",        eu: true  },
-  { code: "AT", flag: "🇦🇹", it: "Austria",         en: "Austria",        eu: true  },
-  { code: "FR", flag: "🇫🇷", it: "Francia",         en: "France",         eu: true  },
-  { code: "ES", flag: "🇪🇸", it: "Spagna",          en: "Spain",          eu: true  },
-  { code: "PT", flag: "🇵🇹", it: "Portogallo",      en: "Portugal",       eu: true  },
-  { code: "NL", flag: "🇳🇱", it: "Paesi Bassi",     en: "Netherlands",    eu: true  },
-  { code: "BE", flag: "🇧🇪", it: "Belgio",          en: "Belgium",        eu: true  },
-  { code: "LU", flag: "🇱🇺", it: "Lussemburgo",     en: "Luxembourg",     eu: true  },
-  { code: "CZ", flag: "🇨🇿", it: "Rep. Ceca",       en: "Czech Republic", eu: true  },
-  { code: "SK", flag: "🇸🇰", it: "Slovacchia",      en: "Slovakia",       eu: true  },
-  { code: "PL", flag: "🇵🇱", it: "Polonia",         en: "Poland",         eu: true  },
-  { code: "HU", flag: "🇭🇺", it: "Ungheria",        en: "Hungary",        eu: true  },
-  { code: "SI", flag: "🇸🇮", it: "Slovenia",        en: "Slovenia",       eu: true  },
-  { code: "HR", flag: "🇭🇷", it: "Croazia",         en: "Croatia",        eu: true  },
-  { code: "RO", flag: "🇷🇴", it: "Romania",         en: "Romania",        eu: true  },
-  { code: "BG", flag: "🇧🇬", it: "Bulgaria",        en: "Bulgaria",       eu: true  },
-  { code: "GR", flag: "🇬🇷", it: "Grecia",          en: "Greece",         eu: true  },
-  { code: "DK", flag: "🇩🇰", it: "Danimarca",       en: "Denmark",        eu: true  },
-  { code: "SE", flag: "🇸🇪", it: "Svezia",          en: "Sweden",         eu: true  },
-  { code: "FI", flag: "🇫🇮", it: "Finlandia",       en: "Finland",        eu: true  },
-  { code: "IE", flag: "🇮🇪", it: "Irlanda",         en: "Ireland",        eu: true  },
-  { code: "EE", flag: "🇪🇪", it: "Estonia",         en: "Estonia",        eu: true  },
-  { code: "LV", flag: "🇱🇻", it: "Lettonia",        en: "Latvia",         eu: true  },
-  { code: "LT", flag: "🇱🇹", it: "Lituania",        en: "Lithuania",      eu: true  },
-  { code: "MT", flag: "🇲🇹", it: "Malta",           en: "Malta",          eu: true  },
-  { code: "CY", flag: "🇨🇾", it: "Cipro",           en: "Cyprus",         eu: true  },
+  { code: "IT", flag: "🇮🇹", it: "Italia",          en: "Italy",          de: "Italien",               eu: true  },
+  { code: "DE", flag: "🇩🇪", it: "Germania",        en: "Germany",        de: "Deutschland",           eu: true  },
+  { code: "AT", flag: "🇦🇹", it: "Austria",         en: "Austria",        de: "Österreich",            eu: true  },
+  { code: "FR", flag: "🇫🇷", it: "Francia",         en: "France",         de: "Frankreich",            eu: true  },
+  { code: "ES", flag: "🇪🇸", it: "Spagna",          en: "Spain",          de: "Spanien",               eu: true  },
+  { code: "PT", flag: "🇵🇹", it: "Portogallo",      en: "Portugal",       de: "Portugal",              eu: true  },
+  { code: "NL", flag: "🇳🇱", it: "Paesi Bassi",     en: "Netherlands",    de: "Niederlande",           eu: true  },
+  { code: "BE", flag: "🇧🇪", it: "Belgio",          en: "Belgium",        de: "Belgien",               eu: true  },
+  { code: "LU", flag: "🇱🇺", it: "Lussemburgo",     en: "Luxembourg",     de: "Luxemburg",             eu: true  },
+  { code: "CZ", flag: "🇨🇿", it: "Rep. Ceca",       en: "Czech Republic", de: "Tschechien",            eu: true  },
+  { code: "SK", flag: "🇸🇰", it: "Slovacchia",      en: "Slovakia",       de: "Slowakei",              eu: true  },
+  { code: "PL", flag: "🇵🇱", it: "Polonia",         en: "Poland",         de: "Polen",                 eu: true  },
+  { code: "HU", flag: "🇭🇺", it: "Ungheria",        en: "Hungary",        de: "Ungarn",                eu: true  },
+  { code: "SI", flag: "🇸🇮", it: "Slovenia",        en: "Slovenia",       de: "Slowenien",             eu: true  },
+  { code: "HR", flag: "🇭🇷", it: "Croazia",         en: "Croatia",        de: "Kroatien",              eu: true  },
+  { code: "RO", flag: "🇷🇴", it: "Romania",         en: "Romania",        de: "Rumänien",              eu: true  },
+  { code: "BG", flag: "🇧🇬", it: "Bulgaria",        en: "Bulgaria",       de: "Bulgarien",             eu: true  },
+  { code: "GR", flag: "🇬🇷", it: "Grecia",          en: "Greece",         de: "Griechenland",          eu: true  },
+  { code: "DK", flag: "🇩🇰", it: "Danimarca",       en: "Denmark",        de: "Dänemark",              eu: true  },
+  { code: "SE", flag: "🇸🇪", it: "Svezia",          en: "Sweden",         de: "Schweden",              eu: true  },
+  { code: "FI", flag: "🇫🇮", it: "Finlandia",       en: "Finland",        de: "Finnland",              eu: true  },
+  { code: "IE", flag: "🇮🇪", it: "Irlanda",         en: "Ireland",        de: "Irland",                eu: true  },
+  { code: "EE", flag: "🇪🇪", it: "Estonia",         en: "Estonia",        de: "Estland",               eu: true  },
+  { code: "LV", flag: "🇱🇻", it: "Lettonia",        en: "Latvia",         de: "Lettland",              eu: true  },
+  { code: "LT", flag: "🇱🇹", it: "Lituania",        en: "Lithuania",      de: "Litauen",               eu: true  },
+  { code: "MT", flag: "🇲🇹", it: "Malta",           en: "Malta",          de: "Malta",                 eu: true  },
+  { code: "CY", flag: "🇨🇾", it: "Cipro",           en: "Cyprus",         de: "Zypern",                eu: true  },
   // Outside the EU — customs border, extra rules (cross-border warning applies)
-  { code: "CH", flag: "🇨🇭", it: "Svizzera",        en: "Switzerland",    eu: false },
-  { code: "GB", flag: "🇬🇧", it: "Regno Unito",     en: "United Kingdom", eu: false },
-  { code: "NO", flag: "🇳🇴", it: "Norvegia",        en: "Norway",         eu: false },
+  { code: "CH", flag: "🇨🇭", it: "Svizzera",        en: "Switzerland",    de: "Schweiz",               eu: false },
+  { code: "GB", flag: "🇬🇧", it: "Regno Unito",     en: "United Kingdom", de: "Vereinigtes Königreich", eu: false },
+  { code: "NO", flag: "🇳🇴", it: "Norvegia",        en: "Norway",         de: "Norwegen",              eu: false },
 ];
 const countryByCode = (code) => COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
 
@@ -2668,6 +2674,25 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
     return m;
   }, [LIST]);
 
+  // Category strip scroller: arrow affordances so people know there are more
+  // categories than fit (desktop click-to-scroll, phone "more" hint).
+  const catScrollRef = useRef(null);
+  const [catArrows, setCatArrows] = useState({ left: false, right: true });
+  const updateCatArrows = () => {
+    const el = catScrollRef.current; if (!el) return;
+    setCatArrows({
+      left: el.scrollLeft > 8,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 8,
+    });
+  };
+  useEffect(() => {
+    updateCatArrows();
+    const onR = () => updateCatArrows();
+    window.addEventListener("resize", onR);
+    return () => window.removeEventListener("resize", onR);
+  }, []);
+  const scrollCats = (dir) => catScrollRef.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
+
   return (
     <div className="max-w-7xl mx-auto w-full">
       {/* Temporary post-Verona thank-you banner (remove when no longer needed) */}
@@ -2761,20 +2786,42 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         <div className="flex items-baseline justify-between mb-3">
           <h3 className="font-display text-base md:text-lg text-stone-100 tracking-tight">{t.browseByCategory}</h3>
         </div>
-        <div className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5 md:mx-0 md:px-0 pb-2">
-          {CATEGORIES.map((c, i) => (
-            <button key={c.id}
-                    onClick={() => {
-                      setFilter({ ...filter, category: c.id });
-                      go("search", null, true); // fresh = start at top
-                    }}
-                    className="anim-up shrink-0 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all min-w-[110px] text-left"
-                    style={{ animationDelay: `${i * 30}ms` }}>
-              <div className="text-2xl mb-1.5">{c.emoji}</div>
-              <div className="font-bold text-sm text-stone-100">{c[lang]}</div>
-              <div className="text-[10px] text-stone-500 font-medium">{catCounts[c.id] || 0} {lang === "it" ? "annunci" : "listings"}</div>
+        <div className="relative">
+          <div ref={catScrollRef} onScroll={updateCatArrows}
+               className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5 md:mx-0 md:px-0 pb-2">
+            {CATEGORIES.map((c, i) => (
+              <button key={c.id}
+                      onClick={() => {
+                        setFilter({ ...filter, category: c.id });
+                        go("search", null, true); // fresh = start at top
+                      }}
+                      className="anim-up shrink-0 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all min-w-[110px] text-left"
+                      style={{ animationDelay: `${i * 30}ms` }}>
+                <div className="text-2xl mb-1.5">{c.emoji}</div>
+                <div className="font-bold text-sm text-stone-100">{c[lang]}</div>
+                <div className="text-[10px] text-stone-500 font-medium">{catCounts[c.id] || 0} {lang === "it" ? "annunci" : "listings"}</div>
+              </button>
+            ))}
+          </div>
+          {/* Left scroll button — desktop, once scrolled */}
+          {catArrows.left && (
+            <button type="button" onClick={() => scrollCats(-1)}
+                    aria-label={lang === "it" ? "Categorie precedenti" : "Previous categories"}
+                    className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-9 h-9 rounded-full bg-stone-900/90 border border-stone-700 text-stone-200 hover:text-amber-400 hover:border-amber-500/50 shadow-lg backdrop-blur transition-colors">
+              <ChevronLeft size={18} />
             </button>
-          ))}
+          )}
+          {/* Right scroll button + fade — signals "more categories" on phone and desktop */}
+          {catArrows.right && (
+            <>
+              <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-14 bg-gradient-to-l from-stone-950 via-stone-950/80 to-transparent" />
+              <button type="button" onClick={() => scrollCats(1)}
+                      aria-label={lang === "it" ? "Altre categorie" : "More categories"}
+                      className="flex absolute right-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-9 h-9 rounded-full bg-amber-500 text-stone-950 shadow-lg hover:bg-amber-400 active:scale-95 transition-all">
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Quick-access: icon + one clear word each (readable on phones) */}
@@ -4189,11 +4236,11 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
           <ChevronLeft size={20} />
         </button>
         <button onClick={(e) => { e.stopPropagation(); shareListing(a, t, lang); }} aria-label="Condividi / Share"
-                className="absolute top-5 right-[4.5rem] p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
+                className="absolute top-5 right-[8.5rem] md:right-[4.5rem] p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors z-10">
           <Share2 size={20} />
         </button>
         <button onClick={(e) => toggleFav(a.id, e)} aria-label="Save to favourites"
-                className="absolute top-5 right-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full transition-colors z-10">
+                className="absolute top-5 right-20 md:right-4 p-2.5 bg-stone-950/70 backdrop-blur-md rounded-full transition-colors z-10">
           <Heart size={20} className={favorites.includes(a.id) ? "fill-rose-500 text-rose-500" : "text-stone-100"} />
         </button>
       </div>
@@ -4490,12 +4537,12 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         </Section>
       )}
 
-      {/* Owner: print this animal's record. Quiet link, same row style as report. */}
+      {/* Owner: print this animal's passport — a prominent action. */}
       {isMine && (
-        <div className="px-5 md:px-8 pb-28 md:pb-24 pt-2 text-center">
+        <div className="px-5 md:px-8 pb-28 md:pb-24 pt-2">
           <button onClick={() => printAnimalRecord(a, t, lang)}
-                  className="inline-flex items-center gap-1.5 text-[11px] text-stone-500 hover:text-stone-300 transition-colors">
-            <FileText size={12} />{t.printRecord}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-amber-500/15 ring-1 ring-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-bold text-sm px-4 py-3.5 rounded-xl transition-colors">
+            <FileText size={17} />{t.printRecord}
           </button>
         </div>
       )}
@@ -5791,7 +5838,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
               <select className="form-input" value={subcatId}
                       onChange={e => { setSubcatId(e.target.value); setSpeciesVal(""); }}>
                 <option value="">{lang === "it" ? "Scegli sottocategoria" : "Choose subcategory"}</option>
-                {subcats.map(sc => <option key={sc.id} value={sc.id}>{sc[lang]}</option>)}
+                {subcats.map(sc => <option key={sc.id} value={sc.id}>{sc[lang] || sc.en}</option>)}
               </select>
             </FormBlock>
           )}
@@ -6999,6 +7046,11 @@ function MyListingsScreen({ t, lang, go, user }) {
             <Check size={15} strokeWidth={3} />{toast}
           </div>
         )}
+        <button onClick={() => printAllPassports(items || [], t, lang)}
+                disabled={!items || items.length === 0}
+                className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500/15 ring-1 ring-amber-500/40 hover:bg-amber-500/25 disabled:opacity-40 text-amber-300 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
+          <FileText size={14} />{t.printAllPassports}
+        </button>
         <button onClick={() => printInventory(items || [], t, lang, user?.name)}
                 disabled={!items || items.length === 0}
                 className="shrink-0 inline-flex items-center gap-1.5 bg-stone-800/70 ring-1 ring-stone-700 hover:bg-stone-800 disabled:opacity-40 text-stone-300 font-bold text-[11px] px-3 py-2 rounded-lg transition-colors">
@@ -7087,6 +7139,16 @@ function MyListingsScreen({ t, lang, go, user }) {
 
               {/* Actions depend on which bucket the animal is in */}
               <div className="flex flex-col gap-1.5 shrink-0">
+                <div className="flex gap-1.5">
+                  <button onClick={() => printAnimalRecord(l, t, lang)}
+                          className="flex-1 text-[11px] font-bold px-2.5 py-1.5 rounded-md bg-sky-500/10 ring-1 ring-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-colors inline-flex items-center justify-center gap-1">
+                    <FileText size={11} />{t.passport}
+                  </button>
+                  <button onClick={() => shareListing(l, t, lang)} aria-label={lang === "it" ? "Condividi annuncio" : "Share listing"}
+                          className="flex-1 text-[11px] font-bold px-2.5 py-1.5 rounded-md bg-amber-500/10 ring-1 ring-amber-500/30 text-amber-300 hover:bg-amber-500/20 transition-colors inline-flex items-center justify-center gap-1">
+                    <Share2 size={11} />{lang === "it" ? "Condividi" : "Share"}
+                  </button>
+                </div>
                 {bucket(l) === "active" && (
                   <>
                     <button onClick={() => { setSoldFor(soldFor?.id === l.id ? null : l); setEditId(null); setRemoveFor(null); }}
@@ -7666,6 +7728,18 @@ function EditStoreScreen({ t, lang, go, user }) {
     } finally { setBusy(false); }
   };
 
+  const [shareCopied, setShareCopied] = useState(false);
+  const shareMyStore = async () => {
+    if (!seller?.id) return;
+    const url = `${window.location.origin}/?s=${seller.id}`;
+    const title = storeName || name || "HerpMarket";
+    const text = lang === "it" ? "Dai un'occhiata al mio store su HerpMarket 🦎" : "Check out my store on HerpMarket 🦎";
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    try { await navigator.clipboard.writeText(`${text}\n${url}`); setShareCopied(true); setTimeout(() => setShareCopied(false), 2000); } catch (e) { alert(url); }
+  };
+
   return (
     <div className="max-w-2xl mx-auto w-full pb-24">
       <header className="px-5 md:px-8 pt-12 md:pt-8 pb-4 border-b border-stone-800 flex items-center gap-3">
@@ -7674,6 +7748,10 @@ function EditStoreScreen({ t, lang, go, user }) {
           <h1 className="font-display text-2xl text-stone-50 tracking-tight">{t.spTitle}</h1>
           <p className="text-[11px] text-stone-500 mt-0.5">{t.spIntro}</p>
         </div>
+        <button onClick={shareMyStore} disabled={!seller?.id}
+                className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500/15 ring-1 ring-amber-500/40 hover:bg-amber-500/25 disabled:opacity-40 text-amber-300 font-bold text-xs px-3 py-2 rounded-full transition-colors">
+          <Share2 size={14} />{shareCopied ? (lang === "it" ? "Copiato!" : "Copied!") : (lang === "it" ? "Condividi store" : "Share store")}
+        </button>
       </header>
 
       <div className="p-5 md:p-8 space-y-5">
@@ -8701,7 +8779,7 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
           <ChevronLeft size={20} />
         </button>
         <button onClick={shareStore}
-                className="absolute top-5 right-4 pl-3 pr-3.5 py-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors flex items-center gap-1.5 text-xs font-bold">
+                className="absolute top-5 right-20 md:right-4 pl-3 pr-3.5 py-2.5 bg-stone-950/70 backdrop-blur-md rounded-full text-stone-100 hover:bg-stone-950/90 transition-colors flex items-center gap-1.5 text-xs font-bold">
           <Share2 size={16} />{shareCopied ? (lang === "it" ? "Copiato!" : "Copied!") : (lang === "it" ? "Condividi" : "Share")}
         </button>
       </div>
@@ -9679,16 +9757,16 @@ async function printCitesRecord(r, t, lang) {
 
 /* 2) Animal record / care sheet — includes the main photo and every detail
       we hold on the animal. */
-async function printAnimalRecord(a, t, lang) {
-  const jsPDF = await loadJsPDF();
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+// Draw ONE animal's passport onto the current page of `doc`. Async because it
+// loads photos. Shared by the single-animal print and the bulk "all passports".
+async function drawPassportPage(doc, a, t, lang) {
   const it = lang === "it";
   const M = 20, W = 210;
 
   let y = pdfHeader(doc, {
     title: a.title || a.common || a.species || t.printAnimalTitle,
-    subtitle: it ? "Scheda dell'animale — tutti i dati registrati su HerpMarket."
-                 : "Animal record — all details held on HerpMarket.",
+    subtitle: it ? "Passaporto animale — tutti i dati registrati su HerpMarket."
+                 : "Animal passport — all details held on HerpMarket.",
   });
 
   // Main photo, top-right. Re-encoded to JPEG so jsPDF always accepts it.
@@ -9792,9 +9870,29 @@ async function printAnimalRecord(a, t, lang) {
   }
 
   pdfFooter(doc, it
-    ? "Scheda generata da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
-    : "Record generated by HerpMarket. Not a substitute for official CITES documentation.");
-  doc.save(`animal-${String(a.title || a.species || "record").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`);
+    ? "Passaporto generato da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
+    : "Passport generated by HerpMarket. Not a substitute for official CITES documentation.");
+}
+
+// Single animal → one-page passport PDF.
+async function printAnimalRecord(a, t, lang) {
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  await drawPassportPage(doc, a, t, lang);
+  doc.save(`passport-${String(a.title || a.species || "animal").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`);
+}
+
+// All animals → one PDF, one passport per page.
+async function printAllPassports(animals, t, lang) {
+  const list = (animals || []).filter(Boolean);
+  if (!list.length) return;
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  for (let i = 0; i < list.length; i++) {
+    if (i > 0) doc.addPage();
+    await drawPassportPage(doc, list[i], t, lang);
+  }
+  doc.save(`herpmarket-passports-${list.length}.pdf`);
 }
 
 /* 3) Collection inventory — a table of all the keeper's animals. */
