@@ -1488,6 +1488,12 @@ const EXPOS = [
     venue: "Area Exp · Via Libertà, 57", country: "IT",
   },
   {
+    id: 158, name: "I Love Reptiles", location: "Fiano Romano (RM)",
+    date: "21-22 nov 2026", dateISO: "2026-11-21", color: "from-emerald-700 to-lime-600",
+    description: "La fiera dei rettili e degli animali esotici: rettili, pappagalli, anfibi, piccoli animali e piante particolari. Un'esperienza per tutta la famiglia. Sabato 14:30–19:30, domenica 10:00–19:00.",
+    venue: "Palazzetto dello Sport Sandro Pertini", country: "IT",
+  },
+  {
     id: 2, name: "Squamata", location: "Ozzano dell'Emilia (BO)",
     date: "21 giu 2026", dateISO: "2026-06-21", color: "from-emerald-700 to-teal-600",
     description: "Mostra mercato di terraristica nata nel 2006. Punto d'incontro per appassionati italiani al Palagira di Ozzano.",
@@ -4335,17 +4341,9 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         <Section title={t.parentage}>
           <div className="grid grid-cols-2 gap-2.5">
             {a.parents.filter(p => p && (p.image || p.label)).map((p, i) => (
-              <div key={i} className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
-                {p.image ? (
-                  <img src={p.image} alt="" className="w-full aspect-square object-cover" />
-                ) : (
-                  <div className="w-full aspect-square bg-stone-800/50 flex items-center justify-center text-stone-600 font-display italic text-xs">{t.unknown}</div>
-                )}
-                <div className="p-2.5">
-                  <div className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">{p.role === "dam" ? t.dam : t.sire}</div>
-                  <div className="text-sm text-stone-100 font-medium mt-0.5">{p.label || t.unknown}</div>
-                </div>
-              </div>
+              <ParentThumb key={i} p={p}
+                           roleLabel={p.role === "dam" ? t.dam : t.sire}
+                           unknownLabel={t.unknown} />
             ))}
           </div>
         </Section>
@@ -5113,6 +5111,49 @@ function ParentCard({ role, label, children }) {
     <div className={`rounded-lg ring-1 px-3 py-2.5 ${color}`}>
       <div className="text-[9px] font-bold uppercase tracking-widest opacity-70">{label}</div>
       <div className="text-sm font-bold mt-0.5">{children}</div>
+    </div>
+  );
+}
+
+/* A parent (sire/dam) thumbnail on the listing detail. Parents are stored
+   inline on the listing (a morph label + an optional photo), so there is no
+   separate animal page to open — tapping the photo enlarges it full-screen,
+   matching the main listing photos, instead of doing nothing. */
+function ParentThumb({ p, roleLabel, unknownLabel }) {
+  const [zoom, setZoom] = useState(false);
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e) => { if (e.key === "Escape") setZoom(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [zoom]);
+  return (
+    <div className="bg-stone-900/50 ring-1 ring-stone-800 rounded-xl overflow-hidden">
+      {p.image ? (
+        <div className="relative">
+          <img src={p.image} alt="" onClick={() => setZoom(true)}
+               className="w-full aspect-square object-cover cursor-zoom-in" />
+          <button onClick={(e) => { e.stopPropagation(); setZoom(true); }}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-stone-950/60 backdrop-blur text-stone-100 flex items-center justify-center active:bg-stone-950/90"
+                  aria-label="Enlarge photo"><Maximize2 size={14} /></button>
+        </div>
+      ) : (
+        <div className="w-full aspect-square bg-stone-800/50 flex items-center justify-center text-stone-600 font-display italic text-xs">{unknownLabel}</div>
+      )}
+      <div className="p-2.5">
+        <div className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">{roleLabel}</div>
+        <div className="text-sm text-stone-100 font-medium mt-0.5">{p.label || unknownLabel}</div>
+      </div>
+      {zoom && p.image && (
+        <div className="fixed inset-0 z-[60] bg-stone-950/95 backdrop-blur flex items-center justify-center"
+             onClick={() => setZoom(false)}>
+          <img src={p.image} alt="" onClick={(e) => e.stopPropagation()}
+               className="max-w-full max-h-full object-contain" />
+          <button onClick={(e) => { e.stopPropagation(); setZoom(false); }}
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-stone-900/80 text-stone-100 flex items-center justify-center active:bg-stone-800"
+                  aria-label="Close"><X size={20} /></button>
+        </div>
+      )}
     </div>
   );
 }
