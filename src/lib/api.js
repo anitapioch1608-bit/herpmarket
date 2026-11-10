@@ -29,6 +29,7 @@ export function mapListing(row) {
     sire: row.sire,
     dam: row.dam,
     parents: Array.isArray(row.parents) ? row.parents : [],
+    badges: Array.isArray(row.badges) ? row.badges : [],
     desc: row.description,
     image: row.image_url,
     images: (row.images && row.images.length) ? row.images : (row.image_url ? [row.image_url] : []),
@@ -154,7 +155,7 @@ export async function createListing(listing, sellerId) {
     birth_date: listing.birthDate || null, cites_listed: !!listing.citesListed,
     country: listing.country, region: listing.region, city: listing.city,
     breeder_code: listing.breederCode || null,
-    sire: listing.sire, dam: listing.dam, parents: listing.parents || [], description: listing.desc,
+    sire: listing.sire, dam: listing.dam, parents: listing.parents || [], badges: listing.badges || [], description: listing.desc,
     image_url: listing.image, images: listing.images || (listing.image ? [listing.image] : []),
     shipping: !!listing.shipping,
     shipping_cost: listing.shippingCost != null ? listing.shippingCost : null,
@@ -266,6 +267,7 @@ export async function updateListing(id, fields) {
   if (fields.breederCode !== undefined) patch.breeder_code = fields.breederCode || null;
   if (fields.image !== undefined) patch.image_url = fields.image;
   if (fields.images != null) patch.images = fields.images;
+  if (fields.badges != null) patch.badges = fields.badges;
   const { data, error } = await supabase.from('listings')
     .update(patch).eq('id', id).select('*, sellers(*)').single();
   if (error) throw error;

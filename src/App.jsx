@@ -22,7 +22,7 @@ import {
 /* ───── i18n (IT primary, EN secondary) ─────────────────────────── */
 const I18N = {
   it: {
-    tagline: "Il mercato italiano dei rettili",
+    tagline: "Il nuovo marketplace di rettili e animali esotici",
     home: "Esplora", search: "Cerca", sell: "Vendi", chat: "Messaggi", profile: "Profilo",
     nearYou: "Vicino a te", upcomingExpos: "Prossime fiere", browseByCategory: "Che animale stai cercando?",
     category: "Categoria",
@@ -51,7 +51,7 @@ const I18N = {
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     heroTitle: "Rettili e animali esotici, dagli appassionati in Italia e in Europa.",
-    heroSub: "Che tu voglia trovare il tuo prossimo geco, serpente o tarantola, o presentare gli animali del tuo allevamento, HerpMarket è il punto d'incontro per chi ama i rettili e gli esotici in Italia e in Europa. Sfogliare e pubblicare è gratuito.",
+    heroSub: "Che tu voglia trovare il tuo prossimo geco, serpente o tarantola, o presentare gli animali del tuo allevamento, HerpMarket è il punto d'incontro per chi ama i rettili o cerca un nuovo amico. Sfogliare e pubblicare è gratis durante la Beta!",
     heroCta: "📲 Aggiungila alla schermata Home e usala come un'app — pubblica il tuo animale in 2 minuti.",
     heroBtn: "Esplora il marketplace",
     browseListings: "Sfoglia annunci", sellCta: "Vendi un animale", orSep: "oppure",
@@ -303,7 +303,7 @@ const I18N = {
     paymentSuccessSub: "L'esemplare è ora riservato a te.",
   },
   en: {
-    tagline: "Italy's reptile marketplace",
+    tagline: "The new reptile & exotic animal marketplace",
     home: "Explore", search: "Search", sell: "Sell", chat: "Messages", profile: "Profile",
     nearYou: "Near you", upcomingExpos: "Upcoming expos", browseByCategory: "What animal are you looking for?",
     category: "Category",
@@ -332,7 +332,7 @@ const I18N = {
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
     heroTitle: "Reptiles & exotic animals, from enthusiasts across Italy and Europe.",
-    heroSub: "Whether you're looking for your next gecko, snake or tarantula, or showing the animals you breed, HerpMarket is the meeting place for everyone who loves reptiles and exotics in Italy and across Europe. Browsing and listing are free.",
+    heroSub: "Whether you're looking for your next gecko, snake or tarantula, or showing the animals you breed, HerpMarket is the meeting place for everyone who loves reptiles or is looking for a new pet. Browsing and listing are free during Beta!",
     heroCta: "📲 Add it to your home screen and use it like an app — list your animal in 2 minutes.",
     heroBtn: "Browse the Marketplace",
     browseListings: "Browse listings", sellCta: "Sell an animal", orSep: "or",
@@ -580,7 +580,7 @@ const I18N = {
     paymentSuccessSub: "The animal is now reserved for you.",
   },
   de: {
-    tagline: "Der Reptilienmarktplatz Italiens",
+    tagline: "Der neue Marktplatz für Reptilien & exotische Tiere",
     home: "Entdecken", search: "Suchen", sell: "Verkaufen", chat: "Nachrichten", profile: "Profil",
     nearYou: "In deiner Nähe", upcomingExpos: "Kommende Börsen", browseByCategory: "Welches Tier suchst du?",
     category: "Kategorie",
@@ -609,7 +609,7 @@ const I18N = {
     detailedSearch: "Detailsuche", detailedSearchSub: "Nach Merkmalen, Preis, Land filtern", viewAuctions: "Auktionen ansehen", viewAuctionsSub: "Nur Auktionen",
     allListings: "Alle Anzeigen", seeAll: "Alle ansehen",
     heroTitle: "Reptilien & exotische Tiere, von Liebhabern aus Italien und Europa.",
-    heroSub: "Egal ob du deinen nächsten Gecko, deine nächste Schlange oder Vogelspinne suchst oder die Tiere aus deiner Zucht zeigen möchtest – HerpMarket ist der Treffpunkt für alle, die Reptilien und Exoten in Italien und Europa lieben. Stöbern und Inserieren sind kostenlos.",
+    heroSub: "Egal ob du deinen nächsten Gecko, deine nächste Schlange oder Vogelspinne suchst oder die Tiere aus deiner Zucht zeigen möchtest – HerpMarket ist der Treffpunkt für alle, die Reptilien lieben oder ein neues Haustier suchen. Stöbern und Inserieren sind während der Beta kostenlos!",
     heroCta: "📲 Füge sie zum Startbildschirm hinzu und nutze sie wie eine App – inseriere dein Tier in 2 Minuten.",
     heroBtn: "Zum Marktplatz",
     browseListings: "Anzeigen durchsuchen", sellCta: "Ein Tier verkaufen", orSep: "oder",
@@ -1313,6 +1313,15 @@ const CATEGORIES = [
   { id: "livefood",    it: "Cibo vivo",    en: "Live food",     de: "Lebendfutter",  emoji: "🦗" },
   { id: "educativo",   it: "Educativo",    en: "Educational",   de: "Lehrmaterial",  emoji: "📚" },
 ];
+
+// Seller-applied flair badges. Free during beta; purely cosmetic — they make a
+// listing stand out but have NO effect on ranking/order (paid "boost" is a
+// separate feature for later). The seller chooses them on the listing form.
+const LISTING_BADGES = [
+  { key: "flame", emoji: "🔥", it: "Hot",    en: "Hot",    de: "Hot" },
+  { key: "skull", emoji: "💀", it: "Skull",  en: "Skull",  de: "Skull" },
+];
+const badgeMeta = (key) => LISTING_BADGES.find(b => b.key === key) || null;
 
 // Localise expo names + dates for non-Italian UIs: swap seasonal words and
 // Italian month abbreviations only. Proper names (Verona Reptiles, Esotika…)
@@ -2225,15 +2234,65 @@ export default function HerpMarket() {
       {/* Global mobile language toggle — fixed, always reachable on any screen.
           Hidden on desktop where the sidebar Brand toggle already exists.
           z-[80] keeps it above every sticky header and modal backdrop. */}
-      <button onClick={() => setLang(lang === "it" ? "en" : lang === "en" ? "de" : "it")}
-              aria-label="Toggle language"
-              className="md:hidden fixed top-2 right-2 z-[80] flex items-center gap-1
-                         bg-amber-500/90 backdrop-blur text-stone-950 font-black
-                         ring-1 ring-amber-400/50 rounded-full pl-2.5 pr-3 py-1.5 shadow-xl
-                         active:scale-95 transition-transform">
-        <Languages size={13} />
-        <span className="text-[11px] uppercase tracking-widest">{lang}</span>
+      <div className="md:hidden fixed top-2 right-2 z-[80]">
+        <LanguageMenu lang={lang} setLang={setLang} variant="pill" />
+      </div>
+    </div>
+  );
+}
+
+/* Language picker. Shows every language with its flag and a check on the
+   current one, instead of the old "tap to cycle" toggle (which hid the options
+   and showed the NEXT language, not the current one). Two visual variants:
+   "pill" (the floating mobile button) and "minimal" (the desktop sidebar). */
+const LANGS = [
+  { code: "it", flag: "🇮🇹", label: "Italiano" },
+  { code: "en", flag: "🇬🇧", label: "English" },
+  { code: "de", flag: "🇩🇪", label: "Deutsch" },
+];
+function LanguageMenu({ lang, setLang, variant = "pill" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("touchstart", onDoc);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("touchstart", onDoc); };
+  }, [open]);
+  const cur = LANGS.find(l => l.code === lang) || LANGS[0];
+  const menu = open && (
+    <div className="absolute right-0 mt-1.5 w-40 bg-stone-900 ring-1 ring-stone-700 rounded-xl shadow-2xl overflow-hidden py-1 z-[81]">
+      {LANGS.map(l => (
+        <button key={l.code} onClick={() => { setLang(l.code); setOpen(false); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-colors ${l.code === lang ? "bg-amber-500/15 text-amber-200 font-bold" : "text-stone-200 hover:bg-stone-800"}`}>
+          <span className="text-base leading-none">{l.flag}</span>
+          <span className="flex-1">{l.label}</span>
+          {l.code === lang && <Check size={14} className="text-amber-400" />}
+        </button>
+      ))}
+    </div>
+  );
+  if (variant === "minimal") {
+    return (
+      <div ref={ref} className="relative mt-4 inline-block">
+        <button onClick={() => setOpen(o => !o)} aria-label="Change language"
+                className="inline-flex items-center gap-1.5 text-[10px] text-stone-400 hover:text-amber-400 transition-colors">
+          <Languages size={11} /><span className="uppercase tracking-widest font-bold">{cur.code}</span>
+          <ChevronRight size={10} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+        </button>
+        {menu}
+      </div>
+    );
+  }
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen(o => !o)} aria-label="Change language"
+              className="flex items-center gap-1 bg-amber-500/90 backdrop-blur text-stone-950 font-black ring-1 ring-amber-400/50 rounded-full pl-2.5 pr-2 py-1.5 shadow-xl active:scale-95 transition-transform">
+        <Languages size={13} /><span className="text-[11px] uppercase tracking-widest">{cur.code}</span>
+        <ChevronRight size={12} className={`transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
+      {menu}
     </div>
   );
 }
@@ -2328,10 +2387,7 @@ function Brand({ t, lang, setLang }) {
         </h1>
       </div>
       <p className="text-[10px] text-stone-400 mt-2 leading-snug max-w-[180px]">{t.tagline}</p>
-      <button onClick={() => setLang(lang === "it" ? "en" : lang === "en" ? "de" : "it")}
-              className="mt-4 inline-flex items-center gap-1.5 text-[10px] text-stone-400 hover:text-amber-400 transition-colors">
-        <Languages size={11} /> <span className="uppercase tracking-widest font-bold">{lang === "it" ? "EN" : lang === "en" ? "DE" : "IT"}</span>
-      </button>
+      <LanguageMenu lang={lang} setLang={setLang} variant="minimal" />
     </div>
   );
 }
@@ -2505,12 +2561,17 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
       <div className="relative aspect-square bg-stone-800 overflow-hidden">
         <ImageCarousel images={item.images} alt={item.common} fallbackLabel={item.common || t.realPhoto}
                        imgClass="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-        {/* Sex badge top-left (animals only) */}
-        {item.sex && (
-          <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50">
-            <SexIcon sex={item.sex} t={t} size={11} />
-          </div>
-        )}
+        {/* Sex + seller flair badges, top-left */}
+        <div className="absolute top-2 left-2 flex items-center gap-1">
+          {item.sex && (
+            <div className="bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50">
+              <SexIcon sex={item.sex} t={t} size={11} />
+            </div>
+          )}
+          {(item.badges || []).map(k => badgeMeta(k) && (
+            <span key={k} className="bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50 text-[12px] leading-none">{badgeMeta(k).emoji}</span>
+          ))}
+        </div>
         {/* Heart top-right */}
         <button onClick={(e) => toggleFav(item.id, e)} aria-label="Save to favourites"
                 className="absolute top-2 right-2 p-1.5 bg-stone-950/80 backdrop-blur-sm rounded-full ring-1 ring-stone-700/50 hover:ring-rose-500/50 transition-all">
@@ -3104,7 +3165,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
             <input
               value={filter.search}
               onChange={e => setFilter({ ...filter, search: e.target.value })}
-              placeholder={lang === "it" ? "Cerca morph, specie, allevatore…" : "Search morph, species, breeder…"}
+              placeholder={lang === "it" ? "Cerca specie, animale, allevatore o negozio…" : lang === "de" ? "Suche nach Art, Tier, Züchter oder Shop…" : "Search species, animal, breeder or store…"}
               className="w-full bg-stone-900 border border-stone-800 rounded-lg pl-10 pr-3 py-3 text-sm text-stone-100 placeholder:text-stone-500 outline-none focus:border-amber-500/60 transition-colors"
             />
           </div>
@@ -3125,28 +3186,9 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
             <div className="ml-auto text-[10px] text-stone-500 font-bold uppercase tracking-widest">{t.resultsCount(filtered.length)}</div>
           </div>
 
-          {/* Quick trait chips — appear when a category is selected (MorphMarket-style) */}
-          {filter.category && scopeTraits.length > 0 && (
-            <div className="mt-3 -mx-5 md:mx-0 px-5 md:px-0">
-              <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
-                {scopeTraits.slice(0, 14).map((tr, i) => {
-                  const on = filter.traits.includes(tr.name);
-                  return (
-                    <button key={i}
-                            onClick={() => setFilter({
-                              ...filter,
-                              traits: on ? filter.traits.filter(x => x !== tr.name) : [...filter.traits, tr.name],
-                            })}
-                            className={`shrink-0 transition-all ${on ? "scale-100" : "opacity-70 hover:opacity-100"}`}>
-                      <span className={on ? "ring-2 ring-amber-400 rounded-md inline-block" : "inline-block"}>
-                        <TraitChip trait={tr} size="sm" />
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Morph chips intentionally NOT shown here — they overwhelmed casual
+              keepers ("another morph site"). Morph filtering now lives only in
+              the Advanced filters sheet. */}
 
           {/* Active filter pills */}
           {activeFilterCount > 0 && (
@@ -3273,8 +3315,61 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               </FilterGroup>
             )}
 
-            {/* Trait tags — hidden behind a button by default. Only shown once
-                the buyer opts in, so casual shoppers aren't faced with genetics. */}
+            {/* Price range */}
+            <FilterGroup label={t.priceRange}>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-1">
+                  <span className="text-stone-400 text-sm shrink-0">€</span>
+                  <input type="number" min="0" inputMode="numeric" placeholder={t.min}
+                         value={filter.priceMin ?? ""}
+                         onChange={e => setFilter({ ...filter, priceMin: e.target.value === "" ? null : Number(e.target.value) })}
+                         className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
+                </div>
+                <span className="text-stone-600">–</span>
+                <div className="flex items-center gap-1.5 flex-1">
+                  <span className="text-stone-400 text-sm shrink-0">€</span>
+                  <input type="number" min="0" inputMode="numeric" placeholder={t.max}
+                         value={filter.priceMax ?? ""}
+                         onChange={e => setFilter({ ...filter, priceMax: e.target.value === "" ? null : Number(e.target.value) })}
+                         className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
+                </div>
+              </div>
+            </FilterGroup>
+
+            {/* Sex */}
+            <FilterGroup label={t.sex}>
+              <div className="flex flex-wrap gap-1.5">
+                {["M", "F", "U", "P"].map(s => (
+                  <ToggleChip key={s} active={filter.sex === s}
+                              onClick={() => setFilter({ ...filter, sex: filter.sex === s ? null : s })}>
+                    {sexLabel(s, t)}
+                  </ToggleChip>
+                ))}
+              </div>
+            </FilterGroup>
+
+            {/* Country — dropdown (Italy first, then alphabetical) */}
+            <FilterGroup label={t.countryLabel}>
+              <select value={filter.country || ""} onChange={e => setFilter({ ...filter, country: e.target.value || null, region: null })}
+                      className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
+                <option value="">{t.anyCountry}</option>
+                {[...COUNTRIES].sort((a, b) => a.code === "IT" ? -1 : b.code === "IT" ? 1 : a[lang].localeCompare(b[lang], lang))
+                  .map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Region — adapts to the selected country; free of country shows IT regions */}
+            <FilterGroup label={t.region}>
+              <select value={filter.region || ""} onChange={e => setFilter({ ...filter, region: e.target.value || null })}
+                      className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
+                <option value="">{t.anyRegion}</option>
+                {(regionsForCountry(filter.country || "IT")).map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Morphs / genetics — moved below the everyday filters (category,
+                price, sex, location) so casual keepers aren't met with genetics
+                first. Still hidden behind a button until the buyer opts in. */}
             <FilterGroup label={t.traitsLabel}>
               {!filter.category ? (
                 <p className="text-xs text-stone-500 italic">{t.selectCategoryFirst}</p>
@@ -3337,58 +3432,6 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               </div>
             </FilterGroup>
             )}
-
-            {/* Price range */}
-            <FilterGroup label={t.priceRange}>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 flex-1">
-                  <span className="text-stone-400 text-sm shrink-0">€</span>
-                  <input type="number" min="0" inputMode="numeric" placeholder={t.min}
-                         value={filter.priceMin ?? ""}
-                         onChange={e => setFilter({ ...filter, priceMin: e.target.value === "" ? null : Number(e.target.value) })}
-                         className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
-                </div>
-                <span className="text-stone-600">–</span>
-                <div className="flex items-center gap-1.5 flex-1">
-                  <span className="text-stone-400 text-sm shrink-0">€</span>
-                  <input type="number" min="0" inputMode="numeric" placeholder={t.max}
-                         value={filter.priceMax ?? ""}
-                         onChange={e => setFilter({ ...filter, priceMax: e.target.value === "" ? null : Number(e.target.value) })}
-                         className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60" />
-                </div>
-              </div>
-            </FilterGroup>
-
-            {/* Sex */}
-            <FilterGroup label={t.sex}>
-              <div className="flex flex-wrap gap-1.5">
-                {["M", "F", "U", "P"].map(s => (
-                  <ToggleChip key={s} active={filter.sex === s}
-                              onClick={() => setFilter({ ...filter, sex: filter.sex === s ? null : s })}>
-                    {sexLabel(s, t)}
-                  </ToggleChip>
-                ))}
-              </div>
-            </FilterGroup>
-
-            {/* Country — dropdown (Italy first, then alphabetical) */}
-            <FilterGroup label={t.countryLabel}>
-              <select value={filter.country || ""} onChange={e => setFilter({ ...filter, country: e.target.value || null, region: null })}
-                      className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
-                <option value="">{t.anyCountry}</option>
-                {[...COUNTRIES].sort((a, b) => a.code === "IT" ? -1 : b.code === "IT" ? 1 : a[lang].localeCompare(b[lang], lang))
-                  .map(c => <option key={c.code} value={c.code}>{c.flag} {c[lang]}</option>)}
-              </select>
-            </FilterGroup>
-
-            {/* Region — adapts to the selected country; free of country shows IT regions */}
-            <FilterGroup label={t.region}>
-              <select value={filter.region || ""} onChange={e => setFilter({ ...filter, region: e.target.value || null })}
-                      className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-3 text-sm text-stone-100 outline-none focus:border-amber-500/60">
-                <option value="">{t.anyRegion}</option>
-                {(regionsForCountry(filter.country || "IT")).map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </FilterGroup>
 
             {/* Seller */}
             <FilterGroup label={t.sellerLabel}>
@@ -3480,7 +3523,7 @@ function ToggleChip({ active, onClick, children }) {
 }
 function BottomSheet({ title, onClose, children, footer }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div onMouseDown={e => e.stopPropagation()}
            className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col anim-up overflow-hidden"
            style={{ maxHeight: "85dvh" }}>
@@ -3799,7 +3842,7 @@ function ReportSheet({ listing = null, t, lang, user = null, onClose }) {
     } finally { setBusy(false); }
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose(); }}>
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-stone-950/80 backdrop-blur-sm" onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose(); }}>
       <div onMouseDown={e => e.stopPropagation()}
            className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[88dvh] anim-up">
         <div className="flex items-center justify-between p-5 pb-3 shrink-0">
@@ -4264,6 +4307,15 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
             <h1 className="font-display text-3xl md:text-4xl text-stone-50 tracking-tight leading-tight">{a.common}</h1>
             {a.species && <p className="font-display italic text-amber-500 text-sm md:text-base mt-1">{a.species}</p>}
           </>
+        )}
+        {(a.badges || []).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {a.badges.map(k => { const b = badgeMeta(k); return b && (
+              <span key={k} className="inline-flex items-center gap-1 bg-stone-900/70 ring-1 ring-stone-700 text-stone-200 text-xs font-bold px-2 py-1 rounded-md">
+                <span className="text-sm leading-none">{b.emoji}</span>{b[lang] || b.en}
+              </span>
+            ); })}
+          </div>
         )}
         <div className="flex flex-wrap gap-1.5 mt-4">
           {a.traits.map((tr, i) => <TraitChip key={i} trait={tr} size="sm" />)}
@@ -5375,6 +5427,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
   };
   const [bornPrecision, setBornPrecision] = useState(isEdit ? detectBornPrecision(editListing?.birthDate) : "month"); // "day" | "month" | "year"
   const [isCites, setIsCites] = useState(isEdit ? !!editListing?.citesListed : !!draft.isCites);
+  // "More details" optional section — collapsed by default for a fast listing
+  // flow; opened automatically when editing (so existing data is visible).
+  const [moreOpen, setMoreOpen] = useState(isEdit);
   const [desc, setDesc] = useState(editListing?.desc || draft.desc || "");
   const [sire, setSire] = useState(editListing?.sire || "");
   const [dam, setDam] = useState(editListing?.dam || "");
@@ -5570,7 +5625,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
         birthDate: isGoods ? null : ((born || "").trim() || null),
         citesListed: isGoods ? false : isCites,
         country, region, city: null,
-        sire: isGoods ? null : (sire.trim() || null), dam: isGoods ? null : (dam.trim() || null), parents: _parents, desc: desc.trim(),
+        sire: isGoods ? null : (sire.trim() || null), dam: isGoods ? null : (dam.trim() || null), parents: _parents, badges, desc: desc.trim(),
         image: urls[0] || null, images: urls,
         // Delivery options chosen by the seller (shared by create + edit).
         shipping: !!shipping,
@@ -5601,6 +5656,8 @@ function SellScreen({ t, lang, go, user, editListing }) {
   };
   // Cascading category → subcategory → species
   const [catId, setCatId] = useState(editListing?.category || draft.catId || "");
+  // Seller flair badges (flame / skull) — free during beta, cosmetic only.
+  const [badges, setBadges] = useState(Array.isArray(editListing?.badges) ? editListing.badges : []);
   const _editEquip = isEdit && editListing?.category === "equipment";
   const _editLF = isEdit && editListing?.category === "livefood";
   const _editEdu = isEdit && editListing?.category === "educativo";
@@ -5925,37 +5982,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
           )}
         </div>
 
-        {!isSimple && (
-        <FormBlock label={t.traits}>
-          <div className="flex flex-wrap gap-1.5">
-            {/* Preset chips for the category + any custom traits the user added */}
-            {[...exampleTraits, ...selectedTraits.filter(n => !exampleTraits.some(e => e.name === n)).map(n => ({ name: n, cls: "line" }))].map((tr, i) => {
-              const isSelected = selectedTraits.includes(tr.name);
-              return (
-                <button key={tr.name + i} type="button"
-                        onClick={() => setSelectedTraits(isSelected ? selectedTraits.filter(s => s !== tr.name) : [...selectedTraits, tr.name])}
-                        className="transition-transform hover:scale-105">
-                  <span className={isSelected ? "" : "opacity-40"}><TraitChip trait={tr} size="sm" /></span>
-                </button>
-              );
-            })}
-          </div>
-          {/* Add a trait that isn't listed — it's saved with the listing. */}
-          <div className="flex gap-2 mt-2.5">
-            <input value={customTrait} onChange={e => setCustomTrait(e.target.value)}
-                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomTrait(); } }}
-                   placeholder={lang === "it" ? "Aggiungi un'altra morph…" : "Add another morph…"}
-                   className="form-input flex-1" />
-            <button type="button" onClick={addCustomTrait}
-                    className="px-4 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors shrink-0">
-              {lang === "it" ? "Aggiungi" : "Add"}
-            </button>
-          </div>
-          <p className="text-[10px] text-stone-500 mt-2">{t.pickTraits}</p>
-        </FormBlock>
-        )}
-
-        {/* Sale type: fixed price or auction */}
+        {/* Price / sale type — kept in the fast path, right after the core fields. */}
         <SellPricing t={t} lang={lang} price={price} setPrice={setPrice}
                      mode={saleMode} setMode={setSaleMode}
                      startPrice={startPrice} setStartPrice={setStartPrice}
@@ -5972,58 +5999,148 @@ function SellScreen({ t, lang, go, user, editListing }) {
           </p>
         )}
 
-        {!isGoods && (<>
-        <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
-          {/* Precision chooser — some breeders only know the year or month. */}
-          <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
-            {[
-              ["day",   lang === "it" ? "Data esatta" : "Exact date"],
-              ["month", lang === "it" ? "Mese e anno" : "Month & year"],
-              ["year",  lang === "it" ? "Solo anno" : "Year only"],
-            ].map(([key, label]) => {
-              const locked = false;  // CITES no longer forces exact date — seller chooses
+        {/* Seller flair badges — free during beta, cosmetic only (no ranking effect). */}
+        <FormBlock label={lang === "de" ? "Abzeichen" : lang === "it" ? "Badge" : "Badges"}>
+          <div className="flex flex-wrap gap-2">
+            {LISTING_BADGES.map(b => {
+              const on = badges.includes(b.key);
               return (
-                <button type="button" key={key} disabled={locked}
-                        onClick={() => { setBornPrecision(key); setBorn(""); }}
-                        className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${
-                          bornPrecision === key ? "bg-amber-500 text-stone-950"
-                          : locked ? "text-stone-700 cursor-not-allowed"
-                          : "text-stone-400 hover:text-stone-200"
-                        }`}>
-                  {label}
+                <button type="button" key={b.key}
+                        onClick={() => setBadges(on ? badges.filter(x => x !== b.key) : [...badges, b.key])}
+                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold ring-1 transition-colors ${on ? "bg-amber-500/15 ring-amber-500/50 text-amber-200" : "bg-stone-900/60 ring-stone-800 text-stone-300 hover:ring-stone-700"}`}>
+                  <span className="text-base leading-none">{b.emoji}</span>{b[lang] || b.en}
                 </button>
               );
             })}
           </div>
-          {bornPrecision === "day" && (
-            <input type="date" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
-                   max={new Date().toISOString().slice(0, 10)} style={{ colorScheme: "dark" }} />
-          )}
-          {bornPrecision === "month" && (
-            <input type="month" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
-                   max={new Date().toISOString().slice(0, 7)} style={{ colorScheme: "dark" }} />
-          )}
-          {bornPrecision === "year" && (
-            <input type="number" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
-                   min="1980" max={new Date().getFullYear()} placeholder={String(new Date().getFullYear())} />
-          )}
+          <p className="text-[10px] text-stone-500 mt-2">
+            {lang === "de" ? "Gratis während der Beta — hebt dein Inserat optisch hervor (keine Auswirkung auf die Reihung)."
+             : lang === "it" ? "Gratis durante la Beta — mette in risalto il tuo annuncio (nessun effetto sull'ordine)."
+             : "Free during beta — makes your listing stand out (no effect on ranking)."}
+          </p>
         </FormBlock>
 
-        <FormBlock label={t.weight}>
-          <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)}
-                 placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
-        </FormBlock>
+        {/* Description stays in the fast path for goods (equipment / live food / educational). */}
+        {isGoods && (
+          <FormBlock label={t.description}>
+            <textarea rows="4" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
+          </FormBlock>
+        )}
 
-        <FormBlock label={lang === "it" ? "Sigla / ID allevatore" : "Breeder ID / code"}>
-          <input className="form-input" value={breederCode} onChange={e => setBreederCode(e.target.value)}
-                 placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
-        </FormBlock>
+        {/* ─── More details (optional) — collapsed by default so the fast path
+            (photos → title → category → species → sex → price) stays short for
+            casual keepers. Animals & exotics only; morphs only for true animals.
+            Auto-opens for CITES species (birth date required) and when editing. ─── */}
+        {!isGoods && (<>
+          <button type="button" onClick={() => setMoreOpen(o => !o)}
+                  className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-stone-900/50 ring-1 ring-stone-800 hover:ring-stone-700 transition-colors">
+            <span className="text-sm font-bold text-stone-200">
+              {lang === "de" ? "Mehr Details (optional)" : lang === "it" ? "Più dettagli (facoltativo)" : "More details (optional)"}
+            </span>
+            <ChevronRight size={18} className={`text-stone-400 transition-transform ${(moreOpen || isCites) ? "rotate-90" : ""}`} />
+          </button>
 
-        {/* CITES self-declaration — the SELLER decides. Never auto-ticked.
-            For known listed species we highlight the box and prompt the seller
-            to tick it. Ticking is the seller's agreement that they hold the
-            original documents and accept the marketplace rules. */}
-        {(() => {
+          {(moreOpen || isCites) && (
+          <div className="space-y-6">
+            <FormBlock label={t.born} required={isCites} done={!!born && (!isCites || /^\d{4}-\d{1,2}-\d{1,2}$/.test(born.trim()))}>
+              {/* Precision chooser — some breeders only know the year or month. */}
+              <div className="flex bg-stone-900 ring-1 ring-stone-800 rounded-lg p-1 mb-2">
+                {[
+                  ["day",   lang === "it" ? "Data esatta" : "Exact date"],
+                  ["month", lang === "it" ? "Mese e anno" : "Month & year"],
+                  ["year",  lang === "it" ? "Solo anno" : "Year only"],
+                ].map(([key, label]) => {
+                  const locked = false;  // CITES no longer forces exact date — seller chooses
+                  return (
+                    <button type="button" key={key} disabled={locked}
+                            onClick={() => { setBornPrecision(key); setBorn(""); }}
+                            className={`flex-1 py-2 rounded-md text-xs font-bold transition-colors ${
+                              bornPrecision === key ? "bg-amber-500 text-stone-950"
+                              : locked ? "text-stone-700 cursor-not-allowed"
+                              : "text-stone-400 hover:text-stone-200"
+                            }`}>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              {bornPrecision === "day" && (
+                <input type="date" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                       max={new Date().toISOString().slice(0, 10)} style={{ colorScheme: "dark" }} />
+              )}
+              {bornPrecision === "month" && (
+                <input type="month" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                       max={new Date().toISOString().slice(0, 7)} style={{ colorScheme: "dark" }} />
+              )}
+              {bornPrecision === "year" && (
+                <input type="number" className="form-input" value={born} onChange={e => setBorn(e.target.value)}
+                       min="1980" max={new Date().getFullYear()} placeholder={String(new Date().getFullYear())} />
+              )}
+            </FormBlock>
+
+            <FormBlock label={t.description}>
+              <textarea rows="4" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
+            </FormBlock>
+
+            <FormBlock label={t.weight}>
+              <input className="form-input" value={weight} onChange={e => setWeight(e.target.value)}
+                     placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
+            </FormBlock>
+
+            {!isSimple && (
+            <FormBlock label={t.traits}>
+              <div className="flex flex-wrap gap-1.5">
+                {/* Preset chips for the category + any custom traits the user added */}
+                {[...exampleTraits, ...selectedTraits.filter(n => !exampleTraits.some(e => e.name === n)).map(n => ({ name: n, cls: "line" }))].map((tr, i) => {
+                  const isSelected = selectedTraits.includes(tr.name);
+                  return (
+                    <button key={tr.name + i} type="button"
+                            onClick={() => setSelectedTraits(isSelected ? selectedTraits.filter(s => s !== tr.name) : [...selectedTraits, tr.name])}
+                            className="transition-transform hover:scale-105">
+                      <span className={isSelected ? "" : "opacity-40"}><TraitChip trait={tr} size="sm" /></span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Add a trait that isn't listed — it's saved with the listing. */}
+              <div className="flex gap-2 mt-2.5">
+                <input value={customTrait} onChange={e => setCustomTrait(e.target.value)}
+                       onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomTrait(); } }}
+                       placeholder={lang === "it" ? "Aggiungi un'altra morph…" : "Add another morph…"}
+                       className="form-input flex-1" />
+                <button type="button" onClick={addCustomTrait}
+                        className="px-4 rounded-lg text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors shrink-0">
+                  {lang === "it" ? "Aggiungi" : "Add"}
+                </button>
+              </div>
+              <p className="text-[10px] text-stone-500 mt-2">{t.pickTraits}</p>
+            </FormBlock>
+            )}
+
+            <FormBlock label={lang === "it" ? "Sigla / ID allevatore" : "Breeder ID / code"}>
+              <input className="form-input" value={breederCode} onChange={e => setBreederCode(e.target.value)}
+                     placeholder={lang === "it" ? "Facoltativo" : "Optional"} />
+            </FormBlock>
+
+            <FormBlock label={lang === "it" ? "Genitori" : "Parents"}>
+              <div className="grid grid-cols-2 gap-3">
+                <ParentField label={t.sire} value={sire} setValue={setSire} photo={sirePhoto} setPhoto={setSirePhoto}
+                             candidates={myAnimals} lang={lang}
+                             placeholder={lang === "it" ? "Morph del padre" : "Sire morph"} />
+                <ParentField label={t.dam} value={dam} setValue={setDam} photo={damPhoto} setPhoto={setDamPhoto}
+                             candidates={myAnimals} lang={lang}
+                             placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
+              </div>
+              <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue. Scrivi il morph o scegli un animale dalla tua collezione (foto inclusa)." : "Optional — showcase the bloodline. Type the morph, or pick an animal from your collection (photo included)."}</p>
+            </FormBlock>
+          </div>
+          )}
+        </>)}
+
+        {/* CITES self-declaration — stays visible (compliance), animals & exotics.
+            The SELLER decides; never auto-ticked. For known listed species we
+            highlight the box and prompt the seller to tick it. */}
+        {!isGoods && (() => {
           const known = isCitesSpecies(speciesVal);
           return (
             <div className={`rounded-xl ring-1 transition-all p-4 ${isCites ? "bg-amber-500/10 ring-amber-500/40" : known ? "bg-amber-500/5 ring-amber-500/30" : "bg-stone-900/40 ring-stone-800"}`}>
@@ -6056,7 +6173,6 @@ function SellScreen({ t, lang, go, user, editListing }) {
             </div>
           );
         })()}
-        </>)}
 
         {/* Country → region cascade */}
         <div className="grid grid-cols-2 gap-3">
@@ -6078,24 +6194,6 @@ function SellScreen({ t, lang, go, user, editListing }) {
             )}
           </FormBlock>
         </div>
-
-        <FormBlock label={t.description}>
-          <textarea rows="4" value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.describePlaceholder} className="form-input resize-none" />
-        </FormBlock>
-
-        {!isGoods && (
-        <FormBlock label={lang === "it" ? "Genitori" : "Parents"}>
-          <div className="grid grid-cols-2 gap-3">
-            <ParentField label={t.sire} value={sire} setValue={setSire} photo={sirePhoto} setPhoto={setSirePhoto}
-                         candidates={myAnimals} lang={lang}
-                         placeholder={lang === "it" ? "Morph del padre" : "Sire morph"} />
-            <ParentField label={t.dam} value={dam} setValue={setDam} photo={damPhoto} setPhoto={setDamPhoto}
-                         candidates={myAnimals} lang={lang}
-                         placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
-          </div>
-          <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue. Scrivi il morph o scegli un animale dalla tua collezione (foto inclusa)." : "Optional — showcase the bloodline. Type the morph, or pick an animal from your collection (photo included)."}</p>
-        </FormBlock>
-        )}
 
         {!isGoods && (
         <FormBlock label={lang === "it" ? "Acconto per la prenotazione (facoltativo)" : "Reservation deposit (optional)"}>
