@@ -2797,15 +2797,13 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
         <h2 className="font-display text-2xl text-stone-50 tracking-tight leading-tight">{t.heroTitle}</h2>
         <p className="text-stone-400 text-[13px] mt-2.5 leading-relaxed">{t.heroSub}</p>
         <p className="text-amber-300/90 text-[12px] mt-2 font-semibold leading-snug">{t.heroCta}</p>
-        <div className="flex items-center gap-2 mt-4">
+        {/* Single primary CTA. Browse + Sell both live in the bottom nav
+            (Discover/Search + the ➕ Sell button), so a second Sell button here
+            was redundant. */}
+        <div className="mt-4">
           <button onClick={() => { setFilter({ ...filter, sort: "distance" }); go("search", null, true); }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-4 py-3 rounded-lg transition-colors">
+                  className="w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm px-4 py-3 rounded-lg transition-colors">
             <Search size={15} />{t.browseListings}
-          </button>
-          <span className="text-[11px] text-stone-500 font-medium shrink-0">{t.orSep}</span>
-          <button onClick={() => { if (requireAuth(t.loginToSell, () => go("sell"))) go("sell"); }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-sm px-4 py-3 rounded-lg transition-colors ring-1 ring-stone-700">
-            <PlusCircle size={15} />{t.sellCta}
           </button>
         </div>
       </div>
@@ -4648,7 +4646,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                 </button>
               ) : txState === "idle" ? (
                 <div className="flex-[1.4] font-bold text-sm py-3 rounded-lg flex items-center justify-center bg-stone-800 text-stone-500">
-                  <span className="text-xs">{lang === "it" ? "Solo via messaggio" : "Message only"}</span>
+                  <span className="text-xs">{lang === "it" ? "Solo via messaggio" : lang === "de" ? "Nur per Nachricht" : "Message only"}</span>
                 </div>
               ) : null}
               {!a.auction && txState !== "idle" && (
