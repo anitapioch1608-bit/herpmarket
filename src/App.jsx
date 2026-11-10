@@ -7,7 +7,8 @@ import {
   ArrowUpDown, Lock, CreditCard, Info, Languages, Send,
   LogIn, LogOut, Globe, Truck, Scale,
   ListOrdered, Grid3x3, Settings as SettingsIcon, Mail,
-  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw, Flag, Share2
+  Clock, PackageCheck, Hourglass, Check, Bell, UploadCloud, GitBranch, Loader2, WifiOff, RefreshCw, Flag, Share2,
+  Download, QrCode
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -2262,7 +2263,7 @@ function LanguageMenu({ lang, setLang, variant = "pill" }) {
   }, [open]);
   const cur = LANGS.find(l => l.code === lang) || LANGS[0];
   const menu = open && (
-    <div className="absolute right-0 mt-1.5 w-40 bg-stone-900 ring-1 ring-stone-700 rounded-xl shadow-2xl overflow-hidden py-1 z-[81]">
+    <div className={`absolute ${variant === "minimal" ? "left-0" : "right-0"} mt-1.5 w-40 bg-stone-900 ring-1 ring-stone-700 rounded-xl shadow-2xl overflow-hidden py-1 z-[81]`}>
       {LANGS.map(l => (
         <button key={l.code} onClick={() => { setLang(l.code); setOpen(false); }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-colors ${l.code === lang ? "bg-amber-500/15 text-amber-200 font-bold" : "text-stone-200 hover:bg-stone-800"}`}>
@@ -2569,7 +2570,7 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
             </div>
           )}
           {(item.badges || []).map(k => badgeMeta(k) && (
-            <span key={k} className="bg-stone-950/80 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-stone-700/50 text-[12px] leading-none">{badgeMeta(k).emoji}</span>
+            <span key={k} className="bg-stone-950/85 backdrop-blur-sm rounded-md px-1.5 py-1 ring-1 ring-amber-500/50 text-[15px] leading-none shadow-lg">{badgeMeta(k).emoji}</span>
           ))}
         </div>
         {/* Heart top-right */}
@@ -4100,6 +4101,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
   const [buyerHandover, setBuyerHandover] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
+  const [passportOpen, setPassportOpen] = useState(false);   // in-app animal passport viewer
   const [saleInfo, setSaleInfo] = useState(null);   // buyer details from the completed sale
   // Buyer's chosen delivery method. Initialised to safe defaults; a useEffect
   // below picks ship/expo once the listing's options are known. These useState
@@ -4309,9 +4311,7 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         {(a.badges || []).length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-4">
             {a.badges.map(k => { const b = badgeMeta(k); return b && (
-              <span key={k} className="inline-flex items-center gap-1 bg-stone-900/70 ring-1 ring-stone-700 text-stone-200 text-xs font-bold px-2 py-1 rounded-md">
-                <span className="text-sm leading-none">{b.emoji}</span>{b[lang] || b.en}
-              </span>
+              <span key={k} aria-label={b.key} className="inline-flex items-center justify-center bg-stone-900/70 ring-1 ring-amber-500/40 w-9 h-9 rounded-lg text-xl leading-none">{b.emoji}</span>
             ); })}
           </div>
         )}
@@ -4585,14 +4585,19 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
         </Section>
       )}
 
-      {/* Owner: print this animal's passport — a prominent action. */}
+      {/* Owner: open this animal's passport — a prominent action. Opens an
+          in-app viewer (see → download / share / QR) rather than silently
+          generating a PDF. */}
       {isMine && (
         <div className="px-5 md:px-8 pb-28 md:pb-24 pt-2">
-          <button onClick={() => printAnimalRecord(a, t, lang)}
+          <button onClick={() => setPassportOpen(true)}
                   className="w-full inline-flex items-center justify-center gap-2 bg-amber-500/15 ring-1 ring-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-bold text-sm px-4 py-3.5 rounded-xl transition-colors">
             <FileText size={17} />{t.printRecord}
           </button>
         </div>
+      )}
+      {passportOpen && (
+        <PassportModal animal={a} t={t} lang={lang} onClose={() => setPassportOpen(false)} />
       )}
 
       {/* Quiet report link — present on every listing (DSA notice mechanism),
@@ -5997,27 +6002,6 @@ function SellScreen({ t, lang, go, user, editListing }) {
           </p>
         )}
 
-        {/* Seller flair badges — free during beta, cosmetic only (no ranking effect). */}
-        <FormBlock label={lang === "de" ? "Abzeichen" : lang === "it" ? "Badge" : "Badges"}>
-          <div className="flex flex-wrap gap-2">
-            {LISTING_BADGES.map(b => {
-              const on = badges.includes(b.key);
-              return (
-                <button type="button" key={b.key}
-                        onClick={() => setBadges(on ? badges.filter(x => x !== b.key) : [...badges, b.key])}
-                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold ring-1 transition-colors ${on ? "bg-amber-500/15 ring-amber-500/50 text-amber-200" : "bg-stone-900/60 ring-stone-800 text-stone-300 hover:ring-stone-700"}`}>
-                  <span className="text-base leading-none">{b.emoji}</span>{b[lang] || b.en}
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-[10px] text-stone-500 mt-2">
-            {lang === "de" ? "Gratis während der Beta — hebt dein Inserat optisch hervor (keine Auswirkung auf die Reihung)."
-             : lang === "it" ? "Gratis durante la Beta — mette in risalto il tuo annuncio (nessun effetto sull'ordine)."
-             : "Free during beta — makes your listing stand out (no effect on ranking)."}
-          </p>
-        </FormBlock>
-
         {/* Description stays in the fast path for goods (equipment / live food / educational). */}
         {isGoods && (
           <FormBlock label={t.description}>
@@ -6130,6 +6114,27 @@ function SellScreen({ t, lang, go, user, editListing }) {
                              placeholder={lang === "it" ? "Morph della madre" : "Dam morph"} />
               </div>
               <p className="text-[10px] text-stone-500 mt-1.5">{lang === "it" ? "Facoltativo — mostra la linea di sangue. Scrivi il morph o scegli un animale dalla tua collezione (foto inclusa)." : "Optional — showcase the bloodline. Type the morph, or pick an animal from your collection (photo included)."}</p>
+            </FormBlock>
+
+            {/* Seller flair badges — emoji only, free during beta, cosmetic (no ranking). */}
+            <FormBlock label={lang === "de" ? "Abzeichen" : lang === "it" ? "Badge" : "Badges"}>
+              <div className="flex flex-wrap gap-2">
+                {LISTING_BADGES.map(b => {
+                  const on = badges.includes(b.key);
+                  return (
+                    <button type="button" key={b.key} aria-label={b.key}
+                            onClick={() => setBadges(on ? badges.filter(x => x !== b.key) : [...badges, b.key])}
+                            className={`inline-flex items-center justify-center w-11 h-11 rounded-lg text-xl ring-1 transition-colors ${on ? "bg-amber-500/15 ring-amber-500/60" : "bg-stone-900/60 ring-stone-800 hover:ring-stone-700"}`}>
+                      <span className="leading-none">{b.emoji}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-stone-500 mt-2">
+                {lang === "de" ? "Gratis während der Beta — hebt dein Inserat optisch hervor (keine Auswirkung auf die Reihung)."
+                 : lang === "it" ? "Gratis durante la Beta — mette in risalto il tuo annuncio (nessun effetto sull'ordine)."
+                 : "Free during beta — makes your listing stand out (no effect on ranking)."}
+              </p>
             </FormBlock>
           </div>
           )}
@@ -7074,6 +7079,7 @@ function RelistPanel({ listing, t, lang, busy, onCancel, onConfirm }) {
 
 function MyListingsScreen({ t, lang, go, user }) {
   const [items, setItems] = useState(null);   // null = loading
+  const [passportAnimal, setPassportAnimal] = useState(null);   // in-app passport viewer
   const [tab, setTab] = useState("active");   // active | sold | held | breeder
   const [editId, setEditId] = useState(null);
   const [eTitle, setETitle] = useState("");
@@ -7315,7 +7321,7 @@ function MyListingsScreen({ t, lang, go, user }) {
               {/* Actions depend on which bucket the animal is in */}
               <div className="flex flex-col gap-1.5 shrink-0">
                 <div className="flex gap-1.5">
-                  <button onClick={() => printAnimalRecord(l, t, lang)}
+                  <button onClick={() => setPassportAnimal(l)}
                           className="flex-1 text-[11px] font-bold px-2.5 py-1.5 rounded-md bg-sky-500/10 ring-1 ring-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-colors inline-flex items-center justify-center gap-1">
                     <FileText size={11} />{t.passport}
                   </button>
@@ -7435,6 +7441,9 @@ function MyListingsScreen({ t, lang, go, user }) {
           </div>
         ))}
       </div>
+      {passportAnimal && (
+        <PassportModal animal={passportAnimal} t={t} lang={lang} onClose={() => setPassportAnimal(null)} />
+      )}
     </div>
   );
 }
@@ -9748,6 +9757,164 @@ async function loadJsPDF() {
     jsPDF = window.jspdf.jsPDF;
   }
   return jsPDF;
+}
+
+// Load a tiny QR generator (browser global `qrcode`) from CDN. Best-effort:
+// returns null (no QR) if offline, so the passport still works without it.
+async function loadQRCode() {
+  try {
+    if (window.qrcode) return window.qrcode;
+    await new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return window.qrcode || null;
+  } catch { return null; }
+}
+
+/* In-app animal passport. Tapping "Animal passport" opens THIS — a visible,
+   scrollable card — instead of blindly generating a PDF (on installed PWAs a
+   generated PDF often silently downloads and can't be opened). From here the
+   keeper can see it, download the PDF, share it, or show a QR that opens the
+   listing online. */
+function PassportModal({ animal: a, t, lang, onClose }) {
+  const [busy, setBusy] = useState(false);
+  const [qr, setQr] = useState(null);
+  const it = lang === "it";
+  const mainPhoto = (a.images && a.images[0]) || a.image || null;
+  const shareUrl = a?.id ? `${location.origin}/?l=${a.id}` : location.origin;
+
+  useEffect(() => {
+    let dead = false;
+    loadQRCode().then((QR) => {
+      if (dead || !QR) return;
+      try { const q = QR(0, "M"); q.addData(shareUrl); q.make(); if (!dead) setQr(q.createDataURL(5, 6)); } catch {}
+    }).catch(() => {});
+    return () => { dead = true; };
+  }, [shareUrl]);
+
+  const buildDoc = async () => {
+    const jsPDF = await loadJsPDF();
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    await drawPassportPage(doc, a, t, lang);
+    return doc;
+  };
+  const fileName = `passport-${String(a.title || a.species || "animal").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
+  const download = async () => {
+    setBusy(true);
+    try { const doc = await buildDoc(); savePdf(doc, fileName); } catch {} finally { setBusy(false); }
+  };
+  const share = async () => {
+    setBusy(true);
+    try {
+      const doc = await buildDoc();
+      const blob = doc.output("blob");
+      const file = typeof File !== "undefined" ? new File([blob], fileName, { type: "application/pdf" }) : null;
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: a.title || a.common || t.passport });
+      } else if (navigator.share) {
+        await navigator.share({ title: a.title || a.common || t.passport, url: shareUrl });
+      } else {
+        savePdf(doc, fileName);
+      }
+    } catch (e) { /* AbortError = user cancelled the share sheet; ignore */ }
+    finally { setBusy(false); }
+  };
+
+  const parents = Array.isArray(a.parents) ? a.parents.filter(p => p && (p.image || p.label)) : [];
+  const rows = [
+    a.sex && [t.sex, sexLabel(a.sex, t)],
+    [t.born, formatBirth(a, t) || "—"],
+    a.weight && [t.weight, a.weight],
+    a.breederCode && [(it ? "Sigla / ID" : "Breeder ID"), a.breederCode],
+    ["CITES", a.citesListed ? (it ? "Sì — dichiarato" : "Yes — declared") : "—"],
+  ].filter(Boolean);
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-stone-950/85 backdrop-blur-sm"
+         onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full md:max-w-md bg-stone-900 ring-1 ring-stone-800 rounded-t-3xl md:rounded-2xl flex flex-col max-h-[92dvh] anim-up">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
+          <h3 className="font-display text-lg text-stone-50 flex items-center gap-2"><FileText size={17} className="text-amber-400" />{t.passport}</h3>
+          <button onClick={onClose} className="text-stone-400 hover:text-stone-100"><X size={20} /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto hide-scrollbar px-5 pb-3 min-h-0">
+          <div className="bg-stone-950/60 ring-1 ring-stone-800 rounded-2xl overflow-hidden">
+            {mainPhoto && <img src={mainPhoto} alt="" className="w-full aspect-[4/3] object-cover" />}
+            <div className="p-4 space-y-3">
+              <div>
+                <h4 className="font-display text-xl text-stone-50 leading-tight">{a.title || a.common || a.species}</h4>
+                {a.common && a.title && <p className="text-sm text-stone-300">{a.common}</p>}
+                {a.species && <p className="font-display italic text-amber-500 text-sm">{a.species}</p>}
+              </div>
+
+              {a.traits && a.traits.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {a.traits.map((tr, i) => <TraitChip key={i} trait={tr} size="sm" />)}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                {rows.map(([label, val], i) => (
+                  <div key={i} className="bg-stone-900/70 ring-1 ring-stone-800 rounded-lg px-3 py-2">
+                    <div className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">{label}</div>
+                    <div className="text-sm text-stone-100 font-medium mt-0.5">{val}</div>
+                  </div>
+                ))}
+              </div>
+
+              {parents.length > 0 && (
+                <div>
+                  <div className="text-[9px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t.parentage}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {parents.map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-stone-900/70 ring-1 ring-stone-800 rounded-lg p-2">
+                        {p.image ? <img src={p.image} alt="" className="w-9 h-9 rounded object-cover shrink-0" /> : <div className="w-9 h-9 rounded bg-stone-800 shrink-0" />}
+                        <div className="min-w-0">
+                          <div className="text-[9px] font-bold text-stone-500 uppercase">{p.role === "dam" ? t.dam : t.sire}</div>
+                          <div className="text-[11px] text-stone-200 truncate">{p.label || t.unknown}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {qr && (
+                <div className="flex items-center gap-3 bg-stone-900/70 ring-1 ring-stone-800 rounded-xl p-3">
+                  <img src={qr} alt="QR" className="w-20 h-20 rounded bg-white p-1 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-stone-200 flex items-center gap-1.5"><QrCode size={13} className="text-amber-400" />{it ? "Scansiona per aprire online" : "Scan to open online"}</div>
+                    <div className="text-[10px] text-stone-500 mt-1 break-all">{shareUrl}</div>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-[10px] text-stone-500 leading-relaxed pt-1">
+                {it ? "Passaporto generato da HerpMarket. Non sostituisce la documentazione ufficiale CITES."
+                    : "Passport generated by HerpMarket. Not a substitute for official CITES documentation."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="shrink-0 px-5 pt-3 border-t border-stone-800 bg-stone-900 flex gap-2"
+             style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
+          <button onClick={download} disabled={busy}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-100 font-bold text-sm py-3 rounded-lg transition-colors ring-1 ring-stone-700">
+            {busy ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}{it ? "Scarica PDF" : "Download PDF"}
+          </button>
+          <button onClick={share} disabled={busy}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
+            <Share2 size={15} />{it ? "Condividi" : "Share"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function pdfHeader(doc, { title, subtitle }) {
