@@ -51,7 +51,17 @@ export function mapListing(row) {
     rating: row.sellers?.rating ?? 0,
     reviews: row.sellers?.review_count ?? 0,
     status: row.status,
+    soldAt: row.sold_at || null,
   };
+}
+
+// Sold listings stay publicly visible for this many days (as social proof),
+// then drop out of browse — but the seller keeps seeing them in My Listings.
+export const SOLD_PUBLIC_DAYS = 30;
+function soldStillPublic(r) {
+  if (r.status !== 'sold') return true;
+  if (!r.soldAt) return false;
+  return Date.parse(r.soldAt) >= Date.now() - SOLD_PUBLIC_DAYS * 864e5;
 }
 
 export function mapSeller(row) {
@@ -97,7 +107,10 @@ export function mapExpo(row) {
 export async function fetchListings(filter = {}) {
   let q = supabase.from('listings')
     .select('*, sellers(*)')
-    .eq('status', 'active');
+    // Show sold listings too (as social proof) — they get a "SOLD" stamp in the
+    // UI and are sorted after the active ones. Collection statuses (held /
+    // breeder) stay private.
+    .in('status', ['active', 'sold']);
 
   if (filter.category)  q = q.eq('category', filter.category);
   if (filter.country)   q = q.eq('country', filter.country);
@@ -123,6 +136,10 @@ export async function fetchListings(filter = {}) {
   if (filter.expoOnly) rows = rows.filter(r => r.expoIds?.length);
   if (filter.traits?.length) rows = rows.filter(r =>
     filter.traits.every(t => r.traits.some(rt => rt.name === t)));
+  // Drop sold listings older than the public window, then put active before the
+  // recently-sold ones (sold act as social proof at the tail).
+  rows = rows.filter(soldStillPublic);
+  rows = [...rows.filter(r => r.status !== 'sold'), ...rows.filter(r => r.status === 'sold')];
   return rows;
 }
 
@@ -133,9 +150,10 @@ export async function fetchListingsBySeller(sellerName) {
   const { data, error } = await supabase.from('listings')
     .select('*, sellers!inner(*)')
     .or(`name.eq.${safe},store_name.eq.${safe}`, { foreignTable: 'sellers' })
-    .eq('status', 'active');
+    .in('status', ['active', 'sold']);
   if (error) throw error;
-  return (data || []).map(mapListing);
+  const rows = (data || []).map(mapListing).filter(soldStillPublic);
+  return [...rows.filter(r => r.status !== 'sold'), ...rows.filter(r => r.status === 'sold')];
 }
 
 // Fetch a single listing by its id (used for shareable deep links: ?l=<id>).
@@ -282,8 +300,11 @@ export async function deleteListing(id) {
 // Move an animal between collection statuses: active | sold | held | breeder.
 // Used when removing a listing from sale (→ held/breeder) without deleting it.
 export async function updateListingStatus(id, status) {
+  // Stamp the sale time when moving to "sold" (drives the public 30-day window);
+  // clear it when the animal goes back to any other status (e.g. relisted).
+  const patch = { status, updated_at: new Date().toISOString(), sold_at: status === 'sold' ? new Date().toISOString() : null };
   const { data, error } = await supabase.from('listings')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(patch)
     .eq('id', id).select('*, sellers(*)').single();
   if (error) throw error;
   return mapListing(data);
@@ -336,7 +357,7 @@ export async function markListingSold(opts) {
   const { data: tx, error } = await supabase.from('transactions').insert(row).select().single();
   if (error) throw error;
   // Take it off the market.
-  const { error: updErr } = await supabase.from('listings').update({ status: 'sold' }).eq('id', opts.listingId);
+  const { error: updErr } = await supabase.from('listings').update({ status: 'sold', sold_at: new Date().toISOString() }).eq('id', opts.listingId);
   if (updErr) throw updErr;
   return tx;
 }
