@@ -1702,6 +1702,19 @@ const formatBirth = (listing, t) => {
   }
   return formatAge(listing?.ageMonths, t);
 };
+// The actual birth date, formatted by whatever precision the seller entered
+// (year / month+year / full date). Returns null when no date was given.
+const formatBornDate = (bd, lang) => {
+  const s = (bd || "").trim();
+  if (!s) return null;
+  const loc = lang === "it" ? "it-IT" : lang === "de" ? "de-DE" : "en-GB";
+  if (/^\d{4}$/.test(s)) return s;                       // year only
+  if (/^\d{4}-\d{1,2}$/.test(s)) {                       // month + year
+    const [y, m] = s.split("-").map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString(loc, { month: "short", year: "numeric" });
+  }
+  return formatDate(s, lang) || s;                       // full date
+};
 const formatPrice = (n) => (n == null || isNaN(n)) ? "—" : `€${Number(n).toLocaleString("it-IT")}`;
 const FREE_LISTING_LIMIT = 9999;  // beta: effectively unlimited for everyone (tighten later if needed)
 // Compact relative time for chat list ("now", "5m", "3h", "2d", or a date).
@@ -1824,6 +1837,7 @@ export default function HerpMarket() {
   const [view, setView] = useState("home");
   const [navSeq, setNavSeq] = useState(0);  // bumps on every navigation → re-mounts screens that need fresh data
   const [viewData, setViewData] = useState(null);
+  const [deepPassport, setDeepPassport] = useState(null);  // animal passport opened via a shared ?p= link
   const [lang, setLangState] = useState(() => {
     try { return localStorage.getItem("hm_lang") || "it"; } catch (e) { return "it"; }
   });
@@ -1837,7 +1851,7 @@ export default function HerpMarket() {
     try { localStorage.setItem("hm_favs", JSON.stringify(favorites)); } catch (e) {}
   }, [favorites]);
   const [filter, setFilter] = useState({
-    category: null, subCategory: null, sex: null, region: null, country: null,
+    category: null, subcatGroup: null, subCategory: null, sex: null, region: null, country: null,
     sort: "newest", search: "",
     priceMin: null, priceMax: null,
     traits: [],            // array of selected trait names
@@ -2002,7 +2016,14 @@ export default function HerpMarket() {
       const params = new URLSearchParams(window.location.search);
       const s = params.get("s");
       const l = params.get("l");
-      if (s) {
+      const p = params.get("p");
+      if (p) {
+        // Shared passport link: open the animal's passport directly, viewable
+        // by anyone with the link (buyer at handover, etc.).
+        loadApi().then(api => api.fetchListingById(p))
+          .then(listing => { if (listing) setDeepPassport(listing); })
+          .catch(() => {});
+      } else if (s) {
         // New links use the seller's id (clean + collision-proof); resolve it
         // to the seller and open their page. Old name-based links still work.
         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) {
@@ -2017,10 +2038,11 @@ export default function HerpMarket() {
           .then(listing => { if (listing) go("detail", listing); })
           .catch(() => {});
       }
-      if (s || l) {
+      if (s || l || p) {
         const url = new URL(window.location.href);
         url.searchParams.delete("s");
         url.searchParams.delete("l");
+        url.searchParams.delete("p");
         window.history.replaceState({}, "", url.pathname + url.search + url.hash);
       }
     } catch (e) { /* ignore malformed URLs */ }
@@ -2058,7 +2080,7 @@ export default function HerpMarket() {
   // to preserve the filter they just set.
   const goToSearchFresh = () => {
     setFilter({
-      category: null, subCategory: null, sex: null, region: null, country: null,
+      category: null, subcatGroup: null, subCategory: null, sex: null, region: null, country: null,
       sort: "newest", search: "",
       priceMin: null, priceMax: null,
       traits: [], traitClass: null, seller: null,
@@ -2227,6 +2249,11 @@ export default function HerpMarket() {
       )}
       {recovery && (
         <SetNewPasswordModal t={t} onDone={() => setRecovery(false)} />
+      )}
+
+      {/* Passport opened from a shared ?p= link (e.g. a buyer at handover). */}
+      {deepPassport && (
+        <PassportModal animal={deepPassport} t={t} lang={lang} onClose={() => setDeepPassport(null)} />
       )}
 
       {/* Privacy / cookie banner — shown until the user makes a choice. */}
@@ -2562,6 +2589,18 @@ function ListingCard({ item, go, favorites, toggleFav, t }) {
       <div className="relative aspect-square bg-stone-800 overflow-hidden">
         <ImageCarousel images={item.images} alt={item.common} fallbackLabel={item.common || t.realPhoto}
                        imgClass="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        {/* SOLD stamp — sold listings stay visible (social proof) but dimmed and
+            stamped so they're clearly not available. */}
+        {item.status === "sold" && (
+          <>
+            <div className="absolute inset-0 bg-stone-950/55 pointer-events-none" />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="-rotate-12 border-[3px] border-rose-500/90 text-rose-50 bg-rose-600/30 backdrop-blur-sm font-black uppercase tracking-[0.2em] text-lg px-4 py-1.5 rounded shadow-xl">
+                {t.soldBadge}
+              </span>
+            </div>
+          </>
+        )}
         {/* Sex + seller flair badges, top-left */}
         <div className="absolute top-2 left-2 flex items-center gap-1">
           {item.sex && (
@@ -2858,7 +2897,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
             {CATEGORIES.map((c, i) => (
               <button key={c.id}
                       onClick={() => {
-                        setFilter({ ...filter, category: c.id });
+                        setFilter({ ...filter, category: c.id, subcatGroup: null, subCategory: null });
                         go("search", null, true); // fresh = start at top
                       }}
                       className="anim-up shrink-0 bg-stone-900/60 hover:bg-stone-800/60 border border-stone-800 hover:border-amber-500/40 rounded-xl px-4 py-3 transition-all min-w-[110px] text-left"
@@ -3101,6 +3140,19 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
   const filtered = useMemo(() => {
     let r = listingsData || [];
     if (filter.category)    r = r.filter(l => l.category === filter.category);
+    // Subcategory GROUP (Boas / Pythons / Colubrids / Other…) — tappable chips on
+    // the results screen so beginners narrow down without opening the filter.
+    if (filter.subcatGroup) {
+      const sp = speciesForSubcat(filter.category, filter.subcatGroup);
+      if (sp.length) {
+        r = r.filter(l => sp.includes(l.species));
+      } else {
+        // "Other" bucket = species not covered by any named subcategory group.
+        const named = new Set();
+        subcatsFor(filter.category).forEach(s => (s.species || []).forEach(x => named.add(x)));
+        r = r.filter(l => l.species && !named.has(l.species));
+      }
+    }
     if (filter.subCategory) r = r.filter(l => l.species === filter.subCategory);
     if (filter.sex)         r = r.filter(l => l.sex === filter.sex);
     if (filter.region)      r = r.filter(l => l.region === filter.region);
@@ -3185,15 +3237,36 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
             <div className="ml-auto text-[10px] text-stone-500 font-bold uppercase tracking-widest">{t.resultsCount(filtered.length)}</div>
           </div>
 
-          {/* Morph chips intentionally NOT shown here — they overwhelmed casual
-              keepers ("another morph site"). Morph filtering now lives only in
-              the Advanced filters sheet. */}
+          {/* Subcategory quick-chips — appear once a category is selected, so a
+              beginner narrows down (e.g. Snakes → Boas / Pythons / Colubrids)
+              with one tap, no filter sheet needed. Morph chips stay OUT of here
+              (they live only in the Advanced filters sheet). */}
+          {filter.category && subcatsFor(filter.category).length > 0 && (
+            <div className="mt-3 -mx-5 md:mx-0 px-5 md:px-0">
+              <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
+                <button onClick={() => setFilter({ ...filter, subcatGroup: null })}
+                        className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${!filter.subcatGroup ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-300 ring-1 ring-stone-800 hover:ring-stone-700"}`}>
+                  {lang === "it" ? "Tutti" : lang === "de" ? "Alle" : "All"}
+                </button>
+                {subcatsFor(filter.category).map(sc => {
+                  const on = filter.subcatGroup === sc.id;
+                  return (
+                    <button key={sc.id}
+                            onClick={() => setFilter({ ...filter, subcatGroup: on ? null : sc.id })}
+                            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${on ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-300 ring-1 ring-stone-800 hover:ring-stone-700"}`}>
+                      {sc[lang] || sc.en}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Active filter pills */}
           {activeFilterCount > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {filter.category && (
-                <FilterPill onRemove={() => setFilter({ ...filter, category: null, subCategory: null, traits: [] })}>
+                <FilterPill onRemove={() => setFilter({ ...filter, category: null, subcatGroup: null, subCategory: null, traits: [] })}>
                   {CATEGORIES.find(c => c.id === filter.category)?.[lang]}
                 </FilterPill>
               )}
@@ -3253,7 +3326,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
             <p className="font-display italic text-lg">{lang === "it" ? "Nessun risultato trovato" : "No results found"}</p>
             <p className="text-xs mt-2">{lang === "it" ? "Prova a modificare i filtri" : "Try adjusting your filters"}</p>
             <button onClick={() => setFilter({
-                      category: null, subCategory: null, sex: null, region: null, country: null,
+                      category: null, subcatGroup: null, subCategory: null, sex: null, region: null, country: null,
                       sort: "newest", search: "", priceMin: null, priceMax: null, traits: [], traitClass: null,
                       seller: null, expoOnly: false, verifiedOnly: false, auctionOnly: false,
                     })}
@@ -3274,7 +3347,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
           footer={
             <div className="flex gap-2">
               <button onClick={() => { setShowTraits(false); setFilter({
-                        category: null, subCategory: null, sex: null, region: null, country: null,
+                        category: null, subcatGroup: null, subCategory: null, sex: null, region: null, country: null,
                         sort: filter.sort, search: filter.search,
                         priceMin: null, priceMax: null, traits: [], traitClass: null,
                         seller: null, expoOnly: false, verifiedOnly: false, auctionOnly: false,
@@ -3294,7 +3367,7 @@ function SearchScreen({ t, lang, go, favorites, toggleFav, filter, setFilter, in
               <div className="flex flex-wrap gap-1.5">
                 {CATEGORIES.map(c => (
                   <ToggleChip key={c.id} active={filter.category === c.id}
-                              onClick={() => setFilter({ ...filter, category: filter.category === c.id ? null : c.id, subCategory: null, traits: [] })}>
+                              onClick={() => setFilter({ ...filter, category: filter.category === c.id ? null : c.id, subcatGroup: null, subCategory: null, traits: [] })}>
                     {c.emoji} {c[lang]}
                   </ToggleChip>
                 ))}
@@ -4086,9 +4159,10 @@ async function shareListing(a, t, lang) {
     try { await navigator.share({ title: title || "HerpMarket", text, url: listingUrl }); return; }
     catch (e) { if (e && e.name === "AbortError") return; }
   }
-  // Fallback for browsers without the Web Share API: copy the link.
+  // Fallback for browsers without the Web Share API: copy just the clean link
+  // (no caption) so it pastes cleanly into Instagram link stickers / bios.
   try {
-    await navigator.clipboard.writeText(`${text}\n${listingUrl}`);
+    await navigator.clipboard.writeText(listingUrl);
     alert(lang === "it" ? "Link copiato!" : "Link copied!");
   } catch (e) { alert(listingUrl); }
 }
@@ -4554,8 +4628,9 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                               className={`w-full text-left rounded-lg p-2.5 flex items-center gap-2.5 transition-all ${
                                 selected ? "bg-amber-500/15 ring-1 ring-amber-500/40" : "bg-stone-900/60 ring-1 ring-stone-800 hover:ring-stone-700"
                               }`}>
-                        <div className={`rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br from-emerald-800 to-teal-700`}>
-                          <div className="text-[8px] uppercase tracking-widest text-white/80 font-bold leading-none">{(ex.date || "").split(" ")[0]}</div>
+                        <div className={`rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br from-emerald-800 to-teal-700 min-w-[46px]`}>
+                          <div className="text-[11px] text-white font-bold leading-none">{(ex.date || "").split(" ")[0]}</div>
+                          <div className="text-[7px] uppercase tracking-wide text-white/70 font-bold leading-none mt-0.5">{(ex.date || "").split(" ").slice(1).join(" ").replace(/20(\d\d)/, "'$1")}</div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[12px] font-bold text-stone-100 leading-tight truncate">{ex.name}</div>
@@ -4581,6 +4656,43 @@ function Detail({ listing, go, goBack, t, favorites, toggleFav, user, requireAut
                 <Info size={14} className="shrink-0 mt-0.5" />{t.noExpoNoShip}
               </div>
             )}
+          </div>
+        </Section>
+      )}
+
+      {/* Auctions: the buy/ship flow doesn't apply (you bid to win), but the
+          winner still picks up at one of the seller's expos — so show those
+          here too. Previously the whole delivery section was hidden on auctions,
+          so expos only appeared on the browse card, not in the listing. */}
+      {a.auction && hasExpo && (
+        <Section title={t.availableAtExpos}>
+          <div className="bg-stone-900/40 ring-1 ring-stone-800 rounded-xl p-3">
+            <p className="text-[11px] text-stone-400 mb-2.5 leading-relaxed">
+              {lang === "it"
+                ? "Chi vince l'asta ritira l'esemplare allo stand del venditore in una di queste fiere."
+                : lang === "de"
+                ? "Der Gewinner der Auktion holt das Tier am Stand des Verkaeufers auf einer dieser Boersen ab."
+                : "The auction winner picks up the animal at the seller's stand at one of these expos."}
+            </p>
+            <div className="space-y-1.5">
+              {listingExpos.map(ex => (
+                <button key={ex.id} onClick={() => go("expo", ex)}
+                        className="w-full text-left rounded-lg p-2.5 flex items-center gap-2.5 bg-stone-900/60 ring-1 ring-stone-800 hover:ring-stone-700 transition-all">
+                  <div className="rounded px-2 py-1 text-center shrink-0 bg-gradient-to-br from-emerald-800 to-teal-700 min-w-[46px]">
+                    <div className="text-[11px] text-white font-bold leading-none">{(ex.date || "").split(" ")[0]}</div>
+                    <div className="text-[7px] uppercase tracking-wide text-white/70 font-bold leading-none mt-0.5">{(ex.date || "").split(" ").slice(1).join(" ").replace(/20(\d\d)/, "'$1")}</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-bold text-stone-100 leading-tight truncate">{ex.name}</div>
+                    <div className="text-[10px] text-stone-500 flex items-center gap-1">
+                      <MapPin size={9} />{ex.location}
+                      {ex.country !== "IT" && <span className="text-[8px] uppercase font-black bg-stone-800 text-stone-400 px-1 rounded">{ex.country}</span>}
+                    </div>
+                  </div>
+                  <ChevronRight size={15} className="text-stone-500 shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
         </Section>
       )}
@@ -5535,7 +5647,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
       if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di cibo vivo" : "Choose the live food type"); return; }
     } else if (isEducational) {
       if (!subcatId) { setSaveErr(lang === "it" ? "Scegli il tipo di contenuto" : "Choose the content type"); return; }
-    } else if (!speciesVal.trim() || speciesVal === "__other") { setSaveErr(t.needSpecies); return; }
+    }
+    // Species is OPTIONAL for animals & exotics — a beginner can list with just
+    // the category + title and type the species later if they want.
     const isAuction = saleMode === "auction";
     const basePrice = isAuction ? Number(startPrice) : Number(price);
     if (!isCollectionEdit && (!basePrice || basePrice <= 0)) { setSaveErr(t.needPrice); return; }
@@ -5582,8 +5696,9 @@ function SellScreen({ t, lang, go, user, editListing }) {
         const e = exampleTraits.find(x => x.name === n);
         return { name: n, cls: e?.cls || "line" };
       });
-      let common = SPECIES_LABELS[speciesVal]?.it || speciesVal;
-      let speciesOut = speciesVal;
+      const _spRaw = (speciesVal && speciesVal !== "__other") ? speciesVal.trim() : "";
+      let common = _spRaw ? (SPECIES_LABELS[_spRaw]?.it || _spRaw) : null;
+      let speciesOut = _spRaw || null;
       if (isEquipment) {
         // Equipment: TYPE -> common; CONDITION + BRAND -> first two trait chips.
         common = eqTypeLabel(subcatId, "it");
@@ -5601,8 +5716,8 @@ function SellScreen({ t, lang, go, user, editListing }) {
         speciesOut = null;
         traits = brand.trim() ? [{ name: brand.trim(), cls: "line" }] : [];
       } else if (isExotic) {
-        speciesOut = speciesVal.trim();
-        common = speciesVal.trim();
+        speciesOut = speciesVal.trim() || null;
+        common = speciesVal.trim() || null;
         traits = [];
       }
       const headline = title.trim();
@@ -5923,7 +6038,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
           {/* Other exotics & gastropods: free-text species, no morphs */}
           {isExotic && (
             <FormBlock label={lang === "it" ? "Specie / animale" : "Species / animal"}
-                       required done={!!speciesVal.trim() && speciesVal !== "__other"}>
+                       done={!!speciesVal.trim() && speciesVal !== "__other"}>
               <input className="form-input" value={speciesVal === "__other" ? "" : speciesVal}
                      onChange={e => setSpeciesVal(e.target.value)}
                      placeholder={lang === "it" ? "" : ""} />
@@ -5945,7 +6060,7 @@ function SellScreen({ t, lang, go, user, editListing }) {
           )}
 
           {!isSimple && subcatId && (
-            <FormBlock label={t.species} required done={!!speciesVal && speciesVal !== "__other"}>
+            <FormBlock label={t.species} done={!!speciesVal && speciesVal !== "__other"}>
               {speciesOptions.length > 0 ? (
                 <>
                   <select className="form-input"
@@ -7910,11 +8025,12 @@ function EditStoreScreen({ t, lang, go, user }) {
     if (!seller?.id) return;
     const url = `${window.location.origin}/?s=${seller.id}`;
     const title = storeName || name || "HerpMarket";
-    const text = lang === "it" ? "Dai un'occhiata al mio store su HerpMarket 🦎" : "Check out my store on HerpMarket 🦎";
+    // Share only the clean URL (no extra caption text) — otherwise the caption
+    // gets pasted in front of the link and Instagram link stickers reject it.
     if (navigator.share) {
-      try { await navigator.share({ title, text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+      try { await navigator.share({ title, url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
     }
-    try { await navigator.clipboard.writeText(`${text}\n${url}`); setShareCopied(true); setTimeout(() => setShareCopied(false), 2000); } catch (e) { alert(url); }
+    try { await navigator.clipboard.writeText(url); setShareCopied(true); setTimeout(() => setShareCopied(false), 2000); } catch (e) { alert(url); }
   };
 
   return (
@@ -8938,9 +9054,10 @@ function SellerProfile({ sellerName, t, lang, go, goBack, favorites, toggleFav, 
     const url = shareId
       ? `${window.location.origin}/?s=${shareId}`
       : `${window.location.origin}/?s=${encodeURIComponent(storeTitle)}`;
-    const text = lang === "it" ? `Scopri ${storeTitle} su HerpMarket 🦎` : `Check out ${storeTitle} on HerpMarket 🦎`;
+    // Share only the clean URL (no caption) so it pastes cleanly into Instagram
+    // link stickers / bios.
     if (navigator.share) {
-      try { await navigator.share({ title: storeTitle, text, url }); } catch (e) { /* cancelled */ }
+      try { await navigator.share({ title: storeTitle, url }); } catch (e) { /* cancelled */ }
       return;
     }
     try { await navigator.clipboard.writeText(url); setShareCopied(true); setTimeout(() => setShareCopied(false), 2500); } catch (e) { /* clipboard unavailable */ }
@@ -9508,12 +9625,12 @@ function BreedingProjectsScreen({ t, go, lang }) {
           <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-widest mb-2">{lang === "it" ? "Cura e gestione dei rettili" : "Reptile care & maintenance"}</div>
           <p className="text-sm text-stone-300 leading-relaxed">
             {lang === "it"
-              ? "Nel frattempo, per tenere traccia di alimentazione, mute, peso, accoppiamenti, schiuse e manutenzione del terrario — con promemoria — ti consigliamo l'app partner ReptileEat."
-              : "In the meantime, to track feeding, sheds, weight, pairings, hatchings and terrarium maintenance — with reminders — we recommend our partner app ReptileEat."}
+              ? "Nel frattempo, per tenere traccia di alimentazione, mute, peso, accoppiamenti, schiuse e manutenzione del terrario — con promemoria — ti consigliamo l'app partner ReptilEat."
+              : "In the meantime, to track feeding, sheds, weight, pairings, hatchings and terrarium maintenance — with reminders — we recommend our partner app ReptilEat."}
           </p>
           <a href="https://www.reptileat.com/" target="_blank" rel="noopener noreferrer"
              className="mt-3 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-sm px-4 py-2.5 rounded-xl transition-colors">
-            {lang === "it" ? "Scopri ReptileEat" : "Get ReptileEat"} <ChevronRight size={16} />
+            {lang === "it" ? "Scopri ReptilEat" : "Get ReptilEat"} <ChevronRight size={16} />
           </a>
           <p className="text-[10px] text-stone-500 mt-2">{lang === "it" ? "App partner indipendente, disponibile sull'App Store." : "Independent partner app, available on the App Store."}</p>
         </div>
@@ -9784,7 +9901,9 @@ function PassportModal({ animal: a, t, lang, onClose }) {
   const [qr, setQr] = useState(null);
   const it = lang === "it";
   const mainPhoto = (a.images && a.images[0]) || a.image || null;
-  const shareUrl = a?.id ? `${location.origin}/?l=${a.id}` : location.origin;
+  // A clean passport link (?p=) — opens straight to this animal's passport for
+  // anyone with the link (the buyer at handover), with no listing/price page.
+  const shareUrl = a?.id ? `${location.origin}/?p=${a.id}` : location.origin;
 
   useEffect(() => {
     let dead = false;
@@ -9806,18 +9925,18 @@ function PassportModal({ animal: a, t, lang, onClose }) {
     setBusy(true);
     try { const doc = await buildDoc(); savePdf(doc, fileName); } catch {} finally { setBusy(false); }
   };
+  const [copied, setCopied] = useState(false);
+  // Share the passport LINK, not the PDF file: link-sharing works on every phone,
+  // whereas file-sharing silently fails on many PWAs. The buyer opens the link
+  // and sees the passport (and can download the PDF from there themselves).
   const share = async () => {
     setBusy(true);
     try {
-      const doc = await buildDoc();
-      const blob = doc.output("blob");
-      const file = typeof File !== "undefined" ? new File([blob], fileName, { type: "application/pdf" }) : null;
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: a.title || a.common || t.passport });
-      } else if (navigator.share) {
+      if (navigator.share) {
         await navigator.share({ title: a.title || a.common || t.passport, url: shareUrl });
-      } else {
-        savePdf(doc, fileName);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        setCopied(true); setTimeout(() => setCopied(false), 1800);
       }
     } catch (e) { /* AbortError = user cancelled the share sheet; ignore */ }
     finally { setBusy(false); }
@@ -9826,7 +9945,7 @@ function PassportModal({ animal: a, t, lang, onClose }) {
   const parents = Array.isArray(a.parents) ? a.parents.filter(p => p && (p.image || p.label)) : [];
   const rows = [
     a.sex && [t.sex, sexLabel(a.sex, t)],
-    [t.born, formatBirth(a, t) || "—"],
+    [t.born, formatBornDate(a.birthDate, lang) || formatBirth(a, t) || "—"],
     a.weight && [t.weight, a.weight],
     a.breederCode && [(it ? "Sigla / ID" : "Breeder ID"), a.breederCode],
     ["CITES", a.citesListed ? (it ? "Sì — dichiarato" : "Yes — declared") : "—"],
@@ -9909,7 +10028,7 @@ function PassportModal({ animal: a, t, lang, onClose }) {
           </button>
           <button onClick={share} disabled={busy}
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-bold text-sm py-3 rounded-lg transition-colors">
-            <Share2 size={15} />{it ? "Condividi" : "Share"}
+            {copied ? <Check size={15} /> : <Share2 size={15} />}{copied ? (it ? "Link copiato" : "Link copied") : (it ? "Condividi" : "Share")}
           </button>
         </div>
       </div>
@@ -10202,7 +10321,7 @@ async function drawPassportPage(doc, a, t, lang) {
   };
 
   // ── Identity ──────────────────────────────────────────────
-  F(it ? "Titolo annuncio" : "Listing title", a.title);
+  F(it ? "Nome" : "Name", a.title);
   F(it ? "Specie" : "Species", a.species);
   F(it ? "Nome comune" : "Common name", a.common);
   F(it ? "Tipo di animale" : "Animal type", a.category);
@@ -10223,18 +10342,8 @@ async function drawPassportPage(doc, a, t, lang) {
   F(it ? "Regione" : "Region", a.region);
   F(it ? "Paese" : "Country", a.country);
 
-  // ── Listing ───────────────────────────────────────────────
-  heading(it ? "Annuncio" : "Listing");
-  F(it ? "Prezzo" : "Price", a.price != null ? `EUR ${a.price}` : null);
-  F(it ? "Spedizione" : "Shipping", a.shipping
-      ? (a.shippingCost ? `${it ? "Si" : "Yes"} — EUR ${a.shippingCost}` : (it ? "Si" : "Yes"))
-      : (it ? "No" : "No"));
-  F(it ? "Ritiro di persona" : "Local pickup", a.localPickup ? (it ? "Si" : "Yes") : (it ? "No" : "No"));
-  F(it ? "Fiere" : "Expos", (a.expoIds && a.expoIds.length) ? String(a.expoIds.length) : null);
-  F(it ? "Stato" : "Status", a.status);
-  F(it ? "Pubblicato il" : "Listed on", fmtPdfDate(a.createdAt, lang));
-  F(it ? "Aggiornato il" : "Last updated", fmtPdfDate(a.updatedAt, lang));
-  F(it ? "Venditore" : "Seller", a.seller);
+  // The passport is the ANIMAL's record — listing/sale details (price,
+  // shipping, status, dates, seller) are intentionally left off.
 
   // ── Description ───────────────────────────────────────────
   if (a.desc) {
