@@ -52,7 +52,7 @@ const I18N = {
     detailedSearch: "Ricerca dettagliata", detailedSearchSub: "Filtra per tratti, prezzo, paese", viewAuctions: "Vedi le aste", viewAuctionsSub: "Solo annunci all'asta",
     allListings: "Tutti gli annunci", seeAll: "Vedi tutti",
     heroTitle: "Rettili e animali esotici, dagli appassionati in Italia e in Europa.",
-    heroSub: "Che tu voglia trovare il tuo prossimo geco, serpente o tarantola, o presentare gli animali del tuo allevamento, HerpMarket è il punto d'incontro per chi ama i rettili o cerca un nuovo amico. Sfogliare e pubblicare è gratis durante la Beta!",
+    heroSub: "Rettili e animali esotici. Cerchi un geco, un serpente o una tarantola? O vendi gli animali che allevi? Unisciti ora — navigare e pubblicare è gratis durante la Beta!",
     heroCta: "📲 Aggiungila alla schermata Home e usala come un'app — pubblica il tuo animale in 2 minuti.",
     heroBtn: "Esplora il marketplace",
     browseListings: "Sfoglia annunci", sellCta: "Vendi un animale", orSep: "oppure",
@@ -333,7 +333,7 @@ const I18N = {
     detailedSearch: "Detailed search", detailedSearchSub: "Filter by traits, price, country", viewAuctions: "View auctions", viewAuctionsSub: "Auction listings only",
     allListings: "All listings", seeAll: "See all",
     heroTitle: "Reptiles & exotic animals, from enthusiasts across Italy and Europe.",
-    heroSub: "Whether you're looking for your next gecko, snake or tarantula, or showing the animals you breed, HerpMarket is the meeting place for everyone who loves reptiles or is looking for a new pet. Browsing and listing are free during Beta!",
+    heroSub: "Reptiles & exotic animals. Looking for a gecko, snake or tarantula? Or selling the animals you breed? Join now — browsing and listing are free during Beta!",
     heroCta: "📲 Add it to your home screen and use it like an app — list your animal in 2 minutes.",
     heroBtn: "Browse the Marketplace",
     browseListings: "Browse listings", sellCta: "Sell an animal", orSep: "or",
@@ -610,7 +610,7 @@ const I18N = {
     detailedSearch: "Detailsuche", detailedSearchSub: "Nach Merkmalen, Preis, Land filtern", viewAuctions: "Auktionen ansehen", viewAuctionsSub: "Nur Auktionen",
     allListings: "Alle Anzeigen", seeAll: "Alle ansehen",
     heroTitle: "Reptilien & exotische Tiere, von Liebhabern aus Italien und Europa.",
-    heroSub: "Egal ob du deinen nächsten Gecko, deine nächste Schlange oder Vogelspinne suchst oder die Tiere aus deiner Zucht zeigen möchtest – HerpMarket ist der Treffpunkt für alle, die Reptilien lieben oder ein neues Haustier suchen. Stöbern und Inserieren sind während der Beta kostenlos!",
+    heroSub: "Reptilien & exotische Tiere. Suchst du einen Gecko, eine Schlange oder eine Vogelspinne? Oder verkaufst du die Tiere, die du züchtest? Mach jetzt mit — Stöbern und Inserieren sind während der Beta kostenlos!",
     heroCta: "📲 Füge sie zum Startbildschirm hinzu und nutze sie wie eine App – inseriere dein Tier in 2 Minuten.",
     heroBtn: "Zum Marktplatz",
     browseListings: "Anzeigen durchsuchen", sellCta: "Ein Tier verkaufen", orSep: "oder",
@@ -1659,17 +1659,26 @@ function getUpcomingExpos(allExpos = EXPOS, todayISO = new Date().toISOString().
 // Featured expos for the home page: pin the flagship shows (Verona, then the
 // next upcoming Hamm edition) at the front, then fill the rest with the next
 // soonest upcoming expos. Returns `count` expos, de-duplicated.
-function getFeaturedExpos(count = 3, allExpos = EXPOS, todayISO = new Date().toISOString().slice(0, 10)) {
+function getFeaturedExpos(count = 3, allExpos = EXPOS, todayISO = new Date().toISOString().slice(0, 10), listings = []) {
   const upcoming = getUpcomingExpos(allExpos, todayISO);
   const featured = [];
   const pushUnique = (expo) => {
     if (expo && !featured.some(e => e.id === expo.id)) featured.push(expo);
   };
-  // 1) Pin the flagship shows (first upcoming edition of each), in this order.
-  for (const key of ["verona", "hamm", "squamata", "houten"]) {
+  // 1) Pin the flagship international shows (first upcoming edition of each).
+  for (const key of ["verona", "hamm", "houten"]) {
     pushUnique(upcoming.find(e => e.name && e.name.toLowerCase().includes(key)));
   }
-  // 2) Fill remaining slots with the next soonest upcoming expos.
+  // 2) Add the upcoming expo with the most listings attached — the community
+  //    hotspot (often the one people are reserving animals for next).
+  const countFor = (e) => listings.filter(l => (l.expoIds && l.expoIds.includes(e.id)) || l.expoId === e.id).length;
+  const hottest = upcoming
+    .filter(e => !featured.some(f => f.id === e.id))
+    .map(e => ({ e, n: countFor(e) }))
+    .filter(x => x.n > 0)
+    .sort((a, b) => b.n - a.n)[0];
+  if (hottest) pushUnique(hottest.e);
+  // 3) Fill any remaining slots with the next soonest upcoming expos.
   for (const e of upcoming) {
     if (featured.length >= count) break;
     pushUnique(e);
@@ -2959,7 +2968,7 @@ function Home_({ t, lang, setLang, go, favorites, toggleFav, filter, setFilter, 
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {getFeaturedExpos(4).map((expo, i) => {
+          {getFeaturedExpos(4, EXPOS, undefined, LIST).map((expo, i) => {
             const expoAnimalsCount = (listingsData || LISTINGS).filter(l => (l.expoIds && l.expoIds.includes(expo.id)) || l.expoId === expo.id).length;
             return (
               <button key={expo.id}
